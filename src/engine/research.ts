@@ -89,7 +89,7 @@ Return JSON:
   }
 
   // Step 4: Store sources in database
-  const sourceRecords = []
+  const sourceRecords: Awaited<ReturnType<typeof db.researchSource.create>>[] = []
   for (const result of searchResults) {
     const source = await db.researchSource.create({
       data: {

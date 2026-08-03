@@ -83,12 +83,14 @@ const containerVariants = {
   },
 }
 
+const EASE_OUT: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94]
+
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { duration: 0.5, ease: EASE_OUT },
   },
 }
 
@@ -98,7 +100,7 @@ const progressVariants = {
     scaleX: 1,
     transition: {
       duration: 0.8 + percentage * 0.005,
-      ease: [0.25, 0.46, 0.45, 0.94],
+      ease: EASE_OUT,
     },
   }),
 }
@@ -393,7 +395,7 @@ export function YPPProgressTracker({
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${overallPercentage}%` }}
-            transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.3 }}
+            transition={{ duration: 1.2, ease: EASE_OUT, delay: 0.3 }}
             className={cn(
               'absolute inset-y-0 left-0 rounded-full',
               isFullyEligible

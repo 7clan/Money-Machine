@@ -683,11 +683,11 @@ export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
   const thumbnailUrl = videoProjectId ? `/api/data/thumbnail-file?id=${encodeURIComponent(videoProjectId)}` : null
 
   const vp = data?.videoProject
-  const idea = data?.idea
-  const script = data?.script
+  const idea = data?.idea ?? null
+  const script = data?.script ?? null
   const scenes = data?.scenes ?? []
   const claims = data?.claims ?? []
-  const review = data?.review
+  const review = data?.review ?? null
 
   const status = vp ? statusStyle(vp.status) : null
   const pillar = idea?.pillar

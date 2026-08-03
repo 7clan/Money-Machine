@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 export async function POST() {
   try {
     const now = new Date()
-    const jobs = []
+    const jobs: Array<{ type: string; id: string }> = []
 
     // Schedule recurring production jobs
     // Weekly long-form video

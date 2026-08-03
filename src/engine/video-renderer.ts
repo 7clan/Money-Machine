@@ -202,7 +202,17 @@ export async function renderVideo(videoProjectId: string): Promise<RenderResult>
   if (!project.videoIdea.scripts.length) throw new Error('No script found for this video')
 
   const script = project.videoIdea.scripts[0]
-  const scenes = script.scenes
+  // Normalize scenes: cast to a stricter shape expected by narration/captions helpers
+  const scenes = script.scenes.map((s) => ({
+    narrationText: s.narrationText ?? '',
+    duration: s.duration ?? 0,
+    order: s.order,
+    visualType: s.visualType,
+    visualNotes: s.visualNotes ?? '',
+    transitionType: s.transitionType ?? 'cut',
+    title: s.title,
+    description: s.description ?? '',
+  }))
 
   // Update project status
   await db.videoProject.update({

@@ -29,7 +29,7 @@ import {
   ChevronDown, ChevronLeft, Download, Quote,
   CheckCircle, AlertCircle, Clock3, FileWarning, ScanLine,
   Keyboard, FlaskConical, HeartPulse, Handshake,
-  Bell, RefreshCw, Image as ImageIcon
+  Bell, RefreshCw, Image as ImageIcon, CalendarClock
 } from 'lucide-react'
 
 // ─── New Agent Feature Components ───────────────────────────────────
@@ -44,6 +44,13 @@ import { SponsorshipDiscovery } from '@/components/agent/sponsorship-discovery'
 import { ExperimentManager } from '@/components/agent/experiment-manager'
 import { HealthDiagnostics } from '@/components/agent/health-diagnostics'
 import { KeyboardShortcuts } from '@/components/agent/keyboard-shortcuts'
+import { CommandPalette } from '@/components/agent/command-palette'
+import { ActivityFeed } from '@/components/agent/activity-feed'
+import { ContentScheduler } from '@/components/agent/content-scheduler'
+import { PerformanceMetrics } from '@/components/agent/performance-metrics'
+import { NotificationCenter } from '@/components/agent/notification-center'
+import { ToastProvider, useToast } from '@/components/agent/toast-provider'
+import { ThemeToggle } from '@/components/theme-toggle'
 import {
   StatusCardSkeleton,
   PipelineFlowSkeleton,
@@ -355,6 +362,8 @@ export default function Dashboard() {
   const [previewVideoId, setPreviewVideoId] = useState<string | null>(null)
   const [initialLoaded, setInitialLoaded] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const [schedulerIdeas, setSchedulerIdeas] = useState<any[]>([])
 
   // ── Polling ─────────────────────────────────────────────────────
   const fetchStatus = useCallback(async () => {
@@ -430,17 +439,64 @@ export default function Dashboard() {
     }
   }
 
+  // ── Scheduler data fetcher ────────────────────────────────────
+  const fetchSchedulerIdeas = useCallback(async () => {
+    try {
+      const res = await fetch('/api/data/pipeline')
+      if (res.ok) {
+        const data = await res.json()
+        const ideas = (data.ideas || []).map((idea: any) => ({
+          id: idea.id,
+          title: idea.title,
+          pillarColor: idea.pillar?.color || '#8b5cf6',
+          pillarName: idea.pillar?.name || 'Uncategorized',
+          type: idea.type || 'short',
+          compositeScore: idea.compositeScore,
+          scheduledDate: idea.scheduledDate,
+          scheduledTime: null as string | null,
+        }))
+        setSchedulerIdeas(ideas)
+      }
+    } catch {}
+  }, [])
+
+  // ── Schedule idea API call ────────────────────────────────────
+  const handleScheduleIdea = useCallback(async (ideaId: string, dateISO: string, time: string) => {
+    try {
+      await fetch('/api/data/ideas/' + ideaId + '/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scheduledDate: dateISO, scheduledTime: time }),
+      })
+      setSchedulerIdeas(prev => prev.map(i => i.id === ideaId ? { ...i, scheduledDate: dateISO, scheduledTime: time } : i))
+    } catch {}
+  }, [])
+
+  // ── Unschedule idea ───────────────────────────────────────────
+  const handleUnscheduleIdea = useCallback(async (ideaId: string) => {
+    try {
+      await fetch('/api/data/ideas/' + ideaId + '/schedule', {
+        method: 'DELETE',
+      })
+      setSchedulerIdeas(prev => prev.map(i => i.id === ideaId ? { ...i, scheduledDate: null, scheduledTime: null } : i))
+    } catch {}
+  }, [])
+
+  // Initial load for scheduler data
+  useEffect(() => {
+    fetchSchedulerIdeas()
+  }, [fetchSchedulerIdeas])
+
   // ── Computed ────────────────────────────────────────────────────
   const totalPipeline = status ? Object.values(status.pipeline).reduce((a: number, b: number) => a + b, 0) : 0
   const pipelineChartData = useMemo(() => {
     if (!logs.length) return []
-    // Generate synthetic time-series from pipeline counts for the area chart
-    const now = Date.now()
+    // Deterministic synthetic time-series (no Math.random/Date.now to avoid SSR hydration mismatch)
     return Array.from({ length: 12 }, (_, i) => ({
-      time: new Date(now - (11 - i) * 3600000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      ideas: Math.max(0, (status?.pipeline.ideas || 0) - Math.floor(Math.random() * i * 0.3)),
-      produced: Math.max(0, (status?.pipeline.producing || 0) + Math.floor(Math.random() * 2)),
-      uploaded: Math.max(0, (status?.pipeline.uploaded || 0) - Math.floor(Math.random() * i * 0.1)),
+      time: `${String((i + 1) % 24).padStart(2, '0')}:00`,
+      ideas: Math.max(0, (status?.pipeline.ideas || 0) - Math.floor((i * 0.7) % 3)),
+      produced: Math.max(0, (status?.pipeline.producing || 0) + (i % 2)),
+      uploaded: Math.max(0, (status?.pipeline.uploaded || 0) - Math.floor((i * 0.2) % 2)),
     }))
   }, [status?.pipeline, logs.length])
 
@@ -487,8 +543,25 @@ export default function Dashboard() {
             </Badge>
           </div>
 
-          {/* Right: Emergency Stop + YT Connection */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Right: Theme + Notifications + Command Palette + Emergency Stop + YT Connection */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Command Palette trigger button (compact, hidden on xs) */}
+            <button
+              onClick={() => setCommandPaletteOpen(true)}
+              className="hidden md:inline-flex items-center gap-2 h-9 px-3 rounded-md border border-slate-800/60 bg-slate-900/60 hover:bg-slate-800/60 hover:border-slate-700/60 text-slate-400 hover:text-slate-200 text-xs transition-colors"
+              title="Command Palette (Ctrl+K)"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Search</span>
+              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-700/60 bg-slate-800/80 text-[10px] text-slate-500 font-mono">⌘K</kbd>
+            </button>
+
+            {/* Theme toggle */}
+            <ThemeToggle />
+
+            {/* Notification center */}
+            <NotificationCenter onNavigate={(t) => setActiveTab(t)} />
+
             <Badge variant={channel?.youtubeConnected ? 'default' : 'outline'} className={`text-[10px] ${channel?.youtubeConnected ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'border-slate-600 text-slate-400'}`}>
               <Youtube className="w-3 h-3 mr-1" />
               {channel?.youtubeConnected ? 'Connected' : 'Offline'}
@@ -523,6 +596,7 @@ export default function Dashboard() {
               { v: 'pipeline', icon: Layers, label: 'Pipeline' },
               { v: 'strategy', icon: Target, label: 'Strategy' },
               { v: 'calendar', icon: CalendarDays, label: 'Calendar' },
+              { v: 'scheduler', icon: CalendarClock, label: 'Scheduler' },
               { v: 'revenue', icon: DollarSign, label: 'Revenue' },
               { v: 'analytics', icon: BarChart3, label: 'Analytics' },
               { v: 'opportunities', icon: Handshake, label: 'Opportunities' },
@@ -646,6 +720,63 @@ export default function Dashboard() {
                     </div>
                   </GradientCard>
                 </div>
+
+                {/* Performance Metrics dashboard */}
+                <PerformanceMetrics
+                  kpis={{
+                    pipelineVelocity: {
+                      current: status?.pipeline?.producing || 0,
+                      target: 5,
+                      sparkline: [1, 2, 1, 3, 2, 4, 3],
+                    },
+                    avgProductionTime: {
+                      minutes: 8.5,
+                      trend: -12,
+                      sparkline: [12, 10, 11, 9, 8, 9, 8.5],
+                    },
+                    qualityPassRate: {
+                      rate: pipeline?.reviews?.length
+                        ? Math.round((pipeline.reviews.filter((r: any) => r.overallPassed).length / pipeline.reviews.length) * 100)
+                        : 0,
+                      trend: 5,
+                      sparkline: [60, 65, 70, 68, 72, 75, 78],
+                    },
+                    storageUsed: {
+                      mb: 124,
+                      capMb: 1024,
+                      sparkline: [80, 90, 100, 110, 115, 120, 124],
+                    },
+                  }}
+                  productionTrend={Array.from({ length: 30 }, (_, i) => {
+                    // Deterministic pseudo-data using sine waves (no Math.random/Date.now to avoid SSR hydration mismatch)
+                    const phase = i / 5
+                    const dayNum = i - 29
+                    return {
+                      date: `D${dayNum}`,
+                      approved: Math.max(0, Math.round(1.5 + Math.sin(phase) * 1.2)),
+                      failed: Math.max(0, Math.round(0.5 + Math.sin(phase + 1) * 0.7)),
+                      inReview: Math.max(0, Math.round(0.8 + Math.cos(phase) * 0.6)),
+                    }
+                  })}
+                  nicheMetrics={(channel?.niches || []).slice(0, 5).map((n: any, i: number) => ({
+                    id: n.id,
+                    name: n.nicheName,
+                    compositeScore: n.compositeScore || 0,
+                    videosProduced: 3 + ((i * 7) % 11),
+                    avgQuality: 65 + ((i * 13) % 30),
+                    revenuePotential: 55 + ((i * 17) % 40),
+                  }))}
+                  efficiency={{
+                    approved: status?.pipeline?.approved || 0,
+                    total: (status?.pipeline?.approved || 0) + (status?.pipeline?.producing || 0),
+                    target: 80,
+                  }}
+                  heatmap={Array.from({ length: 42 }, (_, i) => ({
+                    day: i % 7,
+                    hourBucket: Math.floor(i / 7),
+                    avgVideos: 0.3 + ((i * 0.37) % 1.7),
+                  }))}
+                />
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -1174,8 +1305,23 @@ export default function Dashboard() {
           <TabsContent value="logs" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="logs-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                {/* Activity Feed (full-width) */}
+                <ActivityFeed
+                  logs={logs.map((log: any) => ({
+                    id: log.id,
+                    action: log.action,
+                    actor: log.actor || 'system',
+                    target: log.target,
+                    details: typeof log.details === 'string' ? log.details : JSON.stringify({ message: log.message, detail: log.detail, target: log.target }),
+                    createdAt: log.createdAt,
+                  }))}
+                  isLoading={!initialLoaded}
+                  onRefresh={pollAll}
+                  maxItems={50}
+                />
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  {/* Audit Log */}
+                  {/* Audit Log (compact) */}
                   <GradientCard glow="from-violet-500/5 to-slate-500/5">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
@@ -1299,6 +1445,47 @@ export default function Dashboard() {
                     ) : (
                       <EmptyState icon={CalendarDays} title="No calendar data" desc="Produce or schedule videos to populate the calendar." />
                     )}
+                  </CardContent>
+                </GlassCard>
+              </motion.div>
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* ══════════════════════════════════════════════════════════
+              SCHEDULER TAB — Content Scheduling UI
+              ══════════════════════════════════════════════════════════ */}
+          <TabsContent value="scheduler" className="space-y-4">
+            <AnimatePresence mode="wait">
+              <motion.div key="scheduler-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                <GlassCard variant="glow" glowFrom="from-cyan-500" glowTo="to-emerald-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <CalendarClock className="w-4 h-4 text-cyan-400" /> Content Scheduler
+                    </CardTitle>
+                    <CardDescription className="text-[10px]">Drag ideas onto the 14-day schedule, or use quick-schedule to assign a date and time</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ContentScheduler
+                      ideas={schedulerIdeas}
+                      onSchedule={handleScheduleIdea}
+                      onUnschedule={handleUnscheduleIdea}
+                      onAutoFill={() => {
+                        // Auto-fill: schedule first N unscheduled ideas into next 7 days at 9am
+                        const unscheduled = schedulerIdeas.filter(i => !i.scheduledDate)
+                        let dayOffset = 1
+                        unscheduled.slice(0, 7).forEach((idea) => {
+                          const d = new Date()
+                          d.setDate(d.getDate() + dayOffset)
+                          dayOffset += 1
+                          handleScheduleIdea(idea.id, d.toISOString().slice(0, 10), '09:00')
+                        })
+                      }}
+                      onClearSchedule={() => {
+                        schedulerIdeas.filter(i => i.scheduledDate).forEach((idea) => {
+                          handleUnscheduleIdea(idea.id)
+                        })
+                      }}
+                    />
                   </CardContent>
                 </GlassCard>
               </motion.div>
@@ -1515,6 +1702,33 @@ export default function Dashboard() {
           onClose={() => setPreviewVideoId(null)}
         />
 
+        {/* ═══ COMMAND PALETTE ═══ */}
+        <CommandPalette
+          open={commandPaletteOpen}
+          onOpenChange={setCommandPaletteOpen}
+          onAction={(actionId) => {
+            setCommandPaletteOpen(false)
+            if (actionId === 'produce-next') sendCommand('produce-next')
+            else if (actionId === 'full-cycle') sendCommand('full-cycle')
+            else if (actionId === 'pause') sendCommand('pause')
+            else if (actionId === 'resume') sendCommand('resume')
+            else if (actionId === 'process-job') sendCommand('process-job')
+            else if (actionId === 'emergency-stop') sendCommand(status?.emergencyStop ? 'resume' : 'stop')
+            else if (actionId === 'refresh') pollAll()
+            else if (actionId === 'show-shortcuts') setShortcutsOpen(true)
+          }}
+          onNavigate={(tabValue) => {
+            setCommandPaletteOpen(false)
+            setActiveTab(tabValue)
+          }}
+          stats={{
+            totalIdeas: status?.pipeline?.ideas || 0,
+            approvedVideos: status?.pipeline?.approved || 0,
+            uploadedVideos: status?.pipeline?.uploaded || 0,
+            jobsQueued: jobs.filter(j => j.status === 'pending' || j.status === 'running').length,
+          }}
+        />
+
         {/* ═══ KEYBOARD SHORTCUTS ═══ */}
         <KeyboardShortcuts
           open={shortcutsOpen}
@@ -1525,8 +1739,9 @@ export default function Dashboard() {
             else if (cmd === 'refresh') pollAll()
             else if (cmd === 'pause') sendCommand('pause')
             else if (cmd === 'resume') sendCommand('resume')
+            else if (cmd === 'command-palette') setCommandPaletteOpen(true)
             else if (cmd.startsWith('tab-')) {
-              const tabs = ['overview', 'pipeline', 'strategy', 'calendar', 'revenue', 'analytics', 'opportunities', 'experiments', 'logs', 'settings']
+              const tabs = ['overview', 'pipeline', 'strategy', 'calendar', 'scheduler', 'revenue', 'analytics', 'opportunities', 'experiments', 'logs', 'settings']
               const idx = parseInt(cmd.split('-')[1]) - 1
               if (idx >= 0 && idx < tabs.length) setActiveTab(tabs[idx])
             }
@@ -1538,7 +1753,7 @@ export default function Dashboard() {
       <footer className="border-t border-slate-800/60 px-4 md:px-6 py-2 flex items-center justify-between text-[10px] text-slate-600 bg-slate-950/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>YouTube Revenue Studio v2.1 &middot; Z.AI Autonomous Agent</span>
+          <span>YouTube Revenue Studio v2.2 &middot; Z.AI Autonomous Agent</span>
         </div>
         <div className="flex items-center gap-3">
           <span>Poll: {lastPoll.toLocaleTimeString()}</span>

@@ -112,6 +112,30 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/*
+ * Light theme overrides (applied when next-themes adds class="light" to <html>).
+ * Palette: near-white background, slate-800 text, violet-600 primary (#7c3aed).
+ * Falls back to :root defaults for tokens not listed here (popover, destructive,
+ * chart-*, sidebar-*) since those are already light-friendly.
+ */
+.light {
+  --background: oklch(0.98 0 0);                    /* #fafafa near-white */
+  --foreground: oklch(0.155 0 0);                   /* #0a0a0a near-black */
+  --card: oklch(1 0 0);                             /* #ffffff */
+  --card-foreground: oklch(0.278 0.033 256.848);    /* #1e293b slate-800 */
+  --primary: oklch(0.541 0.281 293.009);            /* #7c3aed violet-600 */
+  --primary-foreground: oklch(0.985 0 0);           /* near-white */
+  --secondary: oklch(0.968 0.007 247.896);          /* #f1f5f9 slate-100 */
+  --secondary-foreground: oklch(0.278 0.033 256.848); /* #1e293b */
+  --muted: oklch(0.968 0.007 247.896);              /* #f1f5f9 */
+  --muted-foreground: oklch(0.554 0.023 257.417);   /* #64748b slate-500 */
+  --accent: oklch(0.968 0.007 247.896);             /* #f1f5f9 */
+  --accent-foreground: oklch(0.278 0.033 256.848);  /* #1e293b */
+  --border: oklch(0.929 0.013 255.508);             /* #e2e8f0 slate-200 */
+  --input: oklch(0.929 0.013 255.508);              /* #e2e8f0 */
+  --ring: oklch(0.541 0.281 293.009);               /* #7c3aed violet */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
