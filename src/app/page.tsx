@@ -25,8 +25,24 @@ import {
   CircleDot, Layers, MonitorSmartphone, ToggleLeft,
   Database, CloudUpload, Award, CreditCard, Percent,
   ArrowUpRight, ArrowDownRight, Minus, Megaphone,
-  Lightbulb, Wand2, Film, ThumbsUp, Users, Hash
+  Lightbulb, Wand2, Film, ThumbsUp, Users, Hash, CalendarDays,
+  ChevronDown, ChevronLeft, Download, Quote,
+  CheckCircle, AlertCircle, Clock3, FileWarning, ScanLine
 } from 'lucide-react'
+
+// ─── New Agent Feature Components ───────────────────────────────────
+import { VideoPreviewModal } from '@/components/agent/video-preview-modal'
+import { IdeaExplorer } from '@/components/agent/idea-explorer'
+import { QualityReviewPanel } from '@/components/agent/quality-review-panel'
+import { ContentCalendar } from '@/components/agent/content-calendar'
+import { GlassCard } from '@/components/agent/glass-card'
+import {
+  StatusCardSkeleton,
+  PipelineFlowSkeleton,
+  IdeaListSkeleton,
+  ChartSkeleton,
+  LogListSkeleton,
+} from '@/components/agent/skeletons'
 
 // ─── Types ───────────────────────────────────────────────────────────
 interface AgentStatus {
@@ -128,13 +144,34 @@ function stateColor(state: string) {
 }
 
 function actionColor(action: string) {
+  // New categorized actions
+  if (action === 'emergency_stop') return 'text-red-400 bg-red-500/10 border-red-500/30'
+  if (action === 'mode_change') return 'text-amber-400 bg-amber-500/10 border-amber-500/30'
+  if (action === 'upload') return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30'
+  if (action === 'strategy_change') return 'text-violet-400 bg-violet-500/10 border-violet-500/30'
+  // Legacy / fallback keyword matching
   if (action.includes('error') || action.includes('fail')) return 'text-red-400 bg-red-500/10 border-red-500/30'
   if (action.includes('upload') || action.includes('complete')) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
   if (action.includes('produce') || action.includes('render')) return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30'
   if (action.includes('script') || action.includes('write')) return 'text-amber-400 bg-amber-500/10 border-amber-500/30'
-  if (action.includes('research') || action.includes('niche')) return 'text-blue-400 bg-blue-500/10 border-blue-500/30'
+  if (action.includes('research') || action.includes('niche')) return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30'
   if (action.includes('review') || action.includes('quality')) return 'text-rose-400 bg-rose-500/10 border-rose-500/30'
   return 'text-slate-400 bg-slate-500/10 border-slate-500/30'
+}
+
+/** Pretty-print an audit-log action label */
+function actionLabel(action: string): string {
+  const map: Record<string, string> = {
+    emergency_stop: 'E-STOP',
+    mode_change: 'MODE',
+    upload: 'UPLOAD',
+    metadata_update: 'UPDATE',
+    strategy_change: 'STRATEGY',
+    token_refresh: 'TOKEN',
+    token_revoke: 'REVOKE',
+    publish: 'PUBLISH',
+  }
+  return map[action] || action.slice(0, 10).toUpperCase()
 }
 
 function modeLabel(mode: string) {
@@ -307,6 +344,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [lastPoll, setLastPoll] = useState<Date>(new Date())
+  const [previewVideoId, setPreviewVideoId] = useState<string | null>(null)
+  const [initialLoaded, setInitialLoaded] = useState(false)
 
   // ── Polling ─────────────────────────────────────────────────────
   const fetchStatus = useCallback(async () => {
@@ -354,6 +393,7 @@ export default function Dashboard() {
   const pollAll = useCallback(async () => {
     await Promise.all([fetchStatus(), fetchPipeline(), fetchChannel(), fetchJobs(), fetchLogs(), fetchAnalytics()])
     setLastPoll(new Date())
+    setInitialLoaded(true)
   }, [fetchStatus, fetchPipeline, fetchChannel, fetchJobs, fetchLogs, fetchAnalytics])
 
   useEffect(() => {
@@ -466,6 +506,7 @@ export default function Dashboard() {
               { v: 'overview', icon: Activity, label: 'Overview' },
               { v: 'pipeline', icon: Layers, label: 'Pipeline' },
               { v: 'strategy', icon: Target, label: 'Strategy' },
+              { v: 'calendar', icon: CalendarDays, label: 'Calendar' },
               { v: 'revenue', icon: DollarSign, label: 'Revenue' },
               { v: 'analytics', icon: BarChart3, label: 'Analytics' },
               { v: 'logs', icon: FileText, label: 'Logs' },
@@ -600,8 +641,8 @@ export default function Dashboard() {
                 </GradientCard>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  {/* Video Ideas */}
-                  <GradientCard>
+                  {/* Video Ideas — Enhanced with search / filter / detail drawer */}
+                  <GlassCard variant="gradient" glowFrom="from-violet-500" glowTo="to-cyan-500" className="lg:col-span-1">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Lightbulb className="w-4 h-4 text-violet-400" /> Video Ideas
@@ -609,61 +650,51 @@ export default function Dashboard() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ScrollArea className="h-72">
-                        {pipeline?.ideas?.length ? (
-                          <div className="space-y-1.5">
-                            {pipeline.ideas.map((idea: any, i: number) => (
-                              <motion.div
-                                key={idea.id}
-                                initial={{ opacity: 0, x: -5 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.03 }}
-                                className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30 hover:border-slate-600/50 transition-colors"
-                              >
-                                <Badge variant="outline" className={`text-[10px] shrink-0 ${idea.type === 'short' ? 'border-purple-500/50 text-purple-400' : 'border-cyan-500/50 text-cyan-400'}`}>
-                                  {idea.type === 'short' ? 'Short' : 'Long'}
-                                </Badge>
-                                <Badge variant="outline" className={`text-[10px] shrink-0 ${idea.status === 'uploaded' ? 'border-emerald-500/50 text-emerald-400' : idea.status === 'idea' ? 'border-slate-500/50 text-slate-400' : 'border-amber-500/50 text-amber-400'}`}>
-                                  {idea.status}
-                                </Badge>
-                                <span className="text-xs truncate flex-1 text-slate-300">{idea.title}</span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        ) : (
-                          <EmptyState icon={Lightbulb} title="No ideas yet" desc="Run initial setup to generate video ideas from your niche." />
-                        )}
-                      </ScrollArea>
+                      {pipeline?.ideas?.length ? (
+                        <IdeaExplorer
+                          ideas={pipeline.ideas}
+                          onSelectIdea={() => setActiveTab('pipeline')}
+                        />
+                      ) : initialLoaded ? (
+                        <EmptyState icon={Lightbulb} title="No ideas yet" desc="Run initial setup to generate video ideas from your niche." />
+                      ) : (
+                        <IdeaListSkeleton count={5} />
+                      )}
                     </CardContent>
-                  </GradientCard>
+                  </GlassCard>
 
-                  {/* Video Projects */}
-                  <GradientCard>
+                  {/* Video Projects — Clickable to open preview modal */}
+                  <GlassCard variant="gradient" glowFrom="from-emerald-500" glowTo="to-cyan-500" className="lg:col-span-1">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Film className="w-4 h-4 text-emerald-400" /> Video Projects
                         <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{pipeline?.projects?.length || 0}</Badge>
                       </CardTitle>
+                      <CardDescription className="text-[10px]">Click any project to preview video, script, scenes & review</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <ScrollArea className="h-72">
                         {pipeline?.projects?.length ? (
                           <div className="space-y-1.5">
                             {pipeline.projects.map((project: any, i: number) => (
-                              <motion.div
+                              <motion.button
                                 key={project.id}
                                 initial={{ opacity: 0, x: -5 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.03 }}
-                                className="p-2 rounded-lg bg-slate-800/40 border border-slate-700/30 space-y-1.5"
+                                whileHover={{ scale: 1.01, x: 2 }}
+                                whileTap={{ scale: 0.99 }}
+                                onClick={() => setPreviewVideoId(project.id)}
+                                className="w-full text-left p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/30 hover:border-violet-500/50 hover:bg-slate-800/60 transition-colors space-y-1.5 cursor-pointer group"
                               >
                                 <div className="flex items-center gap-2">
+                                  <Play className="w-3.5 h-3.5 text-slate-500 group-hover:text-violet-400 shrink-0 transition-colors" />
                                   <span className="text-xs font-medium text-slate-200 truncate flex-1">{project.title}</span>
                                   {project.duration && (
-                                    <span className="text-[10px] text-slate-500 font-mono">{project.duration.toFixed(0)}s</span>
+                                    <span className="text-[10px] text-slate-500 font-mono shrink-0">{project.duration.toFixed(0)}s</span>
                                   )}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 pl-5">
                                   <Badge variant="outline" className={`text-[10px] ${
                                     project.status === 'approved' || project.status === 'uploaded' ? 'border-emerald-500/50 text-emerald-400' :
                                     project.status === 'failed' ? 'border-red-500/50 text-red-400' :
@@ -677,8 +708,13 @@ export default function Dashboard() {
                                       <span className="text-[10px] text-slate-500 font-mono">{project.renderProgress}%</span>
                                     </div>
                                   )}
+                                  {project.status === 'approved' && (
+                                    <Badge variant="outline" className="text-[10px] border-violet-500/40 text-violet-300 ml-auto">
+                                      <Play className="w-2.5 h-2.5 mr-1" />Preview
+                                    </Badge>
+                                  )}
                                 </div>
-                              </motion.div>
+                              </motion.button>
                             ))}
                           </div>
                         ) : (
@@ -686,7 +722,7 @@ export default function Dashboard() {
                         )}
                       </ScrollArea>
                     </CardContent>
-                  </GradientCard>
+                  </GlassCard>
                 </div>
 
                 {/* Uploads */}
@@ -720,6 +756,29 @@ export default function Dashboard() {
                     </ScrollArea>
                   </CardContent>
                 </GradientCard>
+
+                {/* Quality Review Panel */}
+                <GlassCard variant="glow" glowFrom="from-rose-500" glowTo="to-violet-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-rose-400" /> Quality Review History
+                      <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{pipeline?.reviews?.length || 0}</Badge>
+                    </CardTitle>
+                    <CardDescription className="text-[10px]">Fact-check, originality, copyright & policy compliance for every produced video</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {pipeline?.reviews?.length || pipeline?.projects?.length ? (
+                      <QualityReviewPanel
+                        reviews={pipeline?.reviews || []}
+                        projects={pipeline?.projects || []}
+                      />
+                    ) : initialLoaded ? (
+                      <EmptyState icon={ShieldCheck} title="No quality reviews yet" desc="Produce a video to trigger automated review." />
+                    ) : (
+                      <IdeaListSkeleton count={3} />
+                    )}
+                  </CardContent>
+                </GlassCard>
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -1055,10 +1114,10 @@ export default function Dashboard() {
               <motion.div key="logs-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   {/* Audit Log */}
-                  <GradientCard glow="from-blue-500/5 to-slate-500/5">
+                  <GradientCard glow="from-violet-500/5 to-slate-500/5">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-blue-400" /> Audit Log
+                        <FileText className="w-4 h-4 text-violet-400" /> Audit Log
                         <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{logs.length}</Badge>
                       </CardTitle>
                     </CardHeader>
@@ -1078,12 +1137,16 @@ export default function Dashboard() {
                                   {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                 </span>
                                 <Badge variant="outline" className={`text-[10px] h-5 shrink-0 ${actionColor(log.action)}`}>
-                                  {log.action}
+                                  {actionLabel(log.action)}
                                 </Badge>
-                                <Badge variant="outline" className="text-[10px] h-5 shrink-0 border-slate-700 text-slate-500">
-                                  {log.actor}
-                                </Badge>
-                                <span className="text-slate-400 text-[10px] truncate flex-1">{log.details}</span>
+                                {log.target && (
+                                  <Badge variant="outline" className="text-[9px] h-5 shrink-0 border-cyan-500/30 text-cyan-300 font-mono">
+                                    {log.target.slice(-6)}
+                                  </Badge>
+                                )}
+                                <span className="text-slate-300 text-[11px] truncate flex-1" title={log.detail || log.message}>
+                                  {log.message || log.details}
+                                </span>
                               </motion.div>
                             ))}
                           </div>
@@ -1148,6 +1211,34 @@ export default function Dashboard() {
                     </CardContent>
                   </GradientCard>
                 </div>
+              </motion.div>
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* ══════════════════════════════════════════════════════════
+              CALENDAR TAB
+              ══════════════════════════════════════════════════════════ */}
+          <TabsContent value="calendar" className="space-y-4">
+            <AnimatePresence mode="wait">
+              <motion.div key="calendar-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                <GlassCard variant="glow" glowFrom="from-violet-500" glowTo="to-cyan-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4 text-violet-400" /> Content Calendar
+                    </CardTitle>
+                    <CardDescription className="text-[10px]">Scheduled releases, published videos, and upcoming production queue</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {pipeline?.ideas?.length || pipeline?.uploads?.length ? (
+                      <ContentCalendar
+                        ideas={pipeline?.ideas || []}
+                        uploads={pipeline?.uploads || []}
+                      />
+                    ) : (
+                      <EmptyState icon={CalendarDays} title="No calendar data" desc="Produce or schedule videos to populate the calendar." />
+                    )}
+                  </CardContent>
+                </GlassCard>
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -1285,6 +1376,12 @@ export default function Dashboard() {
             </AnimatePresence>
           </TabsContent>
         </Tabs>
+
+        {/* ═══ VIDEO PREVIEW MODAL ═══ */}
+        <VideoPreviewModal
+          videoProjectId={previewVideoId}
+          onClose={() => setPreviewVideoId(null)}
+        />
       </main>
 
       {/* ═══ FOOTER ═══ */}

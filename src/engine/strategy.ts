@@ -143,8 +143,11 @@ Shorts ideas: ${(ideasData?.shorts || []).slice(0, 20).map((i: any) => i.title).
     })
   }
 
-  // Create content pillars
+  // Create content pillars (idempotent - skip if name already exists)
+  const existingPillars = await db.contentPillar.findMany({ select: { name: true } })
+  const existingNames = new Set(existingPillars.map(p => p.name))
   for (const pillar of strategy.contentPillars) {
+    if (existingNames.has(pillar.name)) continue
     await db.contentPillar.create({
       data: { name: pillar.name, description: pillar.description, color: pillar.color },
     })

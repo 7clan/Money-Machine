@@ -87,14 +87,37 @@ async function setAgentState(key: string, value: string) {
   })
 }
 
-/** Log an agent action */
-async function logAction(action: string, details?: string) {
+/** Categorize an action message into a semantic audit-log action type */
+function categorizeAction(message: string): string {
+  const m = message.toLowerCase()
+  if (/(emergency stop|e-?stop|paused|resuming|agent start)/.test(m)) return 'emergency_stop'
+  if (/(mode change|simulation mode|private production|autonomous)/.test(m)) return 'mode_change'
+  if (/(upload|thumbnail upload|youtube)/.test(m)) return 'upload'
+  if (/(quality review|review passed|review failed|fact check|originality|policy)/.test(m)) return 'metadata_update'
+  if (/(render|video rendered|encoding)/.test(m)) return 'metadata_update'
+  if (/(script|writing script)/.test(m)) return 'metadata_update'
+  if (/(research|topic research|niche research)/.test(m)) return 'metadata_update'
+  if (/(strategy|channel|pillar|niche)/.test(m)) return 'strategy_change'
+  if (/(error|fail|failed)/.test(m)) return 'metadata_update'
+  return 'metadata_update'
+}
+
+/** Log an agent action with proper categorization, target, and structured details */
+async function logAction(action: string, details?: string, target?: string) {
   await setAgentState('last_action', `${new Date().toISOString()}: ${action}`)
+  const category = categorizeAction(action)
+  // Store as JSON details so the UI can render structured info, but keep human-readable too
+  const payload = {
+    message: action,
+    detail: details || null,
+    ts: Date.now(),
+  }
   await db.auditLog.create({
     data: {
-      action: 'strategy_change',
+      action: category,
       actor: 'agent',
-      details: details || action,
+      target: target || null,
+      details: JSON.stringify(payload),
     },
   })
 }
