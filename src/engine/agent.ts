@@ -122,6 +122,46 @@ async function logAction(action: string, details?: string, target?: string) {
   })
 }
 
+// ─── Notification helper ───────────────────────────────────────────
+// Persistence-aware wrapper. Failures are swallowed so a notification
+// error never breaks the agent's main flow.
+
+type NotifType = 'success' | 'error' | 'warning' | 'info' | 'agent_event'
+type NotifCategory = 'agent' | 'pipeline' | 'revenue' | 'system' | 'youtube'
+
+interface NotifyInput {
+  type: NotifType
+  category: NotifCategory
+  title: string
+  description?: string
+  isImportant?: boolean
+  targetId?: string
+  targetType?: 'video_project' | 'upload' | 'idea' | 'job'
+  actionLabel?: string
+  actionTab?: string
+}
+
+async function notify(input: NotifyInput): Promise<void> {
+  try {
+    await db.notification.create({
+      data: {
+        type: input.type,
+        category: input.category,
+        title: input.title.slice(0, 280),
+        description: input.description ? input.description.slice(0, 1024) : null,
+        isImportant: input.isImportant === true,
+        targetId: input.targetId ?? null,
+        targetType: input.targetType ?? null,
+        actionLabel: input.actionLabel ?? null,
+        actionTab: input.actionTab ?? null,
+      },
+    })
+  } catch (e) {
+    // Never let notification persistence break the agent.
+    console.error('[agent.notify] failed to persist notification:', e)
+  }
+}
+
 // ============================================
 // PHASE 1: Initial Setup
 // ============================================
@@ -139,6 +179,13 @@ export async function phase1_nicheResearch(): Promise<void> {
     const best = niches[0]
     
     logAction(`Niche research complete. Selected: ${best.nicheName} (score: ${best.compositeScore.toFixed(2)})`)
+    await notify({
+      type: 'success',
+      category: 'pipeline',
+      title: 'Niche selected',
+      description: `${best.nicheName} — score ${best.compositeScore.toFixed(2)}`,
+      actionTab: 'strategy',
+    })
     await setAgentState('next_action', 'Create channel strategy')
   } catch (e: any) {
     await setAgentState('last_error', e.message)
@@ -157,6 +204,13 @@ export async function phase2_createStrategy(): Promise<void> {
     const strategy = await createChannelStrategy()
     
     logAction(`Strategy created: "${strategy.channelName}" with ${strategy.contentPillars.length} pillars, ${strategy.first30VideoIdeas.length} video ideas, ${strategy.first60ShortIdeas.length} short ideas`)
+    await notify({
+      type: 'success',
+      category: 'pipeline',
+      title: 'Channel strategy created',
+      description: `${strategy.channelName} — ${strategy.contentPillars.length} pillars, ${strategy.first30VideoIdeas.length} long-form ideas`,
+      actionTab: 'strategy',
+    })
     await setAgentState('next_action', 'Select and research first topic')
   } catch (e: any) {
     await setAgentState('last_error', e.message)
@@ -264,6 +318,16 @@ export async function phase5_produceVideo(videoIdeaId: string): Promise<string> 
     logAction(`Rendering video: ${idea.title}`)
     const result = await renderVideo(project.id)
     logAction(`Video rendered: ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB`)
+    await notify({
+      type: 'success',
+      category: 'pipeline',
+      title: 'Video produced',
+      description: `${idea.title} — ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB`,
+      targetId: project.id,
+      targetType: 'video_project',
+      actionLabel: 'View pipeline',
+      actionTab: 'pipeline',
+    })
     await setAgentState('next_action', 'Quality review')
     return project.id
   } catch (e: any) {
@@ -288,9 +352,30 @@ export async function phase6_qualityReview(videoProjectId: string): Promise<stri
     
     if (result.overallPassed) {
       logAction(`Quality review PASSED for ${videoProjectId}`)
+      await notify({
+        type: 'success',
+        category: 'pipeline',
+        title: 'Video approved',
+        description: 'Quality review passed — ready for upload.',
+        targetId: videoProjectId,
+        targetType: 'video_project',
+        actionLabel: 'View pipeline',
+        actionTab: 'pipeline',
+      })
       await setAgentState('next_action', 'Upload to YouTube')
     } else {
       logAction(`Quality review FAILED: ${result.issues.join(', ')}`)
+      await notify({
+        type: 'error',
+        category: 'pipeline',
+        title: 'Video failed review',
+        description: result.issues.slice(0, 4).join(' · ') || 'Quality checks did not pass',
+        isImportant: true,
+        targetId: videoProjectId,
+        targetType: 'video_project',
+        actionLabel: 'View pipeline',
+        actionTab: 'pipeline',
+      })
       await setAgentState('next_action', `Fix issues: ${result.issues[0]}`)
     }
     return videoProjectId
@@ -324,6 +409,17 @@ export async function phase7_upload(videoProjectId: string): Promise<string> {
   
   if (!ytConnected) {
     logAction('YouTube not connected - video approved but awaiting YouTube connection')
+    await notify({
+      type: 'warning',
+      category: 'youtube',
+      title: 'YouTube not connected',
+      description: 'Video approved and queued — connect YouTube in Settings to upload.',
+      isImportant: true,
+      targetId: videoProjectId,
+      targetType: 'video_project',
+      actionLabel: 'Open Settings',
+      actionTab: 'settings',
+    })
     await setAgentState('last_error', 'YouTube not connected. Complete OAuth setup to upload.')
     await setAgentState('next_action', 'Connect YouTube account, or produce next video')
     await setAgentState('agent_state', 'ready')
@@ -347,6 +443,16 @@ export async function phase7_upload(videoProjectId: string): Promise<string> {
     )
 
     logAction(`Uploaded: YouTube ID ${result.youtubeVideoId}`)
+    await notify({
+      type: 'success',
+      category: 'youtube',
+      title: 'Video uploaded',
+      description: `YouTube ID ${result.youtubeVideoId} — privacy: private`,
+      targetId: videoProjectId,
+      targetType: 'video_project',
+      actionLabel: 'View pipeline',
+      actionTab: 'pipeline',
+    })
     
     // Upload thumbnail
     if (project.thumbnailPath) {
@@ -356,6 +462,15 @@ export async function phase7_upload(videoProjectId: string): Promise<string> {
         logAction('Thumbnail uploaded')
       } catch (e: any) {
         logAction(`Thumbnail upload failed: ${e.message}`)
+        await notify({
+          type: 'warning',
+          category: 'youtube',
+          title: 'Thumbnail upload failed',
+          description: e.message?.slice(0, 200) || 'Unknown thumbnail upload error',
+          isImportant: true,
+          targetId: videoProjectId,
+          targetType: 'video_project',
+        })
       }
     }
 

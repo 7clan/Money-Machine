@@ -1,0 +1,286 @@
+   700→---
+   701→Task ID: 9-F
+   702→Agent: Frontend Styling Expert (Notifications)
+   703→Task: Build notification system + toast provider
+   704→
+   705→Work Log:
+   706→- Read worklog.md to understand prior context (Tasks 1-9-E complete; dashboard has 10 tabs, dark theme with violet/cyan/emerald/amber/rose palette, ThemeProvider + Toaster already wired in layout.tsx, shadcn Popover primitive available at @/components/ui/popover)
+   707→- Verified dependencies: framer-motion@^12.23.2, lucide-react@^0.525.0, date-fns@^4.1.0 all in package.json — no installs needed
+   708→- Audited existing keyboard-shortcuts.tsx which already contains a tiny local toast implementation (its own ToastNotification component with hardcoded 3s timeout, no progress bar, no pause-on-hover, no types, no actions). Confirmed the new global ToastProvider is a strict superset and will not conflict (keyboard-shortcuts' local toasts are private to that component).
+   709→- Inspected shadcn primitives used: Popover (Popover/PopoverTrigger/PopoverContent from @radix-ui/react-popover). Confirmed @/lib/utils exposes cn. Confirmed eslint-config disables react-hooks/exhaustive-deps so ref-based effects are fine.
+   710→- Created /home/z/my-project/src/components/agent/toast-provider.tsx (466 LOC):
+   711→  - Exports `ToastProvider`, `useToast`, plus types `Toast`, `ToastOptions`, `ToastType`. All type signatures match the task spec verbatim (Toast extends Required<Omit<ToastOptions, 'action' | 'onDismiss'>> with optional action/onDismiss + createdAt; useToast returns {toast, dismiss, dismissAll, update, toasts}; toast returns string id).
+   712→  - React.createContext<ToastContextValue | null>(null) with a useToast hook that throws a clear error when used outside <ToastProvider>. Provider holds the toasts array via useState and exposes four stable callbacks (toast/dismiss/dismissAll/update) wrapped in useCallback + useMemo.
+   713→  - toast() generates an id (`toast-<ts>-<rand6>`) when none is supplied, defaults type to 'info' and duration to 3000ms, prepends the new toast to the array (newest at top), and slices the array at MAX_VISIBLE=5 — overflow silently drops the oldest, which AnimatePresence then animates out (the "older ones fade out" behavior).
+   714→  - dismiss(id) filters state and fires onDismiss() (wrapped in try/catch). dismissAll() clears everything and fires every onDismiss. update(id, options) merges partial fields, preserving action/onDismiss unless explicitly overwritten, and re-stamps createdAt to Date.now() so the progress bar + timer restart — this is what enables the loading → success transition pattern.
+   715→  - Viewport: `pointer-events-none fixed top-4 right-4 z-[100] flex flex-col gap-2 w-[calc(100vw-2rem)] sm:w-96 max-w-md` with aria-live="polite", aria-atomic="false", aria-relevant="additions removals" for screen readers. AnimatePresence mode="popLayout" wraps the toast list so exiting items don't block layout shifts.
+   716→  - ToastCard: `pointer-events-auto relative cursor-pointer overflow-hidden bg-slate-900/95 backdrop-blur-md border border-slate-800/60 rounded-lg shadow-2xl px-3.5 py-3` plus a per-type glow shadow. framer-motion initial {opacity:0, x:320, scale:0.92} → animate {opacity:1, x:0, scale:1} via spring (stiffness 320, damping 30, mass 0.8); exit mirrors entry with a 220ms ease-in tween. `layout` prop on motion.div lets remaining toasts slide smoothly when one is added/removed.
+   717→  - 5 toast types via TOAST_META map: success=CheckCircle2/emerald, error=XCircle/rose, warning=AlertTriangle/amber, info=Info/cyan, loading=Loader2/violet with animate-spin. Each icon sits in an 8×8 colored circle (bg-{color}-500/15 + text-{color}-400). Title is text-sm font-semibold text-slate-100; description text-xs text-slate-400 mt-0.5; action button text-xs font-medium text-violet-300 hover:text-violet-200 — exactly per spec.
+   718→  - Auto-dismiss timer: implemented with requestAnimationFrame + refs (startRef/remainingRef/pausedRef/rafRef) so progress-bar updates happen via direct DOM writes (barRef.current.style.transform = scaleX(pct)) with zero React re-renders. On mount, starts a tick loop that computes remaining = remainingRef - elapsed; when remaining ≤ 0, calls handleDismiss. Pause-on-hover: onMouseEnter sets pausedRef=true and freezes remainingRef at the current elapsed; onMouseLeave resets startRef to Date.now() and clears pausedRef. Loading toasts (duration=0 OR type='loading') skip the timer entirely and never auto-dismiss.
+   719→  - Progress bar: 2px tall, absolutely positioned at the bottom of the card, `bg-slate-800/80` track + per-type colored fill (bg-{color}-500) using transform: scaleX() with origin-left so it shrinks right-to-left. Hidden for persistent (loading) toasts. Reset to scaleX(1) when toast.createdAt or toast.duration changes (i.e. on update()).
+   720→  - Click-anywhere-on-body-to-dismiss: the motion.div has onClick={handleDismiss}. The X dismiss button (top-right, h-3.5 w-3.5, aria-label="Dismiss notification", hover:bg-slate-800/60) calls e.stopPropagation() then dismisses. The action button (below description) calls e.stopPropagation() then invokes toast.action.onClick() (try/catch wrapped) AND dismisses — matching sonner's default behavior. Body-click dismiss therefore never fires when clicking the X or action button.
+   721→  - A "dismissedRef" guards against double-dismiss (timer fires + user clicks X simultaneously).
+   722→  - Accessibility: viewport has aria-live="polite" + aria-atomic="false"; each ToastCard has role="status". Dismiss button has aria-label. Focus-visible ring on the X button (focus-visible:ring-violet-500/40).
+   723→- Created /home/z/my-project/src/components/agent/notification-center.tsx (524 LOC):
+   724→  - Exports `NotificationCenter` (named + default) plus types `Notification`, `NotificationType`, `NotificationCenterProps`. All type signatures match the task spec exactly.
+   725→  - Dual-mode state: if `notifications` prop is provided, treats it as controlled source of truth and syncs internal state via useEffect on prop change. If omitted, loads initial state from localStorage on mount and persists back on every state change (key 'ytrs-notification-center-v1'). localStorage availability is checked defensively (SSR-safe, quota-error-safe, JSON-parse-error-safe). Array is capped at MAX_NOTIFICATIONS=50 on every write.
+   726→  - Bell button (PopoverTrigger): `relative w-9 h-9 inline-flex items-center justify-center rounded-md hover:bg-slate-800/60 text-slate-300 hover:text-slate-100` with focus-visible ring. Uses Bell icon (h-4 w-4). Unread badge: `absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-slate-950` — shows unreadCount (or "9+" when >9). Badge mounts with a framer-motion spring (stiffness 500, damping 22) keyed on unreadCount so it bounces when the count changes. aria-label includes unread count.
+   727→  - PopoverContent: `p-0 w-[calc(100vw-2rem)] sm:w-96 max-w-md bg-slate-900/95 backdrop-blur-md border border-slate-800/60 shadow-2xl`, align="end", sideOffset=8. Inner column max-h-[70vh] with header / filter tabs / scrollable list / footer.
+   728→  - Header: `flex items-center justify-between px-3 py-2.5 border-b border-slate-800/60`. Left side has Bell icon (violet), "Notifications" title (text-sm font-semibold text-slate-100), and a small violet pill showing unreadCount. Right side has "Mark all" button (CheckCheck icon + label, text-violet-300 hover:text-violet-200, disabled when unreadCount=0).
+   729→  - Filter tabs: All / Unread / Important, each a small button with active state `bg-violet-500/15 text-violet-300` and inactive `text-slate-400 hover:text-slate-200 hover:bg-slate-800/60`. Each shows its count in tabular-nums. A Filter icon (h-3 w-3 text-slate-500) prefixes the row.
+   730→  - List: <ul> with divide-y divide-slate-800/40, framer-motion staggerChildren=0.03 for entrance. Each NotificationRow is a motion.li with a <button> body: `relative w-full text-left flex items-start gap-2.5 px-3 py-2.5 hover:bg-slate-800/60 transition-colors cursor-pointer focus:outline-none focus-visible:bg-slate-800/60`.
+   731→    - Unread dot: `absolute left-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-violet-400` (or transparent when read).
+   732→    - Icon container: 7×7 rounded-full with per-type bg-{color}-500/15 + text-{color}-400. Achievement type uses Trophy icon (violet) — matches the new type added beyond the toast system's 5 types.
+   733→    - Title row: optional "Important" amber pill (AlertTriangle icon + label) + truncated title (text-xs font-medium, text-slate-100 when unread, text-slate-400 when read).
+   734→    - Description: text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2.
+   735→    - Timestamp: text-[10px] text-slate-600 mt-0.5 tabular-nums, formatted via date-fns formatDistanceToNowStrict with addSuffix:true ("3 minutes ago", "about 2 hours ago").
+   736→    - Hover affordance: ChevronRight on the right that fades in on group-hover.
+   737→  - Click handler: marks notification as read (mutates internal state) → if notification.target exists, calls onNavigate(target) → closes the popover. The "View all activity" footer button calls onNavigate('/activity') and closes the popover.
+   738→  - Empty state: when filtered.length === 0, renders a centered motion.div with BellOff icon in a 12×12 ringed circle, a violet blur glow behind it, a title (varies by filter: "No notifications yet" / "No unread notifications" / "No important notifications"), and a subtitle hint. Animates in with opacity + scale.
+   739→  - Color discipline: strictly violet/cyan/emerald/amber/rose + slate. NO indigo, NO blue primary anywhere. Verified via grep — only the file-header comment string mentions those colors.
+   740→- Did NOT modify page.tsx, layout.tsx, globals.css, or any other existing file. Both components are fully self-contained and importable via @/components/agent/toast-provider and @/components/agent/notification-center.
+   741→- Ran `bun run lint` → exit 0, zero errors/warnings.
+   742→- Ran `bunx tsc --noEmit` → zero errors in either new file (confirmed via `rg toast-provider|notification-center` returning no matches). The 4 pre-existing tsc errors remain in examples/websocket/* and skills/* — out of scope, eslint-ignored.
+   743→
+   744→Stage Summary:
+   745→- 2 new files created: `src/components/agent/toast-provider.tsx` (466 LOC) and `src/components/agent/notification-center.tsx` (524 LOC).
+   746→- Toast system: full Context+Hook provider with 5 types (success/error/warning/info/loading), spring slide-in from right, pause-on-hover, RAF-driven progress bar (no re-renders), action buttons, click-to-dismiss body, X dismiss button, max 5 visible with AnimatePresence fade-out for overflow, ARIA live region, and `update()` for loading→success transitions.
+   747→- Notification center: bell + Popover dropdown with unread badge (animated), filter tabs (All/Unread/Important), staggered list with relative timestamps (date-fns), per-type icons (incl. Trophy for achievement), localStorage persistence (key 'ytrs-notification-center-v1', max 50 entries), empty state, footer "View all activity" link. Supports controlled (prop) and uncontrolled (localStorage) modes.
+   748→- Lint clean (exit 0). tsc clean for both new files. No existing files modified.
+   749→- Exact import paths for the lead:
+   750→  - `import { ToastProvider, useToast, type Toast, type ToastOptions, type ToastType } from '@/components/agent/toast-provider'`
+   751→    - Wire `<ToastProvider>` in layout.tsx around `{children}` (inside ThemeProvider is fine). Then anywhere: `const { toast, dismiss, dismissAll, update, toasts } = useToast()`
+   752→    - Example: `const id = toast({ type: 'loading', title: 'Uploading…', description: 'video-final.mp4' })` then `update(id, { type: 'success', title: 'Upload complete', description: 'Now processing on YouTube' })`
+   753→  - `import { NotificationCenter, type Notification, type NotificationCenterProps } from '@/components/agent/notification-center'` (or default import)
+   754→    - Drop into dashboard header next to ThemeToggle: `<NotificationCenter onNavigate={(target) => router.push(target)} />`
+   755→    - In controlled mode: `<NotificationCenter notifications={serverNotifications} onNavigate={(t) => router.push(t)} />`
+   756→- Suggested wiring for the lead (NOT done by this task): wrap `<ToastProvider>` around `{children}` in layout.tsx (after ThemeProvider opening tag, before `{children}`), and place `<NotificationCenter onNavigate={...} />` in page.tsx header. Also consider seeding the notification center from existing audit log API by passing a notifications prop mapped from `/api/data/audit-logs`.
+   757→
+   758→---
+   759→Task ID: 9
+   760→Agent: Lead Architect (Cron Review Round 3)
+   761→Task: Assess project status, perform QA via agent-browser, fix bugs, add features, polish styling
+   762→
+   763→Work Log:
+   764→- Read worklog.md to understand prior progress (Tasks 1-8 + 3-b/c + 4 complete: 10 tabs, autonomous engine, dashboard)
+   765→- Verified dev server was running; ran `bun run lint` (clean) and `bunx tsc --noEmit` (found 15 TS errors in src/)
+   766→- QA via agent-browser across all 10 tabs — all rendered, but identified hydration errors and TypeScript errors
+   767→
+   768→**Bugs Found & Fixed:**
+   769→1. **15 TypeScript errors fixed** in 6 source files:
+   770→   - `src/app/api/agent/schedule-jobs/route.ts` (4× TS2345): `jobs` array typed as `never[]` → typed as `Array<{type: string; id: string}>`
+   771→   - `src/components/agent/revenue-projections.tsx` (4× TS2322): framer-motion `ease: number[]` → cast as `[number, number, number, number]`
+   772→   - `src/components/agent/ypp-progress-tracker.tsx` (2× TS2322): extracted `EASE_OUT` constant with proper tuple type
+   773→   - `src/components/agent/video-preview-modal.tsx` (2× TS2322): `data?.script` returned `T | undefined` → coerced with `?? null`
+   774→   - `src/engine/research.ts` (1× TS2345): `sourceRecords: never[]` → typed as `Awaited<ReturnType<typeof db.researchSource.create>>[]`
+   775→   - `src/engine/video-renderer.ts` (2× TS2345): `script.scenes` had nullable fields → mapped to normalized shape with `?? ''` defaults
+   776→2. **Hydration error fixed**: `Math.random()` and `Date.now()` in page.tsx PerformanceMetrics data caused SSR mismatch. Replaced with deterministic sine-wave and modulo-based pseudo-data.
+   777→
+   778→**New Features Added (6 parallel subagents + integration):**
+   779→1. **Command Palette** (`src/components/agent/command-palette.tsx`, 838 lines) — Ctrl+K modal with 23 commands across 4 groups (Actions / Navigation / Quick Stats / Help), arrow-key nav, recent commands in localStorage, framer-motion animations
+   780→2. **Theme Toggle System** (`src/components/theme-provider.tsx` + `src/components/theme-toggle.tsx` + globals.css light theme + layout.tsx wrap) — Dark/Light/System dropdown with next-themes, animated icon morph, 15 light-mode token overrides
+   781→3. **Activity Feed** (`src/components/agent/activity-feed.tsx`, 1200 lines) — Full-width feed on Logs tab with search/filter (action type, actor, time range), stats summary, auto-refresh toggle, expandable JSON detail panel, staggered animations
+   782→4. **Content Scheduler** (`src/components/agent/content-scheduler.tsx`, 660 lines) — NEW 11th tab! Two-pane drag-and-drop (HTML5 native) idea backlog ↔ 14-day schedule, quick-schedule popover, bulk auto-fill/clear, stats bar, mobile fallback
+   783→5. **Performance Metrics** (`src/components/agent/performance-metrics.tsx`, 1282 lines) — On Overview tab: 4 KPI cards with sparklines, 30-day stacked BarChart, niche performance table with sortable headers, semicircular efficiency gauge (custom SVG), 7×6 time-of-day heatmap
+   784→6. **Notification System**:
+   785→   - `src/components/agent/toast-provider.tsx` (466 lines) — Toast context + `useToast()` hook, 5 types (success/error/warning/info/loading), auto-dismiss with progress bar, pause on hover, action buttons, ARIA live region
+   786→   - `src/components/agent/notification-center.tsx` (524 lines) — Bell button with unread badge, dropdown with All/Unread/Important filter tabs, localStorage-persisted notifications, mark-all-read, empty states
+   787→
+   788→**New API Endpoint:**
+   789→- `src/app/api/data/ideas/[id]/schedule/route.ts` — POST/DELETE for setting/clearing `scheduledDate` on a VideoIdea, with audit log entries
+   790→
+   791→**Integration in page.tsx:**
+   792→- Header: added Search button (Ctrl+K), ThemeToggle, NotificationCenter
+   793→- Tab list: added 11th tab "Scheduler" (between Calendar and Revenue)
+   794→- Overview tab: added `<PerformanceMetrics>` below the Live Feed with full KPI/trend/niche/efficiency/heatmap props
+   795→- Logs tab: added `<ActivityFeed>` (full-width) above the existing Audit Log + Job Queue grid
+   796→- New Scheduler tab: full `<ContentScheduler>` wired to `/api/data/ideas/[id]/schedule` with auto-fill and clear handlers
+   797→- Footer: bumped version to v2.2
+   798→- KeyboardShortcuts handler: added `command-palette` command and 11th tab in tab- navigation
+   799→
+   800→**layout.tsx update:**
+   801→- Wrapped `<ToastProvider>` around children (inside `<ThemeProvider>`) for global toast access
+   802→
+   803→**Verification Results (agent-browser QA):**
+   804→- ✅ All 11 tabs render correctly (Overview, Pipeline, Strategy, Calendar, **Scheduler**, Revenue, Analytics, Opportunities, Experiments, Logs, Settings)
+   805→- ✅ Command Palette opens (via Search button click), shows 23 commands, escapes properly
+   806→- ✅ Theme toggle dropdown works — switches between Dark/Light/System; body background color changes verified via getComputedStyle
+   807→- ✅ Notifications bell button opens dropdown
+   808→- ✅ Scheduler: 50 ideas in backlog, 14-day schedule renders, Auto-fill button scheduled 7 ideas to DB (verified via `/api/data/pipeline` — 7 ideas now have scheduledDate set)
+   809→- ✅ Overview: PerformanceMetrics renders all 5 sections (KPI grid, Production Trend chart, Niche Performance table, Efficiency gauge, Time-of-Day heatmap)
+   810→- ✅ Logs: ActivityFeed renders with stats summary + filterable log entries
+   811→- ✅ Hydration error: GONE (was caused by Math.random in heatmap/productionTrend)
+   812→- ✅ Console errors: ZERO across all tab navigations
+   813→- ✅ `bun run lint`: clean (0 errors)
+   814→- ✅ `bunx tsc --noEmit`: clean (0 errors in src/)
+   815→
+   816→Stage Summary:
+   817→- **6 new feature components** created (~5,000 LOC total) + 1 new API endpoint
+   818→- **15 TypeScript errors fixed** across 6 source files
+   819→- **1 hydration error fixed** (Math.random/Date.now → deterministic data)
+   820→- **11 tabs** now functional (was 10) — added Scheduler
+   821→- **Header enhanced** with Search/Theme/Notifications controls
+   822→- **Layout wrapped** with ToastProvider for global toast access
+   823→- **All design constraints honored**: dark theme default with light theme option, violet/cyan/emerald/amber/rose palette (NO indigo, NO blue primary), framer-motion animations throughout, lucide-react icons, shadcn/ui primitives, mobile-responsive
+   824→- Dashboard now feels production-ready with command palette, theme toggle, notifications, rich activity feed, performance metrics, and content scheduling
+   825→
+   826→Unresolved Issues / Risks:
+   827→- YouTube OAuth still requires manual Google Cloud project setup (expected — can't be automated)
+   828→- Revenue/Analytics data still uses synthetic placeholders until YouTube is connected
+   829→- NotificationCenter uses localStorage only (no real backend notification model yet)
+   830→- Some scheduler ideas may not have compositeScore (newly created ideas have null scores)
+   831→- ToastProvider is mounted but no component currently calls `useToast()` yet — ready for future use
+   832→
+   833→Priority Recommendations for Next Phase:
+   834→1. **Wire toasts into agent actions** — call `toast({ type: 'success', title: 'Video produced' })` after `sendCommand()` returns
+   835→2. **Add notification model to Prisma schema** — persist notifications across sessions/devices
+   836→3. **Implement real analytics ingestion** — once YouTube connected, populate `AnalyticsSnapshot` and feed PerformanceMetrics from real data
+   837→4. **Add Remotion renderer** — replace FFmpeg slideshow for richer, longer videos
+   838→5. **Add video re-render flow** — when Quality Review fails, auto-retry with revised script
+   839→6. **A/B thumbnail testing** — generate multiple thumbnails per video, track CTR
+   840→7. **Cron job for autonomous production** — schedule `produce-next` every X hours via the cron tool
+   841→8. **Add light theme styling pass** — verify all 18 agent components render correctly in light mode (currently only core layout has light tokens)
+   842→9. **Bulk operations** — multi-select ideas for bulk schedule/approve/delete
+   843→10. **Export/report generation** — PDF/CSV exports of revenue, analytics, pipeline
+   844→
+   845→---
+   846→Task ID: 7
+   847→Agent: Enhancement Round
+   848→Task: QA assessment, bug fixes, and comprehensive feature enhancements
+   849→
+   850→Work Log:
+   851→- **QA Bug Fixes Applied:**
+   852→  - Fixed niche text truncation in StatusCard (was slicing to 16 chars, now displays full niche with truncate + title tooltip)
+   853→  - Fixed Live Feed timestamp wrapping (changed w-16 to w-20, removed seconds, added whitespace-nowrap)
+   854→  - Fixed Pause button contrast (changed text-amber-400 → text-amber-300 + font-semibold)
+   855→  - Fixed StatusCard value overflow (made responsive text-xl sm:text-2xl, added truncate)
+   856→- **Styling Polish:**
+   857→  - Enhanced card hover effect (scale: 1.02, y: -2 lift)
+   858→  - Added gradient accent top-border to all GradientCards (violet → cyan → emerald)
+   859→  - Added shadow to GradientCards for depth
+   860→  - Enhanced header glass effect (backdrop-blur-xl, shadow-sm)
+   861→  - Added dot grid background pattern + enhanced gradient blur orbs
+   862→  - Updated footer with richer info (version, mode, icons)
+   863→- **New Features Added:**
+   864→  - **Agent Cycle Visualization** — SVG ring diagram showing 6 autonomous loop stages (Research → Script → Produce → Review → Upload → Analyze) with active/past/idle states and animated pulses
+   865→  - **Quick Actions Bar** — 6 one-click action buttons (Research Niche, Write Script, Produce Video, Review Quality, Upload, Analytics) with color-coded icons
+   866→  - **AI Insights Cards** — 3 insight cards showing upload time optimization, engagement recommendations, quality rate trends
+   867→  - **Revenue Forecast Chart** — 12-month projection with optimistic/expected/conservative curves (AreaChart with gradient fills)
+   868→  - **Content Performance Comparison** — Bar chart comparing views/engagement/revenue across content pillars
+   869→  - **Audience Demographics** — Age distribution bars with animated progress fills
+   870→  - **Traffic Sources** — Horizontal bar breakdown (YouTube Search, Suggested, External, Browse, Direct)
+   871→  - **Niche Comparison Matrix** — Multi-dimensional table with mini-bar indicators for Revenue/Audience/Competition/Evergreen/Production/Risk
+   872→  - **Pipeline Stage Progress Cards** — 6-card grid with animated progress bars showing percentage per pipeline stage
+   873→  - **Storage Dashboard** — Usage breakdown (Videos/Audio/Thumbnails/Other) with cleanup action
+   874→  - **Batch Production Controls** — Single/Batch3/Batch5 production buttons with warning
+   875→  - **Agent Runtime Statistics** — Uptime, cycles completed, avg cycle time, total API calls
+   876→- **Added HelpCircle import** from lucide-react
+   877→- **Lint passes cleanly** — No TypeScript or ESLint errors
+   878→- **All APIs returning 200** — Dev server stable
+   879→
+   880→Stage Summary:
+   881→- **~450 lines of new UI code** added to page.tsx (1769 → 2363 lines)
+   882→- **12 new visual features/sections** added across Overview, Pipeline, Strategy, Revenue, Analytics, Settings tabs
+   883→- **5 QA bugs fixed** (truncation, contrast, timestamp, overflow, header)
+   884→- **6 styling improvements** (card borders, hover lift, header glass, dot grid, shadows, footer)
+   885→- VLM QA rating: **8.5/10** (up from initial assessment)
+   886→- Dashboard now has comprehensive production monitoring, analytics, and agent control capabilities
+   887→
+   888→Unresolved Issues / Risks:
+   889→- YouTube OAuth still requires manual Google Cloud project setup
+   890→- Revenue/Analytics data uses synthetic placeholders until YouTube connected
+   891→- NotificationCenter uses localStorage only (no Prisma model)
+   892→- Some new chart data is deterministic/synthetic (will improve with real data)
+   893→- E-STOP button has no confirmation dialog (design choice for immediate stop)
+   894→
+   895→Priority Recommendations for Next Phase:
+   896→1. **Wire toast notifications to agent actions** — call toast() after sendCommand() for user feedback
+   897→2. **Add confirmation dialog to E-STOP** — prevent accidental emergency stops
+   898→3. **Implement real analytics ingestion** — populate charts from YouTube API data
+   899→4. **Add Remotion renderer** — richer video production pipeline
+   900→5. **Cron job for autonomous production** — schedule produce-next on regular intervals
+   901→6. **Add notification model to Prisma** — persist notifications across sessions
+   902→7. **Light theme QA pass** — verify all new sections render correctly in light mode
+   903→8. **Export/report generation** — PDF/CSV exports of revenue and analytics data
+   904→9. **Multi-select bulk operations** — bulk schedule/approve/delete ideas
+   905→10. **Real storage stats** — compute actual disk usage from data/ directory
+   906→
+   907→---
+   908→Task ID: 5-A
+   909→Agent: Notification Persistence Builder
+   910→Task: Add persistent Notification backend (Prisma model + REST API + agent integration) and refactor NotificationCenter to fetch from API instead of localStorage.
+   911→
+   912→Work Log:
+   913→- Read worklog.md (Tasks 1–9 + 9-F). Confirmed dashboard dark theme + NotificationCenter was localStorage-only; needed Prisma model + REST API + agent integration.
+   914→- Added `Notification` model to prisma/schema.prisma (13 fields + 3 indexes: isRead, createdAt, category). Ran `bun run db:push` — schema synced, Prisma client regenerated.
+   915→- Created src/app/api/data/notifications/route.ts (GET with ?filter=all|unread|important&limit=50 returning {notifications, counts:{total,unread,important}}; POST creating with type/category coercion + length truncation, 201 on success).
+   916→- Created src/app/api/data/notifications/[id]/route.ts (PATCH {isRead:boolean} → 200; DELETE → 200; 404 on missing).
+   917→- Created src/app/api/data/notifications/read-all/route.ts (POST updateMany isRead:false→true, returns {ok, updated:count}).
+   918→- Updated src/engine/agent.ts: added `notify()` helper wrapping db.notification.create in try/catch (failures logged but never thrown). Added 8 notify() calls alongside logAction() for: niche selected, strategy created, video produced, video approved, video failed review (important), YouTube not connected (important, actionTab=settings), video uploaded, thumbnail upload failed (important).
+   919→- Updated src/app/api/agent/command/route.ts: `stop` case now persists a Notification of type=error, category=agent, isImportant=true, actionTab=overview (wrapped in try/catch).
+   920→- Refactored src/components/agent/notification-center.tsx: replaced localStorage with /api/data/notifications fetching; added 15s polling via setInterval; refreshes on popover open; Mark-all calls POST /read-all with optimistic update; click calls PATCH /:id {isRead:true} then navigates to actionTab via onNavigate; added `agent_event` type (Bolt icon, violet); preserved all visual design (dark slate-900/95, rose unread badge, filter tabs, staggered list, date-fns relative timestamps, empty states); kept controlled `notifications` prop mode for backward compat.
+   921→- Updated src/lib/db.ts to defensively invalidate the cached PrismaClient in dev mode after `prisma db push` adds new models. Added SCHEMA_VERSION constant (bump on schema changes), bustPrismaRequireCache() helper (deletes node_modules/.prisma/client and @prisma/client entries from require.cache), and isStale check (version mismatch OR missing .notification delegate). Without this fix the running dev server kept using the stale PrismaClient cached in globalThis, causing `db.notification` to be undefined and GET /api/data/notifications to throw "Cannot read properties of undefined (reading 'findMany')".
+   922→- Restarted dev server (it had died during the require-cache investigation) via `(bun run dev > dev.log 2>&1 &)`.
+   923→
+   924→Verification:
+   925→- `bun run lint` → exit 0, zero errors (added eslint-disable-next-line for intentional dynamic require in lib/db.ts).
+   926→- `bunx tsc --noEmit` → zero errors in any new/modified file. Pre-existing errors remain only in examples/websocket/*, skills/*, and src/app/page.tsx (toast.dismiss/update misuse — pre-existing, page.tsx off-limits per constraint).
+   927→- `curl -s http://localhost:3000/api/data/notifications` → `{"notifications":[],"counts":{"total":0,"unread":0,"important":0}}` (200 OK, clean JSON).
+   928→- Full CRUD curl-tested: POST creates (201), GET returns with correct counts, PATCH marks read, POST /read-all returns updated count, DELETE removes, GET returns empty.
+   929→- Agent command integration verified: POST /api/agent/command {command:'stop'} creates an important error notification titled "Emergency stop activated" with actionTab=overview. Test artifact cleaned up.
+   930→
+   931→Stage Summary:
+   932→- Files CREATED (5): src/app/api/data/notifications/route.ts, src/app/api/data/notifications/[id]/route.ts, src/app/api/data/notifications/read-all/route.ts
+   933→- Files MODIFIED (4): prisma/schema.prisma (Notification model), src/engine/agent.ts (notify() helper + 8 call sites), src/app/api/agent/command/route.ts (stop creates important error notification), src/components/agent/notification-center.tsx (API-backed with 15s polling), src/lib/db.ts (dev-mode PrismaClient cache invalidation)
+   934→- API surface: GET/POST /api/data/notifications, PATCH/DELETE /api/data/notifications/:id, POST /api/data/notifications/read-all
+   935→- NotificationCenter remains a drop-in replacement — same props (onNavigate, className, optional `notifications` for controlled mode), same dark-theme visual design, but now persisted in SQLite via Prisma.
+   936→
+   937→---
+   938→Task ID: 5-B
+   939→Agent: CSV Export Builder
+   940→Task: Add CSV export endpoints + UI buttons (export route, export-button, export-menu)
+   941→
+   942→Work Log:
+   943→- Read worklog.md, prisma schema, db client, audit-logs/jobs/pipeline routes, shadcn Button/DropdownMenu components, and GlassCard/notification-center for styling conventions
+   944→- Created `src/app/api/data/export/route.ts`: unified GET endpoint that takes `?type=<entity>` and returns `text/csv; charset=utf-8` with `Content-Disposition: attachment; filename="<type>-export-<YYYYMMDD-HHmmss>.csv"`
+   945→  - Supports all 7 types: ideas, projects, uploads, revenue, analytics, audit-logs, jobs
+   946→  - Each response prefixed with UTF-8 BOM (`\uFEFF`) so Excel auto-detects UTF-8
+   947→  - RFC 4180 CSV escaping: fields containing comma/quote/newline/CR wrapped in double quotes, internal quotes doubled
+   948→  - \r\n line endings for cross-platform Excel compatibility
+   949→  - Header row always included (even for empty result sets)
+   950→  - 400 response for missing `type` query param or unknown type, with validTypes list
+   951→  - RevenueRecord.uploadId is not a Prisma relation, so revenue exporter does a batched Upload lookup to resolve `uploadTitle`
+   952→  - AuditLog details parsed (JSON `{message, detail}` shape or plain string) and truncated to 200 chars
+   953→  - Job error and VideoProject.reviewResult also truncated (200/500 chars)
+   954→  - VideoIdea tags parsed from JSON array and joined with semicolons
+   955→  - Prisma includes used for relations: VideoIdea.pillar, VideoProject.videoIdea, AnalyticsSnapshot.upload
+   956→- Created `src/components/agent/export-button.tsx`: reusable 'use client' button
+   957→  - Props: `{ type, label?, icon? }` — type is one of the 7 export types
+   958→  - Uses shadcn Button (variant="outline", size="sm" or "icon")
+   959→  - Triggers download via temporary `<a download>` element (preserves cookies/session, no new tab)
+   960→  - Loading state: Loader2 spinner swap on Download icon for ~900ms
+   961→  - Dark theme: border-slate-700/60, bg-slate-900/60, hover:border-violet-500/60 + hover:bg-violet-500/10 + hover:text-violet-200
+   962→  - Compact icon mode (`icon=true`) renders only the Download icon
+   963→  - Default label "Export <CapitalizedType>" (e.g. "Export Ideas", "Export Audit Logs")
+   964→- Created `src/components/agent/export-menu.tsx`: 'use client' dropdown with all 7 export types
+   965→  - Triggered by single "Export Data" outline button (also supports `iconOnly` mode)
+   966→  - Each item has its own lucide icon with a distinct accent color (amber/violet/cyan/emerald/fuchsia/rose/sky — NO indigo, NO blue primary)
+   967→  - Items show label + description, hover ring transitions to violet
+   968→  - Active item shows Loader2 spinner in violet during the brief loading window
+   969→  - Footer hint about UTF-8 BOM / Excel compatibility
+   970→  - Dark theme styling consistent with GlassCard palette
+   971→- Verified with `bun run lint` → 0 errors
+   972→- Verified with curl:
+   973→  - `curl -sI ".../api/data/export?type=ideas"` → 200, Content-Type: text/csv; charset=utf-8, Content-Disposition: attachment; filename="ideas-export-20260803-223548.csv"
+   974→  - `curl -s ".../api/data/export?type=ideas" | head -3` → returns BOM + header row + data rows (with proper CSV escaping — `"{""overallPassed"":true,""issues"":[]}"` seen in projects export)
+   975→  - `curl -s -o /dev/null -w "%{http_code}" ".../api/data/export?type=unknown"` → 400
+   976→  - All 7 types return 200 with correct header row, including empty-result types (uploads/revenue/analytics/jobs in current DB)
+   977→- Did NOT modify src/app/page.tsx, did NOT modify any existing API routes, did NOT modify prisma schema
+   978→
+   979→Stage Summary:
+   980→- 3 new files: `src/app/api/data/export/route.ts`, `src/components/agent/export-button.tsx`, `src/components/agent/export-menu.tsx`
+   981→- Lint: 0 errors
+   982→- All 7 export types working and returning valid RFC 4180 CSV with UTF-8 BOM
+   983→- Unknown type → 400, missing type → 400
+
+[showing lines 700-983 of 985; use offset=984 with limit to continue reading]

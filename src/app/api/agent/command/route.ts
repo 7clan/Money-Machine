@@ -17,6 +17,24 @@ export async function POST(request: NextRequest) {
 
       case 'stop':
         await setStopped(true)
+        // Persist an important agent notification so the operator is alerted
+        // in the NotificationCenter even after a page reload.
+        try {
+          await db.notification.create({
+            data: {
+              type: 'error',
+              category: 'agent',
+              title: 'Emergency stop activated',
+              description:
+                'The autonomous agent has been halted. Resume from the dashboard when ready.',
+              isImportant: true,
+              actionLabel: 'Open overview',
+              actionTab: 'overview',
+            },
+          })
+        } catch (notifErr) {
+          console.error('[agent.command.stop] failed to persist notification:', notifErr)
+        }
         return NextResponse.json({ ok: true, message: 'Emergency stop activated' })
 
       case 'resume':

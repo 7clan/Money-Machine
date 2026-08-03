@@ -263,6 +263,17 @@ const COMMANDS: Command[] = [
     selectable: true,
   },
   {
+    id: 'nav-decisions',
+    label: 'Go to Decisions',
+    group: 'Navigation',
+    kind: 'navigate',
+    shortcut: 'Ctrl+!',
+    icon: GitBranch,
+    iconColor: 'text-violet-400',
+    tabValue: 'decisions',
+    selectable: true,
+  },
+  {
     id: 'nav-settings',
     label: 'Go to Settings',
     group: 'Navigation',

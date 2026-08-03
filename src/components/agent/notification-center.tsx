@@ -3,17 +3,14 @@
 // ───────────────────────────────────────────────────────────────────
 // Notification Center — persistent bell-icon dropdown.
 //
-// Renders a bell button + popover. Notifications are stored in
-// localStorage (when no `notifications` prop is supplied) and
-// survive page reloads. Up to 50 are retained (newest first).
+// Backed by /api/data/notifications (Prisma `Notification` model).
+// Polls every 15s for new rows when uncontrolled (no `notifications`
+// prop supplied) and refreshes immediately whenever the popover opens.
 //
 //   <NotificationCenter onNavigate={(t) => router.push(t)} />
 //
-// or controlled:
-//   <NotificationCenter
-//     notifications={serverNotifications}
-//     onNavigate={(t) => router.push(t)}
-//   />
+// Optional controlled mode (skips API + polling):
+//   <NotificationCenter notifications={serverRows} onNavigate={...} />
 //
 // Palette: violet / cyan / emerald / amber / rose — NO indigo, NO blue.
 // ───────────────────────────────────────────────────────────────────
@@ -28,10 +25,12 @@ import {
   AlertTriangle,
   Info,
   Trophy,
+  Bolt,
   CheckCheck,
   ChevronRight,
   BellOff,
   Filter,
+  Loader2,
 } from 'lucide-react'
 import {
   Popover,
@@ -48,6 +47,7 @@ export type NotificationType =
   | 'warning'
   | 'info'
   | 'achievement'
+  | 'agent_event'
 
 export interface Notification {
   id: string
@@ -57,12 +57,14 @@ export interface Notification {
   timestamp: number
   read: boolean
   important?: boolean
-  /** Navigation target, e.g. '/revenue' or 'revenue'. */
+  /** Optional tab/route to navigate to when the row is clicked. */
   target?: string
+  /** Optional label for the implicit action button (display only). */
+  actionLabel?: string
 }
 
 export interface NotificationCenterProps {
-  /** If omitted, the component reads/writes localStorage. */
+  /** If omitted, the component polls /api/data/notifications. */
   notifications?: Notification[]
   onNavigate?: (target: string) => void
   className?: string
@@ -70,8 +72,8 @@ export interface NotificationCenterProps {
 
 // ─── Constants ─────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'ytrs-notification-center-v1'
-const MAX_NOTIFICATIONS = 50
+const POLL_INTERVAL_MS = 15_000
+const FILTER_PARAM = 'all' // fetch all; filter client-side
 
 type FilterKind = 'all' | 'unread' | 'important'
 
@@ -110,6 +112,11 @@ const NOTIF_META: Record<
     iconBg: 'bg-violet-500/15',
     iconText: 'text-violet-400',
   },
+  agent_event: {
+    Icon: Bolt,
+    iconBg: 'bg-violet-500/15',
+    iconText: 'text-violet-400',
+  },
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -122,43 +129,50 @@ function formatRelative(ts: number): string {
   }
 }
 
-function isLocalStorageAvailable(): boolean {
-  try {
-    const k = '__ytrs_test__'
-    window.localStorage.setItem(k, '1')
-    window.localStorage.removeItem(k)
-    return true
-  } catch {
-    return false
+function normalizeType(t: string | undefined | null): NotificationType {
+  switch (t) {
+    case 'success':
+    case 'error':
+    case 'warning':
+    case 'info':
+    case 'achievement':
+    case 'agent_event':
+      return t
+    default:
+      return 'info'
   }
 }
 
-function loadFromStorage(): Notification[] {
-  if (typeof window === 'undefined') return []
-  if (!isLocalStorageAvailable()) return []
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed
-      .filter((n): n is Notification => Boolean(n) && typeof n === 'object' && typeof n.id === 'string')
-      .slice(0, MAX_NOTIFICATIONS)
-  } catch {
-    return []
-  }
+interface ApiNotification {
+  id: string
+  type: string
+  category?: string
+  title: string
+  description?: string | null
+  targetId?: string | null
+  targetType?: string | null
+  isRead: boolean
+  isImportant: boolean
+  actionLabel?: string | null
+  actionTab?: string | null
+  createdAt: string | number | Date
 }
 
-function saveToStorage(notifs: Notification[]): void {
-  if (typeof window === 'undefined') return
-  if (!isLocalStorageAvailable()) return
-  try {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(notifs.slice(0, MAX_NOTIFICATIONS))
-    )
-  } catch {
-    /* swallow quota errors */
+function apiToNotification(n: ApiNotification): Notification {
+  const ts =
+    typeof n.createdAt === 'number'
+      ? n.createdAt
+      : new Date(n.createdAt).getTime()
+  return {
+    id: n.id,
+    type: normalizeType(n.type),
+    title: n.title,
+    description: n.description ?? undefined,
+    timestamp: Number.isFinite(ts) ? ts : Date.now(),
+    read: n.isRead,
+    important: n.isImportant === true,
+    target: n.actionTab ?? undefined,
+    actionLabel: n.actionLabel ?? undefined,
   }
 }
 
@@ -173,32 +187,87 @@ export function NotificationCenter({
 
   const [open, setOpen] = React.useState(false)
   const [filter, setFilter] = React.useState<FilterKind>('all')
+  const [loading, setLoading] = React.useState(false)
 
-  // Internal state mirrors the prop when controlled, otherwise localStorage.
-  const [internal, setInternal] = React.useState<Notification[]>(() => {
-    if (typeof window !== 'undefined' && notifications) {
-      return notifications.slice(0, MAX_NOTIFICATIONS)
-    }
-    return loadFromStorage()
-  })
+  const [internal, setInternal] = React.useState<Notification[]>(
+    () => (notifications ? notifications.slice(0, 50) : [])
+  )
+  const [counts, setCounts] = React.useState<{
+    total: number
+    unread: number
+    important: number
+  }>({ total: 0, unread: 0, important: 0 })
 
-  // Sync from prop when it changes (controlled mode).
+  // Sync from prop when controlled.
   React.useEffect(() => {
     if (notifications) {
-      setInternal(notifications.slice(0, MAX_NOTIFICATIONS))
+      setInternal(notifications.slice(0, 50))
+      const unread = notifications.filter((n) => !n.read).length
+      const important = notifications.filter((n) => n.important).length
+      setCounts({ total: notifications.length, unread, important })
     }
   }, [notifications])
 
-  // Persist to localStorage in uncontrolled mode.
+  // ── API fetcher ──
+  const fetchNotifications = React.useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(
+        `/api/data/notifications?filter=${FILTER_PARAM}&limit=50`,
+        { cache: 'no-store' }
+      )
+      if (!res.ok) return
+      const json = (await res.json()) as {
+        notifications: ApiNotification[]
+        counts?: { total: number; unread: number; important: number }
+      }
+      const rows = (json.notifications ?? []).map(apiToNotification)
+      setInternal(rows)
+      if (json.counts) {
+        setCounts({
+          total: json.counts.total ?? rows.length,
+          unread: json.counts.unread ?? rows.filter((r) => !r.read).length,
+          important:
+            json.counts.important ?? rows.filter((r) => r.important).length,
+        })
+      } else {
+        setCounts({
+          total: rows.length,
+          unread: rows.filter((r) => !r.read).length,
+          important: rows.filter((r) => r.important).length,
+        })
+      }
+    } catch {
+      /* swallow — the UI shows the last-known state */
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // Initial fetch + 15s polling when uncontrolled.
   React.useEffect(() => {
     if (isControlled) return
-    saveToStorage(internal)
-  }, [internal, isControlled])
+    fetchNotifications()
+    const t = setInterval(fetchNotifications, POLL_INTERVAL_MS)
+    return () => clearInterval(t)
+  }, [isControlled, fetchNotifications])
+
+  // Refresh whenever the popover opens (so the user always sees fresh data).
+  React.useEffect(() => {
+    if (open && !isControlled) {
+      fetchNotifications()
+    }
+  }, [open, isControlled, fetchNotifications])
 
   // ── Derived ──
   const unreadCount = React.useMemo(
-    () => internal.filter((n) => !n.read).length,
-    [internal]
+    () => (isControlled ? internal.filter((n) => !n.read).length : counts.unread),
+    [internal, isControlled, counts.unread]
+  )
+  const importantCount = React.useMemo(
+    () =>
+      isControlled ? internal.filter((n) => n.important).length : counts.important,
+    [internal, isControlled, counts.important]
   )
 
   const filtered = React.useMemo(() => {
@@ -208,19 +277,47 @@ export function NotificationCenter({
   }, [internal, filter])
 
   // ── Mutations ──
-  const markAsRead = React.useCallback((id: string) => {
-    setInternal((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    )
-  }, [])
+  const markAsRead = React.useCallback(
+    async (id: string) => {
+      // Optimistic update
+      setInternal((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      )
+      if (!isControlled) {
+        setCounts((c) => ({
+          ...c,
+          unread: Math.max(0, c.unread - 1),
+        }))
+        try {
+          await fetch(`/api/data/notifications/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isRead: true }),
+          })
+        } catch {
+          /* swallow */
+        }
+      }
+    },
+    [isControlled]
+  )
 
-  const markAllAsRead = React.useCallback(() => {
+  const markAllAsRead = React.useCallback(async () => {
+    // Optimistic update
     setInternal((prev) => prev.map((n) => ({ ...n, read: true })))
-  }, [])
+    if (!isControlled) {
+      setCounts((c) => ({ ...c, unread: 0 }))
+      try {
+        await fetch('/api/data/notifications/read-all', { method: 'POST' })
+      } catch {
+        /* swallow */
+      }
+    }
+  }, [isControlled])
 
   // ── Click handler ──
   const handleItemClick = (notif: Notification) => {
-    if (!notif.read) markAsRead(notif.id)
+    if (!notif.read) void markAsRead(notif.id)
     if (notif.target && onNavigate) onNavigate(notif.target)
     setOpen(false)
   }
@@ -289,21 +386,26 @@ export function NotificationCenter({
                 </span>
               )}
             </div>
-            <button
-              type="button"
-              onClick={markAllAsRead}
-              disabled={unreadCount === 0}
-              className={cn(
-                'flex items-center gap-1',
-                'text-[11px] font-medium',
-                'text-violet-300 hover:text-violet-200',
-                'disabled:text-slate-600 disabled:cursor-not-allowed',
-                'transition-colors'
+            <div className="flex items-center gap-2">
+              {loading && (
+                <Loader2 className="h-3 w-3 animate-spin text-slate-500" />
               )}
-            >
-              <CheckCheck className="h-3 w-3" />
-              Mark all
-            </button>
+              <button
+                type="button"
+                onClick={() => void markAllAsRead()}
+                disabled={unreadCount === 0}
+                className={cn(
+                  'flex items-center gap-1',
+                  'text-[11px] font-medium',
+                  'text-violet-300 hover:text-violet-200',
+                  'disabled:text-slate-600 disabled:cursor-not-allowed',
+                  'transition-colors'
+                )}
+              >
+                <CheckCheck className="h-3 w-3" />
+                Mark all
+              </button>
+            </div>
           </div>
 
           {/* Filter tabs */}
@@ -316,7 +418,7 @@ export function NotificationCenter({
                   ? internal.length
                   : f.id === 'unread'
                     ? unreadCount
-                    : internal.filter((n) => n.important).length
+                    : importantCount
               return (
                 <button
                   key={f.id}

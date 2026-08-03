@@ -30,7 +30,7 @@ import {
   CheckCircle, AlertCircle, Clock3, FileWarning, ScanLine,
   Keyboard, FlaskConical, HeartPulse, Handshake,
   Bell, RefreshCw, Image as ImageIcon, CalendarClock,
-  HelpCircle
+  HelpCircle, GitBranch
 } from 'lucide-react'
 
 // ─── New Agent Feature Components ───────────────────────────────────
@@ -50,7 +50,20 @@ import { ActivityFeed } from '@/components/agent/activity-feed'
 import { ContentScheduler } from '@/components/agent/content-scheduler'
 import { PerformanceMetrics } from '@/components/agent/performance-metrics'
 import { NotificationCenter } from '@/components/agent/notification-center'
-import { ToastProvider, useToast } from '@/components/agent/toast-provider'
+import { DecisionLog } from '@/components/agent/decision-log'
+import { ExportMenu } from '@/components/agent/export-menu'
+import { useToast } from '@/components/agent/toast-provider'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { ThemeToggle } from '@/components/theme-toggle'
 import {
   StatusCardSkeleton,
@@ -216,14 +229,15 @@ function GradientCard({ children, className = '', glow = '' }: { children: React
   )
 }
 
-function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emerald-400' }: {
-  icon: any; label: string; value: string | number; sub?: string; trend?: 'up' | 'down' | 'flat'; color?: string
+function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emerald-400', valueSuffix, hint }: {
+  icon: any; label: string; value: string | number; sub?: string; trend?: 'up' | 'down' | 'flat'; color?: string; valueSuffix?: string; hint?: string
 }) {
+  const bgForColor = (c: string) => c === 'text-emerald-400' ? 'bg-emerald-500/10' : c === 'text-blue-400' ? 'bg-blue-500/10' : c === 'text-amber-400' ? 'bg-amber-500/10' : c === 'text-violet-400' ? 'bg-violet-500/10' : c === 'text-cyan-400' ? 'bg-cyan-500/10' : c === 'text-rose-400' ? 'bg-rose-500/10' : 'bg-slate-500/10'
   return (
     <GradientCard>
-      <div className="p-4">
+      <div className="p-4 group cursor-default" title={hint}>
         <div className="flex items-start justify-between">
-          <div className={`p-2 rounded-lg ${color === 'text-emerald-400' ? 'bg-emerald-500/10' : color === 'text-blue-400' ? 'bg-blue-500/10' : color === 'text-amber-400' ? 'bg-amber-500/10' : color === 'text-violet-400' ? 'bg-violet-500/10' : color === 'text-cyan-400' ? 'bg-cyan-500/10' : color === 'text-rose-400' ? 'bg-rose-500/10' : 'bg-slate-500/10'}`}>
+          <div className={`p-2 rounded-lg ${bgForColor(color)} transition-transform duration-300 group-hover:scale-110`}>
             <Icon className={`w-4 h-4 ${color}`} />
           </div>
           {trend && (
@@ -233,9 +247,12 @@ function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emeral
           )}
         </div>
         <div className="mt-3">
-          <p className="text-xl sm:text-2xl font-bold tracking-tight truncate" title={String(value)}>{value}</p>
+          <div className="flex items-baseline gap-1">
+            <p className="text-xl sm:text-2xl font-bold tracking-tight truncate" title={String(value)}>{value}</p>
+            {valueSuffix && <span className={`text-sm font-semibold ${color}`}>{valueSuffix}</span>}
+          </div>
           <p className="text-xs text-slate-400 mt-0.5">{label}</p>
-          {sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}
+          {sub && <p className="text-xs text-slate-500 mt-0.5 truncate" title={sub}>{sub}</p>}
         </div>
       </div>
     </GradientCard>
@@ -366,7 +383,8 @@ export default function Dashboard() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [schedulerIdeas, setSchedulerIdeas] = useState<any[]>([])
-
+  const [estopDialogOpen, setEstopDialogOpen] = useState(false)
+  const { toast } = useToast()
   // ── Polling ─────────────────────────────────────────────────────
   const fetchStatus = useCallback(async () => {
     try {
@@ -423,7 +441,24 @@ export default function Dashboard() {
   }, [pollAll])
 
   // ── Commands ────────────────────────────────────────────────────
+  const COMMAND_LABELS: Record<string, { label: string; success: string; loading: string }> = {
+    'start': { label: 'Start Agent', success: 'Agent started', loading: 'Starting agent…' },
+    'stop': { label: 'Emergency Stop', success: 'Emergency stop activated', loading: 'Activating emergency stop…' },
+    'pause': { label: 'Pause Agent', success: 'Agent paused', loading: 'Pausing agent…' },
+    'resume': { label: 'Resume Agent', success: 'Agent resumed', loading: 'Resuming agent…' },
+    'initial-setup': { label: 'Run Initial Setup', success: 'Initial setup complete', loading: 'Running initial setup…' },
+    'full-cycle': { label: 'Full Cycle', success: 'Full cycle started', loading: 'Starting full autonomous cycle…' },
+    'produce-next': { label: 'Produce Next Video', success: 'Production queued', loading: 'Producing next video…' },
+    'process-job': { label: 'Process Next Job', success: 'Job processed', loading: 'Processing next job…' },
+    'collect-analytics': { label: 'Collect Analytics', success: 'Analytics collection queued', loading: 'Collecting analytics…' },
+    'schedule-jobs': { label: 'Schedule Jobs', success: 'Recurring jobs scheduled', loading: 'Scheduling jobs…' },
+    'review-strategy': { label: 'Review Strategy', success: 'Strategy review queued', loading: 'Reviewing strategy…' },
+    'reset': { label: 'Reset Agent', success: 'Agent reset', loading: 'Resetting agent…' },
+  }
+
   const sendCommand = async (command: string, extra?: any) => {
+    const meta = COMMAND_LABELS[command]
+    const loadingId = meta ? toast({ type: 'loading', title: meta.loading, duration: 0 }) : null
     setLoading(true)
     try {
       const res = await fetch('/api/agent/command', {
@@ -432,9 +467,25 @@ export default function Dashboard() {
         body: JSON.stringify({ command, ...extra }),
       })
       const data = await res.json()
+      if (!res.ok) {
+        const errMsg = data?.error || data?.message || `Command failed (${res.status})`
+        if (loadingId) toast.dismiss(loadingId)
+        toast({ type: 'error', title: `${meta?.label || command} failed`, description: errMsg, duration: 5000 })
+        return data
+      }
       await fetchStatus()
+      if (loadingId) {
+        toast.update(loadingId, {
+          type: 'success',
+          title: meta?.success || `${command} command sent`,
+          description: data?.message ? String(data.message).slice(0, 120) : undefined,
+          duration: 3000,
+        })
+      }
       return data
     } catch (e: any) {
+      if (loadingId) toast.dismiss(loadingId)
+      toast({ type: 'error', title: 'Network error', description: e?.message || 'Failed to reach server', duration: 5000 })
       console.error(e)
     } finally {
       setLoading(false)
@@ -491,6 +542,11 @@ export default function Dashboard() {
 
   // ── Computed ────────────────────────────────────────────────────
   const totalPipeline = status ? Object.values(status.pipeline).reduce((a: number, b: number) => a + b, 0) : 0
+  const selectedNiche = useMemo(() => {
+    if (!channel?.niches?.length) return null
+    return channel.niches.find((n: any) => n.isSelected) || channel.niches[0] || null
+  }, [channel?.niches])
+  const selectedNicheScore: number | null = selectedNiche?.compositeScore ?? null
   const pipelineChartData = useMemo(() => {
     if (!logs.length) return []
     // Deterministic synthetic time-series (no Math.random/Date.now to avoid SSR hydration mismatch)
@@ -559,6 +615,11 @@ export default function Dashboard() {
               <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-700/60 bg-slate-800/80 text-[10px] text-slate-500 font-mono">⌘K</kbd>
             </button>
 
+            {/* Export Menu (CSV downloads) - hidden on xs */}
+            <div className="hidden md:block">
+              <ExportMenu />
+            </div>
+
             {/* Theme toggle */}
             <ThemeToggle />
 
@@ -570,21 +631,58 @@ export default function Dashboard() {
               {channel?.youtubeConnected ? 'Connected' : 'Offline'}
             </Badge>
 
-            {/* EMERGENCY STOP - ALWAYS VISIBLE */}
-            <motion.div whileTap={{ scale: 0.95 }}>
-              <Button
-                size="sm"
-                onClick={() => sendCommand(status?.emergencyStop ? 'resume' : 'stop')}
-                className={`relative overflow-hidden ${
-                  status?.emergencyStop
-                    ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 shadow-lg shadow-red-500/30 animate-pulse'
-                    : 'bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 shadow-md shadow-red-500/20'
-                }`}
-              >
-                <AlertOctagon className="w-4 h-4 mr-1.5" />
-                {status?.emergencyStop ? 'STOPPED' : 'E-STOP'}
-              </Button>
-            </motion.div>
+            {/* EMERGENCY STOP - ALWAYS VISIBLE (with confirmation when activating) */}
+            <AlertDialog open={estopDialogOpen} onOpenChange={setEstopDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <motion.div whileTap={{ scale: 0.95 }} className="inline-block">
+                  <Button
+                    size="sm"
+                    onClick={(e) => {
+                      // If resuming (already stopped), no confirmation needed
+                      if (status?.emergencyStop) {
+                        sendCommand('resume')
+                      } else {
+                        // Activating emergency stop — show confirmation dialog
+                        setEstopDialogOpen(true)
+                      }
+                    }}
+                    className={`relative overflow-hidden ${
+                      status?.emergencyStop
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 shadow-lg shadow-red-500/30 animate-pulse'
+                        : 'bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 shadow-md shadow-red-500/20'
+                    }`}
+                  >
+                    <AlertOctagon className="w-4 h-4 mr-1.5" />
+                    {status?.emergencyStop ? 'RESUME' : 'E-STOP'}
+                  </Button>
+                </motion.div>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-slate-900 border-red-500/40 text-slate-100">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2 text-red-300">
+                    <AlertOctagon className="w-5 h-5" />
+                    Activate Emergency Stop?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-slate-400">
+                    This will <span className="text-red-300 font-semibold">immediately halt</span> all autonomous agent activity:
+                    running jobs will be interrupted, no new videos will be produced, and no uploads will occur.
+                    The agent will remain stopped until you manually resume.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-slate-100">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => sendCommand('stop')}
+                    className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white border-0"
+                  >
+                    <AlertOctagon className="w-4 h-4 mr-1.5" />
+                    Activate E-STOP
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </header>
@@ -605,6 +703,7 @@ export default function Dashboard() {
               { v: 'opportunities', icon: Handshake, label: 'Opportunities' },
               { v: 'experiments', icon: FlaskConical, label: 'Experiments' },
               { v: 'logs', icon: FileText, label: 'Logs' },
+              { v: 'decisions', icon: GitBranch, label: 'Decisions' },
               { v: 'settings', icon: Settings, label: 'Settings' },
             ].map(tab => (
               <TabsTrigger
@@ -634,10 +733,41 @@ export default function Dashboard() {
               <motion.div key="overview-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
                 {/* Top Stats Row */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <StatusCard icon={Zap} label="Pipeline Items" value={totalPipeline} sub={`${status?.pipeline?.uploaded || 0} uploaded`} color="text-emerald-400" trend="up" />
-                  <StatusCard icon={Video} label="Videos Produced" value={status?.pipeline?.producing || 0} sub={`${status?.pipeline?.approved || 0} approved`} color="text-cyan-400" />
-                  <StatusCard icon={Brain} label="Niche" value={status?.niche || '—'} sub={status?.channelName || 'No channel'} color="text-violet-400" />
-                  <StatusCard icon={Clock} label="Jobs Queued" value={jobs.filter(j => j.status === 'pending' || j.status === 'running').length} sub={`${jobs.filter(j => j.status === 'completed').length} done`} color="text-amber-400" />
+                  <StatusCard
+                    icon={Zap}
+                    label="Pipeline Items"
+                    value={totalPipeline}
+                    sub={`${status?.pipeline?.ideas || 0} ideas · ${status?.pipeline?.approved || 0} approved`}
+                    color="text-emerald-400"
+                    trend="up"
+                    hint={`Total items across all pipeline stages:\n${status?.pipeline?.ideas || 0} ideas · ${status?.pipeline?.researched || 0} researched · ${status?.pipeline?.scripted || 0} scripted · ${status?.pipeline?.producing || 0} producing · ${status?.pipeline?.reviewing || 0} reviewing · ${status?.pipeline?.approved || 0} approved · ${status?.pipeline?.uploaded || 0} uploaded`}
+                  />
+                  <StatusCard
+                    icon={Video}
+                    label="Videos Produced"
+                    value={status?.pipeline?.producing || 0}
+                    sub={`${status?.pipeline?.approved || 0} approved`}
+                    color="text-cyan-400"
+                    hint="Videos currently being rendered or in production queue"
+                  />
+                  <StatusCard
+                    icon={Brain}
+                    label="Niche Score"
+                    value={selectedNicheScore != null ? selectedNicheScore.toFixed(1) : '—'}
+                    valueSuffix={selectedNicheScore != null ? '/10' : undefined}
+                    sub={status?.niche || 'No niche'}
+                    color="text-violet-400"
+                    trend={selectedNicheScore && selectedNicheScore >= 8 ? 'up' : undefined}
+                    hint={`Selected niche: ${status?.niche || 'None'}\nComposite score from 18 weighted criteria (demand, audience, monetization, risk, etc.)`}
+                  />
+                  <StatusCard
+                    icon={Clock}
+                    label="Jobs Queued"
+                    value={jobs.filter(j => j.status === 'pending' || j.status === 'running').length}
+                    sub={`${jobs.filter(j => j.status === 'completed').length} done`}
+                    color="text-amber-400"
+                    hint="Background jobs waiting or running (production, uploads, analytics collection)"
+                  />
                 </div>
 
                 {/* Pipeline Flow Visualization */}
@@ -1019,6 +1149,10 @@ export default function Dashboard() {
                         <IdeaExplorer
                           ideas={pipeline.ideas}
                           onSelectIdea={() => setActiveTab('pipeline')}
+                          onBulkAction={() => {
+                            pollAll()
+                            toast({ type: 'success', title: 'Bulk action complete', description: 'Pipeline refreshed', duration: 2500 })
+                          }}
                         />
                       ) : initialLoaded ? (
                         <EmptyState icon={Lightbulb} title="No ideas yet" desc="Run initial setup to generate video ideas from your niche." />
@@ -1931,6 +2065,17 @@ export default function Dashboard() {
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════════
+              DECISIONS TAB — Agent Autonomous Decision Timeline
+              ══════════════════════════════════════════════════════════ */}
+          <TabsContent value="decisions" className="space-y-4">
+            <AnimatePresence mode="wait">
+              <motion.div key="decisions-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                <DecisionLog />
+              </motion.div>
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* ══════════════════════════════════════════════════════════
               SETTINGS TAB — Enhanced
               ══════════════════════════════════════════════════════════ */}
           <TabsContent value="settings" className="space-y-4">
@@ -2322,7 +2467,7 @@ export default function Dashboard() {
             else if (cmd === 'resume') sendCommand('resume')
             else if (cmd === 'command-palette') setCommandPaletteOpen(true)
             else if (cmd.startsWith('tab-')) {
-              const tabs = ['overview', 'pipeline', 'strategy', 'calendar', 'scheduler', 'revenue', 'analytics', 'opportunities', 'experiments', 'logs', 'settings']
+              const tabs = ['overview', 'pipeline', 'strategy', 'calendar', 'scheduler', 'revenue', 'analytics', 'opportunities', 'experiments', 'logs', 'decisions', 'settings']
               const idx = parseInt(cmd.split('-')[1]) - 1
               if (idx >= 0 && idx < tabs.length) setActiveTab(tabs[idx])
             }
@@ -2336,7 +2481,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 font-medium">YouTube Revenue Studio v2.3</span>
+              <span className="text-slate-500 font-medium">YouTube Revenue Studio v2.4</span>
             </div>
             <span className="text-slate-700">·</span>
             <span>Z.AI Autonomous Agent</span>
