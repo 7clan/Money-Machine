@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -215,14 +215,40 @@ const YPP_THRESHOLDS = {
   uploads: { current: 0, target: 3, label: 'Public Uploads (30d)', icon: Upload },
 }
 
+// ─── Animated Counter Hook ───────────────────────────────────────────
+function useAnimatedCounter(end: number, duration: number = 800) {
+  const [count, setCount] = useState(end)
+  const prevEnd = useRef(end)
+  useEffect(() => {
+    if (prevEnd.current === end) return
+    const start = prevEnd.current
+    const startTime = performance.now()
+    const step = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3) // easeOutCubic
+      setCount(Math.round(start + (end - start) * eased))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+    prevEnd.current = end
+    return () => {}
+  }, [end, duration])
+  return count
+}
+
 // ─── Sub-Components ──────────────────────────────────────────────────
 
 function GradientCard({ children, className = '', glow = '' }: { children: React.ReactNode; className?: string; glow?: string }) {
   return (
     <motion.div {...cardHover} className={`relative group ${className}`}>
-      <div className={`absolute -inset-[1px] rounded-xl bg-gradient-to-br from-slate-700/50 via-slate-800/50 to-slate-700/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${glow}`} />
-      <div className="relative rounded-xl bg-slate-900/80 border border-slate-700/50 backdrop-blur-sm overflow-hidden shadow-sm shadow-slate-900/30">
-        <div className="h-[2px] bg-gradient-to-r from-violet-500/60 via-cyan-500/60 to-emerald-500/60 opacity-40" />
+      {/* Animated gradient border */}
+      <div className={`absolute -inset-[1px] rounded-xl bg-gradient-to-br from-violet-500/30 via-slate-700/20 to-cyan-500/30 opacity-0 group-hover:opacity-100 transition-all duration-700 blur-[1px] ${glow}`} />
+      {/* Main card */}
+      <div className="relative rounded-xl bg-slate-900/90 border border-slate-700/40 backdrop-blur-md overflow-hidden shadow-lg shadow-slate-900/40 transition-all duration-500 group-hover:shadow-xl group-hover:shadow-slate-900/60">
+        {/* Top gradient line - animated */}
+        <div className="h-[2px] bg-gradient-to-r from-violet-500/60 via-cyan-500/60 to-emerald-500/60 group-hover:via-amber-500/60 transition-all duration-700" />
+        {/* Inner glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
         {children}
       </div>
     </motion.div>
@@ -232,27 +258,31 @@ function GradientCard({ children, className = '', glow = '' }: { children: React
 function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emerald-400', valueSuffix, hint }: {
   icon: any; label: string; value: string | number; sub?: string; trend?: 'up' | 'down' | 'flat'; color?: string; valueSuffix?: string; hint?: string
 }) {
+  const numericValue = typeof value === 'number' ? value : 0
+  const animatedValue = useAnimatedCounter(numericValue)
+  const displayValue = typeof value === 'number' ? animatedValue : value
   const bgForColor = (c: string) => c === 'text-emerald-400' ? 'bg-emerald-500/10' : c === 'text-blue-400' ? 'bg-blue-500/10' : c === 'text-amber-400' ? 'bg-amber-500/10' : c === 'text-violet-400' ? 'bg-violet-500/10' : c === 'text-cyan-400' ? 'bg-cyan-500/10' : c === 'text-rose-400' ? 'bg-rose-500/10' : 'bg-slate-500/10'
+  const trendConfig = trend === 'up' ? { icon: ArrowUpRight, color: 'text-emerald-400', bg: 'bg-emerald-500/20' } : trend === 'down' ? { icon: ArrowDownRight, color: 'text-red-400', bg: 'bg-red-500/20' } : trend === 'flat' ? { icon: Minus, color: 'text-slate-400', bg: 'bg-slate-500/20' } : null
   return (
     <GradientCard>
       <div className="p-4 group cursor-default" title={hint}>
         <div className="flex items-start justify-between">
-          <div className={`p-2 rounded-lg ${bgForColor(color)} transition-transform duration-300 group-hover:scale-110`}>
-            <Icon className={`w-4 h-4 ${color}`} />
+          <div className={`p-2.5 rounded-xl ${bgForColor(color)} transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
+            <Icon className={`w-5 h-5 ${color}`} />
           </div>
-          {trend && (
-            <div className={`flex items-center text-xs ${trend === 'up' ? 'text-emerald-400' : trend === 'down' ? 'text-red-400' : 'text-slate-400'}`}>
-              {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : trend === 'down' ? <ArrowDownRight className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+          {trendConfig && (
+            <div className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full ${trendConfig.bg} ${trendConfig.color}`}>
+              <trendConfig.icon className="w-3 h-3" />
             </div>
           )}
         </div>
         <div className="mt-3">
           <div className="flex items-baseline gap-1">
-            <p className="text-xl sm:text-2xl font-bold tracking-tight truncate" title={String(value)}>{value}</p>
+            <p className="text-2xl sm:text-3xl font-bold tracking-tight truncate" title={String(value)}>{displayValue}</p>
             {valueSuffix && <span className={`text-sm font-semibold ${color}`}>{valueSuffix}</span>}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">{label}</p>
-          {sub && <p className="text-xs text-slate-500 mt-0.5 truncate" title={sub}>{sub}</p>}
+          <p className="text-xs text-slate-400 mt-1 font-medium">{label}</p>
+          {sub && <p className="text-[10px] text-slate-500 mt-0.5 truncate" title={sub}>{sub}</p>}
         </div>
       </div>
     </GradientCard>
@@ -261,10 +291,12 @@ function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emeral
 
 function PipelineFlow({ pipeline }: { pipeline: AgentStatus['pipeline'] | null }) {
   if (!pipeline) return null
+  const total = pipeline ? Object.values(pipeline).reduce((a: number, b: number) => a + b, 0) : 0
   return (
     <div className="flex items-center gap-0 overflow-x-auto py-2 px-1">
       {PIPELINE_STAGES.map((stage, i) => {
         const count = pipeline[stage.key as keyof typeof pipeline] || 0
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0
         const Icon = stage.icon
         return (
           <React.Fragment key={stage.key}>
@@ -272,11 +304,14 @@ function PipelineFlow({ pipeline }: { pipeline: AgentStatus['pipeline'] | null }
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.08, duration: 0.3 }}
-              className={`flex flex-col items-center min-w-[80px] p-3 rounded-xl border ${stage.border} ${stage.bg} transition-all duration-300 hover:scale-105`}
+              className={`flex flex-col items-center min-w-[80px] p-3 rounded-xl border ${stage.border} ${stage.bg} transition-all duration-300 hover:scale-105 hover:shadow-lg`}
             >
               <Icon className={`w-5 h-5 ${stage.textColor} mb-1`} />
-              <span className={`text-lg font-bold ${stage.textColor}`}>{count}</span>
+              <span className={`text-xl font-bold ${stage.textColor}`}>{count}</span>
               <span className="text-[10px] text-slate-400 mt-0.5">{stage.label}</span>
+              {pct > 0 && (
+                <span className="text-[9px] text-slate-500 font-mono mt-0.5">{pct}%</span>
+              )}
             </motion.div>
             {i < PIPELINE_STAGES.length - 1 && (
               <motion.div
@@ -299,25 +334,32 @@ function AgentStateIndicator({ state }: { state: string }) {
   const colors = stateColor(state)
   const isActive = ['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete'].includes(state)
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3">
       <div className="relative">
         <motion.div
-          animate={isActive ? { scale: [1, 1.2, 1] } : { scale: 1 }}
+          animate={isActive ? { scale: [1, 1.15, 1] } : { scale: 1 }}
           transition={isActive ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
-          className={`w-14 h-14 rounded-full ${colors.dot} ring-4 ${colors.ring} shadow-lg ${colors.shadow} flex items-center justify-center`}
+          className={`w-10 h-10 rounded-full ${colors.dot} ring-4 ${colors.ring} shadow-lg ${colors.shadow} flex items-center justify-center`}
         >
           {isActive && (
-            <motion.div
-              animate={{ scale: [1, 1.8], opacity: [0.5, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
-              className={`absolute inset-0 rounded-full ${colors.dot}`}
-            />
+            <>
+              <motion.div
+                animate={{ scale: [1, 2], opacity: [0.4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut' }}
+                className={`absolute inset-0 rounded-full ${colors.dot}`}
+              />
+              <motion.div
+                animate={{ scale: [1, 1.8], opacity: [0.3, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeOut', delay: 0.3 }}
+                className={`absolute inset-0 rounded-full ${colors.dot}`}
+              />
+            </>
           )}
         </motion.div>
       </div>
       <div>
-        <p className={`text-xl font-bold ${colors.text}`}>{colors.label}</p>
-        <p className="text-xs text-slate-500 capitalize">{state.replace(/_/g, ' ')}</p>
+        <p className={`text-lg font-bold ${colors.text}`}>{colors.label}</p>
+        <p className="text-[10px] text-slate-500 uppercase tracking-wider">{state.replace(/_/g, ' ')}</p>
       </div>
     </div>
   )
@@ -364,6 +406,24 @@ function EmptyState({ icon: Icon, title, desc }: { icon: any; title: string; des
       <p className="text-sm font-medium text-slate-300">{title}</p>
       <p className="text-xs text-slate-500 mt-1 max-w-xs">{desc}</p>
     </div>
+  )
+}
+
+function QuickStatItem({ label, value, icon: Icon, color, bg, delay }: { label: string; value: number; icon: any; color: string; bg: string; delay: number }) {
+  const animatedVal = useAnimatedCounter(value)
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.3 }}
+      className={`flex items-center gap-2 p-2.5 rounded-lg ${bg} border border-slate-700/30`}
+    >
+      <Icon className={`w-3.5 h-3.5 ${color} shrink-0`} />
+      <div>
+        <p className={`text-sm font-bold ${color}`}>{animatedVal}</p>
+        <p className="text-[9px] text-slate-500">{label}</p>
+      </div>
+    </motion.div>
   )
 }
 
@@ -573,9 +633,11 @@ export default function Dashboard() {
       {/* ═══ Decorative Background ═══ */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(100,116,139,0.12)_1px,transparent_0)] [background-size:32px_32px]" />
-        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-violet-500/[0.04] rounded-full blur-[100px]" />
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-violet-500/[0.04] rounded-full blur-[100px] animate-pulse" />
         <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-cyan-500/[0.04] rounded-full blur-[100px]" />
         <div className="absolute top-1/3 left-1/2 w-80 h-80 bg-emerald-500/[0.03] rounded-full blur-[80px]" />
+        <div className="absolute top-2/3 right-1/4 w-64 h-64 bg-amber-500/[0.02] rounded-full blur-[80px]" />
+        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-rose-500/[0.02] rounded-full blur-[90px]" />
       </div>
 
       {/* ═══ TOP BAR ═══ */}
@@ -770,6 +832,16 @@ export default function Dashboard() {
                   />
                 </div>
 
+                {/* Quick Stats Summary Bar */}
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  <QuickStatItem label="Ideas" value={status?.pipeline?.ideas || 0} icon={Lightbulb} color="text-violet-400" bg="bg-violet-500/10" delay={0} />
+                  <QuickStatItem label="Researched" value={status?.pipeline?.researched || 0} icon={Search} color="text-blue-400" bg="bg-blue-500/10" delay={0.05} />
+                  <QuickStatItem label="Scripted" value={status?.pipeline?.scripted || 0} icon={PenTool} color="text-amber-400" bg="bg-amber-500/10" delay={0.1} />
+                  <QuickStatItem label="Producing" value={status?.pipeline?.producing || 0} icon={Clapperboard} color="text-emerald-400" bg="bg-emerald-500/10" delay={0.15} />
+                  <QuickStatItem label="Approved" value={status?.pipeline?.approved || 0} icon={CheckCircle2} color="text-cyan-400" bg="bg-cyan-500/10" delay={0.2} />
+                  <QuickStatItem label="Uploaded" value={status?.pipeline?.uploaded || 0} icon={CloudUpload} color="text-rose-400" bg="bg-rose-500/10" delay={0.25} />
+                </div>
+
                 {/* Pipeline Flow Visualization */}
                 <GradientCard glow="from-violet-500/5 to-cyan-500/5">
                   <div className="p-4">
@@ -954,6 +1026,67 @@ export default function Dashboard() {
                           <p className="text-xs text-slate-300 leading-relaxed">{insight.text}</p>
                         </motion.div>
                       ))}
+                    </div>
+                  </div>
+                </GradientCard>
+
+                {/* Agent Thinking & Next Steps */}
+                <GradientCard glow="from-violet-500/5 to-cyan-500/5">
+                  <div className="p-4">
+                    <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-violet-400" /> Agent Intelligence
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {/* Current State */}
+                      <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2.5 h-2.5 rounded-full ${stateColor(status?.state || 'idle').dot} ${['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete'].includes(status?.state || '') ? 'animate-pulse' : ''}`} />
+                          <span className="text-xs font-medium text-slate-300">Current State</span>
+                        </div>
+                        <p className={`text-sm font-bold ${stateColor(status?.state || 'idle').text}`}>
+                          {stateColor(status?.state || 'idle').label}
+                        </p>
+                        <p className="text-[10px] text-slate-500 capitalize">{status?.state?.replace(/_/g, ' ') || 'idle'}</p>
+                        {status?.currentJob && (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <Loader2 className="w-3 h-3 text-violet-400 animate-spin" />
+                            <span className="text-[10px] text-violet-300 font-mono truncate">{status.currentJob}</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Next Action */}
+                      <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <ChevronRight className="w-3 h-3 text-emerald-400" />
+                          <span className="text-xs font-medium text-slate-300">Next Action</span>
+                        </div>
+                        <p className="text-sm font-medium text-emerald-300">
+                          {status?.nextAction || 'Awaiting command'}
+                        </p>
+                        {status?.lastError && (
+                          <div className="flex items-start gap-1.5 pt-1">
+                            <AlertTriangle className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+                            <span className="text-[10px] text-red-300 line-clamp-2">{status.lastError}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {/* Pipeline efficiency */}
+                    <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-slate-800/40 to-slate-800/20 border border-slate-700/20">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-400">Pipeline Efficiency</span>
+                        <span className="text-emerald-400 font-medium">
+                          {totalPipeline > 0 ? Math.round(((status?.pipeline?.approved || 0) + (status?.pipeline?.uploaded || 0)) / totalPipeline * 100) : 0}% throughput
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${totalPipeline > 0 ? Math.round(((status?.pipeline?.approved || 0) + (status?.pipeline?.uploaded || 0)) / totalPipeline * 100) : 0}%` }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
+                          className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+                        />
+                      </div>
                     </div>
                   </div>
                 </GradientCard>
@@ -1519,6 +1652,52 @@ export default function Dashboard() {
                   videos={status?.pipeline?.uploaded || 0}
                 />
 
+                {/* Revenue Goal Tracker */}
+                <GradientCard glow="from-emerald-500/5 to-violet-500/5">
+                  <div className="p-4">
+                    <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                      <Target className="w-4 h-4 text-emerald-400" /> Revenue Goals
+                    </h3>
+                    <div className="space-y-3">
+                      {[
+                        { label: 'First $1', current: analytics?.estimatedRevenue || 0, target: 1, icon: DollarSign, color: 'from-emerald-500 to-cyan-500' },
+                        { label: '$100/month', current: (analytics?.estimatedRevenue || 0) * 30, target: 100, icon: TrendingUp, color: 'from-violet-500 to-purple-500' },
+                        { label: '$1,000/month', current: (analytics?.estimatedRevenue || 0) * 30, target: 1000, icon: Rocket, color: 'from-amber-500 to-orange-500' },
+                      ].map((goal, i) => {
+                        const progress = Math.min(100, (goal.current / goal.target) * 100)
+                        const Icon = goal.icon
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="space-y-1.5"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Icon className="w-3.5 h-3.5 text-slate-400" />
+                                <span className="text-xs text-slate-300 font-medium">{goal.label}</span>
+                              </div>
+                              <span className="text-[10px] text-slate-500">
+                                ${goal.current.toFixed(2)} / ${goal.target}
+                              </span>
+                            </div>
+                            <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progress}%` }}
+                                transition={{ delay: i * 0.1 + 0.3, duration: 0.8, ease: 'easeOut' }}
+                                className={`h-full rounded-full bg-gradient-to-r ${goal.color}`}
+                              />
+                            </div>
+                          </motion.div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </GradientCard>
+
                 {/* Revenue Forecast Chart */}
                 <GradientCard glow="from-emerald-500/5 to-cyan-500/5">
                   <CardHeader className="pb-2">
@@ -1650,190 +1829,78 @@ export default function Dashboard() {
           <TabsContent value="analytics" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="analytics-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
-                {/* Analytics Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <StatusCard icon={Eye} label="Total Views" value={(analytics?.totalViews || 0).toLocaleString()} color="text-blue-400" />
-                  <StatusCard icon={Users} label="Subscribers" value={(analytics?.totalSubscribers || 0).toLocaleString()} color="text-emerald-400" />
-                  <StatusCard icon={Clock} label="Watch Hours" value={(analytics?.totalWatchTime || 0).toLocaleString()} color="text-amber-400" />
-                  <StatusCard icon={DollarSign} label="Est. Revenue" value={`$${(analytics?.estimatedRevenue || 0).toFixed(2)}`} color="text-emerald-400" />
+                  <StatusCard icon={Eye} label="Total Views" value={analytics?.totalViews || 0} color="text-blue-400" trend="up" hint="Cumulative views across all uploaded videos" />
+                  <StatusCard icon={Users} label="Subscribers" value={analytics?.totalSubscribers || 0} color="text-emerald-400" hint="Total channel subscribers" />
+                  <StatusCard icon={Clock} label="Watch Hours" value={Math.round((analytics?.totalWatchTime || 0) / 60)} valueSuffix="hrs" color="text-violet-400" hint="Total watch time in hours" />
+                  <StatusCard icon={DollarSign} label="Est. Revenue" value={`$${(analytics?.estimatedRevenue || 0).toFixed(2)}`} color="text-amber-400" trend={(analytics?.estimatedRevenue || 0) > 0 ? 'up' : undefined} hint="Estimated revenue based on current metrics" />
                 </div>
-
-                {/* Pipeline Progress Over Time */}
                 <GradientCard glow="from-blue-500/5 to-violet-500/5">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-blue-400" /> Pipeline Progress Over Time
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {pipelineChartData.length > 0 ? (
-                      <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={pipelineChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                            <defs>
-                              <linearGradient id="colorIdeas" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                              </linearGradient>
-                              <linearGradient id="colorProduced" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
-                              </linearGradient>
-                              <linearGradient id="colorUploaded" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                            <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                            <RechartsTooltip
-                              contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
-                              labelStyle={{ color: '#e2e8f0' }}
-                            />
-                            <Area type="monotone" dataKey="ideas" stroke="#8b5cf6" fill="url(#colorIdeas)" strokeWidth={2} />
-                            <Area type="monotone" dataKey="produced" stroke="#06b6d4" fill="url(#colorProduced)" strokeWidth={2} />
-                            <Area type="monotone" dataKey="uploaded" stroke="#10b981" fill="url(#colorUploaded)" strokeWidth={2} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    ) : (
-                      <EmptyState icon={BarChart3} title="No analytics data" desc="Data will appear as the pipeline produces content." />
-                    )}
-                  </CardContent>
-                </GradientCard>
-
-                {/* Recent Videos Performance */}
-                <GradientCard>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Video className="w-4 h-4 text-cyan-400" /> Video Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {analytics?.recentVideos?.length ? (
-                      <ScrollArea className="h-48">
-                        <div className="space-y-1.5">
-                          {analytics.recentVideos.map((v: any, i: number) => (
-                            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/30 text-xs">
-                              <span className="text-slate-200 truncate flex-1">{v.title}</span>
-                              <span className="text-slate-400 font-mono">{(v.views || 0).toLocaleString()} views</span>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    ) : (
-                      <EmptyState icon={Video} title="No video performance data" desc="Upload videos and connect YouTube to see analytics." />
-                    )}
-                  </CardContent>
-                </GradientCard>
-
-                {/* Content Performance Comparison */}
-                <GradientCard glow="from-violet-500/5 to-cyan-500/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <BarChart3 className="w-4 h-4 text-violet-400" /> Content Performance Comparison
-                    </CardTitle>
-                    <CardDescription className="text-[10px]">Views, engagement, and revenue by content pillar</CardDescription>
+                    <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="w-4 h-4 text-blue-400" /> Performance Trends</CardTitle>
+                    <CardDescription className="text-[10px]">Views, engagement, and revenue over time</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={(channel?.pillars || []).map((p: any) => ({
-                          name: p.name?.length > 12 ? p.name.slice(0, 12) + '…' : p.name,
-                          views: Math.floor(500 + Math.abs(Math.sin(p.priority || 0)) * 2000),
-                          engagement: Math.floor(30 + Math.abs(Math.cos(p.priority || 0)) * 70),
-                          revenue: +(0.5 + Math.abs(Math.sin(p.priority || 0)) * 4.5).toFixed(1),
-                        }))} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                          <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                          <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                          <RechartsTooltip
-                            contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
-                            labelStyle={{ color: '#e2e8f0' }}
-                          />
-                          <Bar dataKey="views" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                          <Bar dataKey="engagement" fill="#06b6d4" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                          <Bar dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={30} />
-                        </BarChart>
+                        <AreaChart data={pipelineChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                          <defs>
+                            <linearGradient id="analyticsGrad1" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} /><stop offset="95%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient>
+                            <linearGradient id="analyticsGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                          <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#64748b' }} />
+                          <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                          <RechartsTooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} labelStyle={{ color: '#e2e8f0' }} />
+                          <Area type="monotone" dataKey="ideas" stroke="#3b82f6" fill="url(#analyticsGrad1)" strokeWidth={2} />
+                          <Area type="monotone" dataKey="produced" stroke="#10b981" fill="url(#analyticsGrad2)" strokeWidth={2} />
+                          <Area type="monotone" dataKey="uploaded" stroke="#f59e0b" fillOpacity={0} strokeWidth={2} strokeDasharray="4 4" />
+                        </AreaChart>
                       </ResponsiveContainer>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 mt-3">
-                      {[{ label: 'Views', color: 'bg-violet-500' }, { label: 'Engagement', color: 'bg-cyan-500' }, { label: 'Revenue', color: 'bg-emerald-500' }].map((l, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                          <div className={`w-2.5 h-2.5 rounded-sm ${l.color}`} />
-                          {l.label}
-                        </div>
-                      ))}
                     </div>
                   </CardContent>
                 </GradientCard>
-
-                {/* Audience Demographics & Traffic Sources */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  <GradientCard glow="from-rose-500/5 to-amber-500/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Users className="w-4 h-4 text-rose-400" /> Audience Demographics
-                      </CardTitle>
-                    </CardHeader>
+                  <GradientCard glow="from-emerald-500/5 to-cyan-500/5">
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Globe className="w-4 h-4 text-emerald-400" /> Traffic Sources</CardTitle></CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
+                      <div className="space-y-2.5">
                         {[
-                          { label: '18-24', pct: 28, color: 'bg-violet-500' },
-                          { label: '25-34', pct: 35, color: 'bg-cyan-500' },
-                          { label: '35-44', pct: 20, color: 'bg-emerald-500' },
-                          { label: '45-54', pct: 12, color: 'bg-amber-500' },
-                          { label: '55+', pct: 5, color: 'bg-rose-500' },
-                        ].map((demo, i) => (
-                          <div key={i} className="space-y-1">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-slate-300">{demo.label}</span>
-                              <span className="text-slate-400 font-mono">{demo.pct}%</span>
+                          { source: 'YouTube Search', pct: 42, icon: Search, color: 'bg-blue-500' },
+                          { source: 'Suggested Videos', pct: 28, icon: Video, color: 'bg-violet-500' },
+                          { source: 'External', pct: 15, icon: ExternalLink, color: 'bg-emerald-500' },
+                          { source: 'Browse Features', pct: 10, icon: Compass, color: 'bg-amber-500' },
+                          { source: 'Direct/Unknown', pct: 5, icon: HelpCircle, color: 'bg-slate-500' },
+                        ].map((src, i) => (
+                          <div key={i} className="flex items-center gap-2.5">
+                            <src.icon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="text-[10px] text-slate-400 w-24 shrink-0 truncate">{src.source}</span>
+                            <div className="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden">
+                              <motion.div initial={{ width: 0 }} animate={{ width: `${src.pct}%` }} transition={{ delay: i * 0.1 + 0.3, duration: 0.6 }} className={`h-full rounded-full ${src.color}`} />
                             </div>
-                            <div className="w-full h-2 rounded-full bg-slate-800">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${demo.pct}%` }}
-                                transition={{ delay: i * 0.1, duration: 0.5 }}
-                                className={`h-full rounded-full ${demo.color}`}
-                              />
-                            </div>
+                            <span className="text-[10px] text-slate-500 w-8 text-right font-mono">{src.pct}%</span>
                           </div>
                         ))}
                       </div>
                     </CardContent>
                   </GradientCard>
-
-                  <GradientCard glow="from-cyan-500/5 to-violet-500/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-cyan-400" /> Traffic Sources
-                      </CardTitle>
-                    </CardHeader>
+                  <GradientCard glow="from-amber-500/5 to-violet-500/5">
+                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Flame className="w-4 h-4 text-amber-400" /> Key Metrics</CardTitle></CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: 'YouTube Search', pct: 42, icon: Search, color: 'bg-red-500' },
-                          { label: 'Suggested Videos', pct: 28, icon: Video, color: 'bg-orange-500' },
-                          { label: 'External', pct: 15, icon: ExternalLink, color: 'bg-cyan-500' },
-                          { label: 'Browse Features', pct: 10, icon: Compass, color: 'bg-violet-500' },
-                          { label: 'Direct/Unknown', pct: 5, icon: HelpCircle, color: 'bg-slate-500' },
-                        ].map((src, i) => {
-                          const Icon = src.icon
+                          { label: 'CTR', value: '4.2%', icon: MousePointerClick, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+                          { label: 'Avg View', value: '6:32', icon: Clock3, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                          { label: 'Retention', value: '58%', icon: Eye, color: 'text-violet-400', bg: 'bg-violet-500/10' },
+                          { label: 'RPM', value: '$2.40', icon: DollarSign, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                          { label: 'Likes/View', value: '3.2%', icon: ThumbsUp, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+                          { label: 'Comments', value: '12', icon: MessageSquare, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                        ].map((kpi, i) => {
+                          const Icon = kpi.icon
                           return (
-                            <div key={i} className="flex items-center gap-3 text-xs">
-                              <Icon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                              <span className="text-slate-300 flex-1">{src.label}</span>
-                              <div className="w-24 h-2 rounded-full bg-slate-800">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${src.pct}%` }}
-                                  transition={{ delay: i * 0.1, duration: 0.5 }}
-                                  className={`h-full rounded-full ${src.color}`}
-                                />
-                              </div>
-                              <span className="text-slate-400 font-mono w-8 text-right">{src.pct}%</span>
+                            <div key={i} className={`p-2.5 rounded-lg ${kpi.bg} border border-slate-700/20 flex items-center gap-2`}>
+                              <Icon className={`w-4 h-4 ${kpi.color} shrink-0`} />
+                              <div><p className={`text-sm font-bold ${kpi.color}`}>{kpi.value}</p><p className="text-[9px] text-slate-500">{kpi.label}</p></div>
                             </div>
                           )
                         })}
@@ -1841,6 +1908,26 @@ export default function Dashboard() {
                     </CardContent>
                   </GradientCard>
                 </div>
+                <GradientCard glow="from-violet-500/5 to-cyan-500/5">
+                  <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Film className="w-4 h-4 text-violet-400" /> Recent Video Performance</CardTitle></CardHeader>
+                  <CardContent>
+                    {pipeline?.uploads?.length ? (
+                      <ScrollArea className="h-48">
+                        <div className="space-y-1.5">
+                          {pipeline.uploads.slice(0, 8).map((upload: any, i: number) => (
+                            <motion.div key={upload.id} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                              className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/30 border border-slate-700/20 text-xs">
+                              <Film className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <span className="text-slate-300 truncate flex-1 font-medium">{upload.title}</span>
+                              <Badge variant="outline" className="text-[9px] border-slate-600 shrink-0">{upload.privacy}</Badge>
+                              <Badge variant="outline" className={`text-[9px] shrink-0 ${upload.uploadStatus === 'completed' ? 'border-emerald-500/50 text-emerald-400' : 'border-amber-500/50 text-amber-400'}`}>{upload.uploadStatus}</Badge>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    ) : (<EmptyState icon={Film} title="No upload data" desc="Upload videos to see performance analytics." />)}
+                  </CardContent>
+                </GradientCard>
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -1877,120 +1964,32 @@ export default function Dashboard() {
           <TabsContent value="logs" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="logs-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
-                {/* Activity Feed (full-width) */}
-                <ActivityFeed
-                  logs={logs.map((log: any) => ({
-                    id: log.id,
-                    action: log.action,
-                    actor: log.actor || 'system',
-                    target: log.target,
-                    details: typeof log.details === 'string' ? log.details : JSON.stringify({ message: log.message, detail: log.detail, target: log.target }),
-                    createdAt: log.createdAt,
-                  }))}
-                  isLoading={!initialLoaded}
-                  onRefresh={pollAll}
-                  maxItems={50}
-                />
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  {/* Audit Log (compact) */}
-                  <GradientCard glow="from-violet-500/5 to-slate-500/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-violet-400" /> Audit Log
-                        <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{logs.length}</Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-[400px]">
-                        {logs.length ? (
-                          <div className="space-y-0.5">
-                            {logs.map((log: any, i: number) => (
-                              <motion.div
-                                key={log.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: i * 0.01 }}
-                                className="flex gap-2 p-1.5 rounded-lg hover:bg-slate-800/40 transition-colors text-xs"
-                              >
-                                <span className="text-slate-600 font-mono text-[10px] w-16 shrink-0 pt-0.5">
-                                  {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                </span>
-                                <Badge variant="outline" className={`text-[10px] h-5 shrink-0 ${actionColor(log.action)}`}>
-                                  {actionLabel(log.action)}
-                                </Badge>
-                                {log.target && (
-                                  <Badge variant="outline" className="text-[9px] h-5 shrink-0 border-cyan-500/30 text-cyan-300 font-mono">
-                                    {log.target.slice(-6)}
-                                  </Badge>
-                                )}
-                                <span className="text-slate-300 text-[11px] truncate flex-1" title={log.detail || log.message}>
-                                  {log.message || log.details}
-                                </span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        ) : (
-                          <EmptyState icon={FileText} title="No logs yet" desc="Audit logs appear as the agent takes actions." />
-                        )}
-                      </ScrollArea>
-                    </CardContent>
-                  </GradientCard>
-
-                  {/* Jobs Queue */}
-                  <GradientCard glow="from-amber-500/5 to-slate-500/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Server className="w-4 h-4 text-amber-400" /> Job Queue
-                        <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{jobs.length}</Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-[400px]">
-                        {jobs.length ? (
-                          <div className="space-y-1.5">
-                            {jobs.map((job: any, i: number) => (
-                              <motion.div
-                                key={job.id}
-                                initial={{ opacity: 0, x: -5 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.03 }}
-                                className="p-2 rounded-lg bg-slate-800/30 border border-slate-700/30 space-y-1.5"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline" className={`text-[10px] shrink-0 ${
-                                    job.status === 'completed' ? 'border-emerald-500/50 text-emerald-400' :
-                                    job.status === 'failed' ? 'border-red-500/50 text-red-400' :
-                                    job.status === 'running' ? 'border-cyan-500/50 text-cyan-400' :
-                                    'border-slate-500/50 text-slate-400'
-                                  }`}>
-                                    {job.status === 'running' && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
-                                    {job.status}
-                                  </Badge>
-                                  <Badge variant="outline" className="text-[10px] border-slate-600 shrink-0">{job.type}</Badge>
-                                  <span className="text-[10px] text-slate-500 font-mono ml-auto">
-                                    {new Date(job.scheduledAt).toLocaleString()}
-                                  </span>
-                                </div>
-                                {(job.error || job.retryCount > 0) && (
-                                  <div className="flex items-center gap-2 text-[10px]">
-                                    {job.error && <span className="text-red-400 truncate">{job.error}</span>}
-                                    {job.retryCount > 0 && <span className="text-amber-400">retry #{job.retryCount}</span>}
-                                  </div>
-                                )}
-                                {job.status === 'running' && (
-                                  <Progress value={45} className="h-1" />
-                                )}
-                              </motion.div>
-                            ))}
-                          </div>
-                        ) : (
-                          <EmptyState icon={Server} title="No jobs queued" desc="Jobs are scheduled as the agent processes content." />
-                        )}
-                      </ScrollArea>
-                    </CardContent>
-                  </GradientCard>
+                <div className="grid grid-cols-3 gap-3">
+                  <StatusCard icon={FileText} label="Total Logs" value={logs.length} color="text-slate-400" />
+                  <StatusCard icon={AlertTriangle} label="Errors" value={logs.filter((l: any) => l.action === 'emergency_stop').length} color="text-red-400" />
+                  <StatusCard icon={Activity} label="Today" value={logs.filter((l: any) => new Date(l.createdAt).toDateString() === new Date().toDateString()).length} color="text-emerald-400" trend="up" />
                 </div>
+                <GradientCard glow="from-slate-500/5 to-violet-500/5">
+                  <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><FileText className="w-4 h-4 text-slate-400" /> Audit Trail</CardTitle><CardDescription className="text-[10px]">Complete log of all agent actions and system events</CardDescription></CardHeader>
+                  <CardContent>
+                    <ScrollArea className="h-[400px]">
+                      {logs.length ? (
+                        <div className="space-y-1">
+                          {logs.map((log: any, i: number) => (
+                            <motion.div key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.01 }}
+                              className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800/30 transition-colors text-xs border-b border-slate-800/30">
+                              <span className="text-slate-600 font-mono text-[10px] w-20 shrink-0">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                              <Badge variant="outline" className={`text-[9px] h-4 shrink-0 ${actionColor(log.action)}`}>{actionLabel(log.action)}</Badge>
+                              <span className="text-slate-500 text-[10px] w-14 shrink-0">{log.actor}</span>
+                              <span className="text-slate-300 truncate flex-1 font-mono text-[10px]">{(() => { try { const d = JSON.parse(log.details || '{}'); return d.message || d.detail || log.details } catch { return log.details } })()}</span>
+                              {log.target && (<span className="text-slate-600 text-[9px] shrink-0 font-mono">{log.target}</span>)}
+                            </motion.div>
+                          ))}
+                        </div>
+                      ) : (<EmptyState icon={FileText} title="No logs" desc="Agent activity will be logged here." />)}
+                    </ScrollArea>
+                  </CardContent>
+                </GradientCard>
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -2070,7 +2069,43 @@ export default function Dashboard() {
           <TabsContent value="decisions" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="decisions-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
-                <DecisionLog />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <StatusCard icon={GitBranch} label="Total Decisions" value={logs.length} color="text-violet-400" hint="All agent decisions and actions" />
+                  <StatusCard icon={CheckCircle2} label="Successful" value={logs.filter((l: any) => l.action !== 'emergency_stop' && !(l.details || '').includes('error')).length} color="text-emerald-400" trend="up" />
+                  <StatusCard icon={AlertTriangle} label="Errors" value={logs.filter((l: any) => (l.details || '').includes('error') || (l.details || '').includes('fail')).length} color="text-red-400" />
+                  <StatusCard icon={Zap} label="Last Action" value={logs[0] ? new Date(logs[0].createdAt).toLocaleTimeString() : 'N/A'} color="text-amber-400" />
+                </div>
+                <GradientCard glow="from-violet-500/5 to-cyan-500/5">
+                  <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><GitBranch className="w-4 h-4 text-violet-400" /> Decision Timeline</CardTitle><CardDescription className="text-[10px]">Complete history of agent decisions and actions</CardDescription></CardHeader>
+                  <CardContent>
+                    {logs.length ? (
+                      <ScrollArea className="h-96">
+                        <div className="relative">
+                          <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-gradient-to-b from-violet-500/30 via-slate-700/30 to-transparent" />
+                          <div className="space-y-3">
+                            {logs.slice(0, 30).map((log: any, i: number) => {
+                              const detail = (() => { try { return JSON.parse(log.details || '{}') } catch { return { message: log.details } } })()
+                              return (
+                                <motion.div key={log.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }} className="flex items-start gap-3 pl-1">
+                                  <div className={`w-5 h-5 rounded-full border-2 border-slate-800 shrink-0 mt-0.5 flex items-center justify-center ${log.action === 'emergency_stop' ? 'bg-red-500 border-red-500/50' : log.action === 'upload' ? 'bg-cyan-500 border-cyan-500/50' : log.action === 'strategy_change' ? 'bg-violet-500 border-violet-500/50' : 'bg-slate-600 border-slate-600/50'}`}>
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white/60" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <Badge variant="outline" className={`text-[9px] h-4 ${actionColor(log.action)}`}>{actionLabel(log.action)}</Badge>
+                                      <span className="text-[10px] text-slate-500 font-mono">{new Date(log.createdAt).toLocaleTimeString()}</span>
+                                    </div>
+                                    <p className="text-xs text-slate-300 mt-0.5 truncate">{detail.message || detail.detail || log.details || '—'}</p>
+                                  </div>
+                                </motion.div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    ) : (<EmptyState icon={GitBranch} title="No decisions recorded" desc="Agent decisions will appear here as it operates." />)}
+                  </CardContent>
+                </GradientCard>
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -2081,37 +2116,35 @@ export default function Dashboard() {
           <TabsContent value="settings" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="settings-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
-                {/* Operating Mode - Radio Cards */}
-                <GradientCard glow="from-violet-500/5 to-emerald-500/5">
+                {/* Operating Mode */}
+                <GradientCard glow="from-violet-500/5 to-cyan-500/5">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <ToggleLeft className="w-4 h-4 text-violet-400" /> Operating Mode
                     </CardTitle>
-                    <CardDescription className="text-[10px]">Controls what the agent is allowed to do autonomously</CardDescription>
+                    <CardDescription className="text-[10px]">Controls what actions the autonomous agent is permitted to perform</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {MODES.map((mode) => {
-                        const isActive = status?.operatingMode === mode.key
                         const Icon = mode.icon
+                        const isActive = status?.operatingMode === mode.key
                         return (
                           <motion.button
                             key={mode.key}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => sendCommand('set-mode', { mode: mode.key })}
-                            className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
-                              isActive
-                                ? mode.activeColor + ' ring-1 ring-current'
-                                : mode.color + ' bg-slate-800/30 hover:bg-slate-800/50'
+                            className={`p-4 rounded-xl border-2 text-left transition-all duration-300 ${
+                              isActive ? mode.activeColor + ' shadow-lg' : mode.color + ' bg-slate-800/40 hover:bg-slate-800/60'
                             }`}
                           >
-                            <div className="flex items-center gap-2 mb-2">
-                              <Icon className={`w-5 h-5 ${isActive ? 'text-current' : 'text-slate-500'}`} />
-                              {isActive && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 rounded-full bg-emerald-400" />}
-                            </div>
-                            <p className={`text-sm font-semibold ${isActive ? 'text-slate-100' : 'text-slate-300'}`}>{mode.label}</p>
-                            <p className="text-[10px] text-slate-400 mt-1">{mode.desc}</p>
+                            <Icon className={`w-5 h-5 mb-2 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                            <p className={`text-xs font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>{mode.label}</p>
+                            <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">{mode.desc}</p>
+                            {isActive && (
+                              <Badge className={`mt-2 text-[9px] ${mode.badge}`}>Active</Badge>
+                            )}
                           </motion.button>
                         )
                       })}
@@ -2119,300 +2152,127 @@ export default function Dashboard() {
                   </CardContent>
                 </GradientCard>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                  {/* YouTube Connection */}
-                  <GradientCard glow="from-red-500/5 to-rose-500/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Youtube className="w-4 h-4 text-red-400" /> YouTube Connection
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/40 border border-slate-700/30">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${channel?.youtubeConnected ? 'bg-red-500/20' : 'bg-slate-700/50'}`}>
-                          <Youtube className={`w-5 h-5 ${channel?.youtubeConnected ? 'text-red-400' : 'text-slate-500'}`} />
-                        </div>
+                {/* YouTube Connection */}
+                <GradientCard glow="from-red-500/5 to-amber-500/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Youtube className="w-4 h-4 text-red-400" /> YouTube Connection
+                    </CardTitle>
+                    <CardDescription className="text-[10px]">Google OAuth 2.0 is required for video uploads and analytics</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${channel?.youtubeConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
                         <div>
-                          <p className="text-sm font-medium">{channel?.youtubeConnected ? 'Connected' : 'Not Connected'}</p>
-                          <p className="text-[10px] text-slate-500">{channel?.youtubeConnected ? 'OAuth tokens active' : 'OAuth credentials required'}</p>
+                          <p className="text-xs font-medium text-slate-200">
+                            {channel?.youtubeConnected ? 'Connected' : 'Not Connected'}
+                          </p>
+                          <p className="text-[10px] text-slate-500">
+                            {channel?.youtubeConnected ? `Channel: ${channel.channel?.name || 'Unknown'}` : 'Complete OAuth setup to enable uploads'}
+                          </p>
                         </div>
-                        {channel?.youtubeConnected && (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400 ml-auto" />
-                        )}
                       </div>
-                      {!channel?.youtubeConnected && (
-                        <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 space-y-2">
-                          <p className="text-xs font-medium text-slate-300">Setup Instructions</p>
-                          <ol className="list-decimal ml-4 space-y-1 text-[10px] text-slate-400">
-                            <li>Create a Google Cloud project</li>
-                            <li>Enable YouTube Data API v3</li>
-                            <li>Configure OAuth 2.0 credentials</li>
-                            <li>Set <code className="text-cyan-400 bg-slate-800 px-1 rounded">YOUTUBE_CLIENT_ID</code> and <code className="text-cyan-400 bg-slate-800 px-1 rounded">YOUTUBE_CLIENT_SECRET</code> in .env</li>
-                            <li>Click authorize in the OAuth flow</li>
-                          </ol>
-                        </div>
-                      )}
-                      <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
-                        <Lock className="w-3 h-3" />
-                        Uses official Google OAuth 2.0. Tokens encrypted at rest. Minimum scopes: youtube.upload, youtube.readonly.
-                      </p>
-                    </CardContent>
-                  </GradientCard>
-
-                  {/* Security Checklist */}
-                  <GradientCard glow="from-emerald-500/5 to-green-500/5">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-emerald-400" /> Security & Compliance
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 gap-1.5">
-                        {[
-                          { label: 'OAuth tokens encrypted at rest', icon: Lock },
-                          { label: 'CSRF protection on OAuth flow', icon: Shield },
-                          { label: 'Emergency stop control', icon: AlertOctagon },
-                          { label: 'All uploads default to private', icon: Lock },
-                          { label: 'Audit logging enabled', icon: FileText },
-                          { label: 'No credentials in source code', icon: Shield },
-                          { label: 'No passwords or 2FA codes stored', icon: ShieldCheck },
-                          { label: 'Least-privilege API scopes', icon: Lock },
-                        ].map((item, i) => (
-                          <div key={i} className="flex items-center gap-2 text-[10px] p-1.5 rounded bg-emerald-500/5">
-                            <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
-                            <span className="text-slate-300">{item.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <Separator className="my-3 bg-slate-800" />
-                      <p className="text-[10px] font-medium text-slate-300 mb-2">Content Policy</p>
-                      <div className="grid grid-cols-1 gap-1.5">
-                        {[
-                          'Original content only — no copied scripts or videos',
-                          'Source attribution required on all claims',
-                          'AI-generated content disclosed in descriptions',
-                          'No fake engagement or misleading thumbnails',
-                          'Asset license tracking enforced',
-                          'Quality review gate before every upload',
-                        ].map((item, i) => (
-                          <div key={i} className="flex items-center gap-2 text-[10px] p-1.5 rounded bg-emerald-500/5">
-                            <FileCheck className="w-3 h-3 text-emerald-500 shrink-0" />
-                            <span className="text-slate-300">{item}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </GradientCard>
-                </div>
-
-                {/* Advanced Agent Configuration — New */}
-                <GradientCard glow="from-cyan-500/5 to-violet-500/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-cyan-400" /> Advanced Agent Configuration
-                    </CardTitle>
-                    <CardDescription className="text-[10px]">Fine-tune agent behavior, scheduling, and production parameters</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[
-                        { label: 'Max Concurrent Jobs', value: '3', desc: 'Parallel job execution limit', icon: Layers },
-                        { label: 'Retry Limit', value: '3', desc: 'Max retries per failed job', icon: RefreshCw },
-                        { label: 'Poll Interval', value: '5s', desc: 'Dashboard refresh frequency', icon: Clock },
-                        { label: 'Script Target Length', value: '8 min', desc: 'Target video duration', icon: FileText },
-                        { label: 'Quality Gate Score', value: '7.5/10', desc: 'Minimum quality to approve', icon: Shield },
-                        { label: 'Thumbnail Resolution', value: '1280×720', desc: 'Generated thumbnail size', icon: ImageIcon },
-                      ].map((config, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.06 }}
-                          className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/30 space-y-1.5"
-                        >
-                          <div className="flex items-center gap-2">
-                            <config.icon className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="text-xs font-medium text-slate-200">{config.label}</span>
-                          </div>
-                          <p className="text-lg font-bold text-slate-100 pl-5">{config.value}</p>
-                          <p className="text-[10px] text-slate-500 pl-5">{config.desc}</p>
-                        </motion.div>
-                      ))}
+                      <Badge variant={channel?.youtubeConnected ? 'default' : 'outline'} className={`text-[10px] ${channel?.youtubeConnected ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'border-red-500/30 text-red-300'}`}>
+                        {channel?.youtubeConnected ? 'Active' : 'Required'}
+                      </Badge>
                     </div>
+                    {!channel?.youtubeConnected && (
+                      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+                        <p className="font-medium mb-1">Setup Required:</p>
+                        <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-amber-300/80">
+                          <li>Create a Google Cloud project with YouTube Data API v3</li>
+                          <li>Configure OAuth 2.0 consent screen</li>
+                          <li>Add redirect URI to your credentials</li>
+                          <li>Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env</li>
+                        </ol>
+                      </div>
+                    )}
                   </CardContent>
                 </GradientCard>
 
-                {/* Notification Preferences — New */}
-                <GradientCard glow="from-amber-500/5 to-rose-500/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-amber-400" /> Notification Preferences
-                    </CardTitle>
-                    <CardDescription className="text-[10px]">Configure when and how you receive agent notifications</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2.5">
-                      {[
-                        { label: 'Video production complete', enabled: true, icon: Film },
-                        { label: 'Quality review failed', enabled: true, icon: AlertTriangle },
-                        { label: 'Upload succeeded', enabled: true, icon: CloudUpload },
-                        { label: 'New sponsorship opportunity', enabled: false, icon: Megaphone },
-                        { label: 'Revenue milestone reached', enabled: false, icon: DollarSign },
-                        { label: 'Agent error or crash', enabled: true, icon: AlertOctagon },
-                        { label: 'Experiment completed', enabled: false, icon: FlaskConical },
-                      ].map((notif, i) => (
-                        <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/30 border border-slate-700/30">
-                          <div className="flex items-center gap-2.5">
-                            <notif.icon className={`w-3.5 h-3.5 ${notif.enabled ? 'text-slate-300' : 'text-slate-600'}`} />
-                            <span className={`text-xs ${notif.enabled ? 'text-slate-200' : 'text-slate-500'}`}>{notif.label}</span>
-                          </div>
-                          <div className={`w-9 h-5 rounded-full transition-colors ${notif.enabled ? 'bg-emerald-500' : 'bg-slate-700'} relative`}>
-                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${notif.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </GradientCard>
-
-                {/* Storage Dashboard */}
+                {/* Agent Configuration */}
                 <GradientCard glow="from-cyan-500/5 to-emerald-500/5">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <Database className="w-4 h-4 text-cyan-400" /> Storage Dashboard
+                      <Settings className="w-4 h-4 text-cyan-400" /> Agent Configuration
                     </CardTitle>
-                    <CardDescription className="text-[10px]">Disk usage breakdown and cleanup controls</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {/* Overall usage */}
-                      <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-slate-300 font-medium">Total Storage</span>
-                          <span className="text-xs text-slate-400 font-mono">124 MB / 1.00 GB</span>
-                        </div>
-                        <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: '12%' }}
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                            className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500"
-                          />
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-1.5">900 MB available</p>
-                      </div>
-                      {/* Breakdown */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        {[
-                          { label: 'Videos', size: '68 MB', pct: 55, icon: Film, color: 'bg-violet-500' },
-                          { label: 'Audio', size: '34 MB', pct: 27, icon: Radio, color: 'bg-cyan-500' },
-                          { label: 'Thumbnails', size: '12 MB', pct: 10, icon: ImageIcon, color: 'bg-amber-500' },
-                          { label: 'Other', size: '10 MB', pct: 8, icon: FileText, color: 'bg-slate-500' },
-                        ].map((item, i) => {
-                          const Icon = item.icon
-                          return (
-                            <motion.div
-                              key={i}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ delay: i * 0.08, duration: 0.2 }}
-                              className="p-2.5 rounded-lg bg-slate-800/30 border border-slate-700/30 space-y-1.5"
-                            >
-                              <div className="flex items-center gap-1.5">
-                                <Icon className="w-3 h-3 text-slate-400" />
-                                <span className="text-[10px] text-slate-300">{item.label}</span>
-                              </div>
-                              <p className="text-sm font-bold text-slate-100">{item.size}</p>
-                              <div className="w-full h-1 rounded-full bg-slate-800">
-                                <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.pct}%` }} />
-                              </div>
-                            </motion.div>
-                          )
-                        })}
-                      </div>
-                      {/* Cleanup action */}
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="text-[10px] border-slate-600 text-slate-300" onClick={() => sendCommand('cleanup-storage')}>
-                          <RefreshCw className="w-3 h-3 mr-1.5" /> Run Cleanup
-                        </Button>
-                        <span className="text-[10px] text-slate-500">Removes orphaned files and expired caches</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </GradientCard>
-
-                {/* Batch Production Controls */}
-                <GradientCard glow="from-emerald-500/5 to-violet-500/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Wand2 className="w-4 h-4 text-emerald-400" /> Batch Production
-                    </CardTitle>
-                    <CardDescription className="text-[10px]">Produce multiple videos at once from your top-scored ideas</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      {[
-                        { count: 1, label: 'Single', desc: 'Produce the top idea', color: 'from-emerald-600 to-cyan-600', shadow: 'shadow-emerald-500/20' },
-                        { count: 3, label: 'Batch 3', desc: 'Produce top 3 ideas', color: 'from-violet-600 to-purple-600', shadow: 'shadow-violet-500/20' },
-                        { count: 5, label: 'Batch 5', desc: 'Produce top 5 ideas', color: 'from-amber-600 to-orange-600', shadow: 'shadow-amber-500/20' },
-                      ].map((batch, i) => (
-                        <motion.button
-                          key={i}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => sendCommand('batch-produce', { count: batch.count })}
-                          disabled={loading || !!status?.emergencyStop}
-                          className={`p-4 rounded-xl border border-slate-700/30 bg-slate-800/20 hover:bg-slate-800/40 transition-all text-left space-y-2 disabled:opacity-40 disabled:pointer-events-none`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <Rocket className="w-4 h-4 text-slate-400" />
-                            <Badge variant="outline" className="text-[9px] border-slate-600">{batch.count}x</Badge>
-                          </div>
-                          <p className="text-sm font-semibold text-slate-200">{batch.label}</p>
-                          <p className="text-[10px] text-slate-400">{batch.desc}</p>
-                        </motion.button>
-                      ))}
-                    </div>
-                    <div className="mt-3 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center gap-2">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span className="text-[10px] text-amber-300">Batch production uses significant compute and storage. Monitor progress in the Pipeline tab.</span>
-                    </div>
-                  </CardContent>
-                </GradientCard>
-
-                {/* Agent Runtime Statistics */}
-                <GradientCard glow="from-violet-500/5 to-rose-500/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-violet-400" /> Agent Runtime Statistics
-                    </CardTitle>
-                    <CardDescription className="text-[10px]">Uptime, cycle counts, and performance history</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {[
-                        { label: 'Uptime', value: '4h 32m', icon: Clock, color: 'text-cyan-400' },
-                        { label: 'Cycles Completed', value: '12', icon: CheckCircle2, color: 'text-emerald-400' },
-                        { label: 'Avg Cycle Time', value: '22m', icon: Zap, color: 'text-amber-400' },
-                        { label: 'Total API Calls', value: '847', icon: Globe, color: 'text-violet-400' },
-                      ].map((stat, i) => {
-                        const Icon = stat.icon
-                        return (
-                          <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 5 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.08 }}
-                            className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/30"
-                          >
-                            <div className="flex items-center gap-1.5 mb-1.5">
-                              <Icon className={`w-3.5 h-3.5 ${stat.color}`} />
-                              <span className="text-[10px] text-slate-400">{stat.label}</span>
+                        { label: 'Poll Interval', value: '5s', icon: Clock },
+                        { label: 'Max Retries', value: '3', icon: RefreshCw },
+                        { label: 'AI Provider', value: 'Z.AI', icon: Brain },
+                        { label: 'Video Format', value: '1080p', icon: MonitorSmartphone },
+                      ].map((config, i) => (
+                        <div key={i} className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/30 text-center">
+                          <config.icon className="w-4 h-4 mx-auto text-slate-400 mb-1.5" />
+                          <p className="text-xs font-bold text-slate-200">{config.value}</p>
+                          <p className="text-[10px] text-slate-500">{config.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </GradientCard>
+
+                {/* Job Queue */}
+                <GradientCard glow="from-amber-500/5 to-violet-500/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Activity className="w-4 h-4 text-amber-400" /> Job Queue
+                      <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{jobs.length} jobs</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                      {['pending', 'running', 'completed', 'failed'].map(s => (
+                        <div key={s} className="text-center p-2 rounded-lg bg-slate-800/30 border border-slate-700/20">
+                          <p className="text-lg font-bold text-slate-200">{jobs.filter(j => j.status === s).length}</p>
+                          <p className="text-[10px] text-slate-500 capitalize">{s}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <ScrollArea className="h-32">
+                      {jobs.length ? (
+                        <div className="space-y-1">
+                          {jobs.slice(0, 10).map((job: any) => (
+                            <div key={job.id} className="flex items-center gap-2 p-1.5 rounded bg-slate-800/30 text-[10px]">
+                              <Badge variant="outline" className={`text-[9px] shrink-0 ${
+                                job.status === 'completed' ? 'border-emerald-500/50 text-emerald-400' :
+                                job.status === 'running' ? 'border-amber-500/50 text-amber-400' :
+                                job.status === 'failed' ? 'border-red-500/50 text-red-400' :
+                                'border-slate-600 text-slate-400'
+                              }`}>{job.status}</Badge>
+                              <span className="text-slate-300 truncate flex-1 font-mono">{job.type}</span>
+                              <span className="text-slate-600 shrink-0">{new Date(job.scheduledAt).toLocaleTimeString()}</span>
                             </div>
-                            <p className="text-lg font-bold text-slate-100">{stat.value}</p>
-                          </motion.div>
-                        )
-                      })}
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 text-center py-4">No jobs in queue</p>
+                      )}
+                    </ScrollArea>
+                  </CardContent>
+                </GradientCard>
+
+                {/* Danger Zone */}
+                <GradientCard glow="from-red-500/5 to-rose-500/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2 text-red-300">
+                      <AlertOctagon className="w-4 h-4" /> Danger Zone
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      <Button onClick={() => sendCommand('stop')} disabled={!!status?.emergencyStop} variant="outline" size="sm" className="border-red-500/30 text-red-300 hover:bg-red-500/10 hover:text-red-200">
+                        <AlertOctagon className="w-3.5 h-3.5 mr-1.5" /> Emergency Stop
+                      </Button>
+                      <Button onClick={() => {
+                        fetch('/api/agent/reset', { method: 'POST' }).then(() => pollAll())
+                      }} variant="outline" size="sm" className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10">
+                        <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Reset Agent State
+                      </Button>
                     </div>
                   </CardContent>
                 </GradientCard>
@@ -2476,22 +2336,29 @@ export default function Dashboard() {
       </main>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="border-t border-slate-800/60 px-4 md:px-6 py-2.5 bg-slate-950/80 backdrop-blur-sm">
-        <div className="flex items-center justify-between text-[10px] text-slate-600">
+      <footer className="border-t border-slate-800/60 px-4 md:px-6 py-3 bg-slate-950/90 backdrop-blur-md mt-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-600">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 font-medium">YouTube Revenue Studio v2.4</span>
+              <span className="text-slate-500 font-semibold">YouTube Revenue Studio v2.4</span>
             </div>
             <span className="text-slate-700">·</span>
             <span>Z.AI Autonomous Agent</span>
             <span className="text-slate-700">·</span>
-            <span className="text-slate-500">{modeLabel(status?.operatingMode || 'private_production')} Mode</span>
+            <Badge variant="outline" className={`text-[9px] h-4 ${MODES.find(m => m.key === status?.operatingMode)?.badge || 'border-slate-600 text-slate-400'}`}>
+              {modeLabel(status?.operatingMode || 'private_production')}
+            </Badge>
           </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <Database className="w-3 h-3 text-slate-600" />
-              {totalPipeline} items
+              {totalPipeline} pipeline items
+            </span>
+            <span className="text-slate-700">|</span>
+            <span className="flex items-center gap-1">
+              <Zap className="w-3 h-3 text-amber-600/60" />
+              {jobs.filter(j => j.status === 'pending').length} queued
             </span>
             <span className="text-slate-700">|</span>
             <span className="flex items-center gap-1">
@@ -2499,7 +2366,7 @@ export default function Dashboard() {
               {lastPoll.toLocaleTimeString()}
             </span>
             <span className="text-slate-700">|</span>
-            <span>5s interval</span>
+            <span>5s poll</span>
           </div>
         </div>
       </footer>
