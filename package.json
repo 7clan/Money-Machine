@@ -10,7 +10,16 @@
     "db:push": "prisma db push --accept-data-loss",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "agent:start": "bun run src/engine/cli.ts start",
+    "agent:status": "bun run src/engine/cli.ts status",
+    "agent:pause": "bun run src/engine/cli.ts pause",
+    "agent:resume": "bun run src/engine/cli.ts resume",
+    "agent:stop": "bun run src/engine/cli.ts stop",
+    "agent:produce-next": "bun run src/engine/cli.ts produce-next",
+    "agent:upload-private": "bun run src/engine/cli.ts upload-private",
+    "agent:collect-analytics": "bun run src/engine/cli.ts collect-analytics",
+    "agent:review-strategy": "bun run src/engine/cli.ts review-strategy"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

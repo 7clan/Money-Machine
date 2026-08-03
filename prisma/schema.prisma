@@ -49,6 +49,7 @@ model ContentPillar {
   color       String?
   icon        String?
   priority    Int      @default(0)
+  videoIdeas  VideoIdea[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -253,6 +254,7 @@ model VideoProject {
   reviewResult    String?  // JSON with all check results
   isApproved      Boolean  @default(false)
   editorNotes     String?
+  policyReviews   PolicyReview[]
   upload          Upload?
   videoIdea       VideoIdea @relation(fields: [videoIdeaId], references: [id], onDelete: Cascade)
   createdAt       DateTime @default(now())
@@ -378,6 +380,7 @@ model Sponsorship {
 model PolicyReview {
   id              String   @id @default(cuid())
   videoProjectId  String
+  videoProject    VideoProject @relation(fields: [videoProjectId], references: [id], onDelete: Cascade)
   factCheckPassed Boolean  @default(false)
   originalityPassed Boolean @default(false)
   copyrightPassed Boolean  @default(false)

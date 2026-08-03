@@ -1,0 +1,162 @@
+/**
+ * Script Writer
+ * 
+ * Uses Z.AI LLM to write original scripts for videos.
+ * Ensures originality, proper structure, no copying.
+ */
+
+import { llm } from './zai-provider'
+import { extractJSONObject } from './json-utils'
+import { db } from '@/lib/db'
+
+export interface ScriptResult {
+  content: string
+  outline: string
+  hook: string
+  callToAction: string
+  scenes: Array<{
+    order: number
+    title: string
+    description: string
+    narrationText: string
+    visualType: string
+    visualNotes: string
+    duration: number
+  }>
+  wordCount: number
+  estimatedMinutes: number
+}
+
+export async function writeScript(videoIdeaId: string): Promise<ScriptResult> {
+  const idea = await db.videoIdea.findUnique({
+    where: { id: videoIdeaId },
+    include: {
+      researchSources: true,
+      claims: true,
+    },
+  })
+  if (!idea) throw new Error(`VideoIdea ${videoIdeaId} not found`)
+
+  const isShort = idea.type === 'short'
+  const targetWords = isShort ? 120 : 1800 // ~60s short vs ~10min longform
+  const targetMinutes = isShort ? 1 : 10
+
+  // Get niche context
+  const nicheState = await db.agentState.findUnique({ where: { key: 'selected_niche' } })
+  const niche = nicheState ? JSON.parse(nicheState.value) : null
+
+  const scriptResponse = await llm([
+    { role: 'system', content: `You are an expert YouTube script writer. Write an ORIGINAL script for this video.
+
+CRITICAL RULES:
+- NEVER copy wording from sources - write completely original content
+- Include a truthful, compelling opening hook (no clickbait or exaggeration)
+- Address a clear viewer problem or question
+- Provide immediate value within the first 30 seconds
+- Use logical structure with clear sections
+- Include original explanations, examples, and demonstrations
+- Add pattern interruptions every 2-3 minutes for long-form
+- Use natural transitions between sections
+- End with a strong but honest conclusion
+- Include a relevant, non-pushy call to action
+- NO filler content to pad length
+- NO exaggerated earnings promises
+- NO misleading urgency
+- If AI-generated content, note it clearly
+
+SCRIPT FORMAT - Return JSON:
+{
+  "outline": "Section breakdown",
+  "hook": "The opening 2-3 sentences",
+  "callToAction": "The closing CTA",
+  "scenes": [{
+    "order": number,
+    "title": "Section title",
+    "description": "What happens visually",
+    "narrationText": "The spoken narration for this scene",
+    "visualType": "screenrecording|diagram|animation|chart|image|text|custom",
+    "visualNotes": "Detailed visual instructions for production",
+    "duration": seconds
+  }]
+}
+
+${isShort ? 'This is a YouTube Short (under 60 seconds). Deliver ONE complete useful idea with original narration.' : 'This is a long-form video. Target ~' + targetMinutes + ' minutes. Include chapters for timestamps.'}` },
+    { role: 'user', content: `Video Title: "${idea.title}"
+Video Type: ${idea.type}
+Niche: ${niche?.nicheName || 'General'}
+
+Research Sources:
+${idea.researchSources.map((s, i) => `[${i}] ${s.title} - ${s.notes || s.sourceUrl}`).join('\n')}
+
+Key Claims:
+${idea.claims.map(c => `- ${c.claim}${c.isUncertain ? ' (UNCERTAIN)' : ''}${c.isConflicting ? ' (CONFLICTING)' : ''}`).join('\n')}
+
+Write the complete original script now.` },
+  ])
+
+  // Parse response
+  let scriptData: any
+  const parsed = extractJSONObject(scriptResponse)
+  if (parsed && parsed.scenes) {
+    scriptData = parsed
+  } else {
+    // Fallback: use the raw response as the script content
+    scriptData = {
+      outline: 'Auto-generated',
+      hook: scriptResponse.slice(0, 200),
+      callToAction: 'Subscribe for more content',
+      scenes: [{
+        order: 1, title: idea.title, description: 'Main content',
+        narrationText: scriptResponse, visualType: 'text',
+        visualNotes: 'Display text on screen', duration: targetMinutes * 60,
+      }],
+    }
+  }
+
+  // Build full content from scenes
+  const fullContent = scriptData.scenes?.map((s: any) => s.narrationText).join('\n\n') || ''
+  const wordCount = fullContent.split(/\s+/).length
+  const estimatedMinutes = wordCount / 150 // ~150 wpm speaking rate
+
+  // Store script in database
+  const script = await db.script.create({
+    data: {
+      videoIdeaId,
+      content: fullContent,
+      outline: scriptData.outline || '',
+      hook: scriptData.hook || '',
+      callToAction: scriptData.callToAction || '',
+      wordCount,
+      estimatedMinutes,
+      status: 'draft',
+      scenes: {
+        create: (scriptData.scenes || []).map((s: any) => ({
+          order: s.order || 1,
+          title: s.title || '',
+          description: s.description || '',
+          narrationText: s.narrationText || '',
+          visualType: s.visualType || 'text',
+          visualNotes: s.visualNotes || '',
+          duration: s.duration || 30,
+        })),
+      },
+    },
+    include: { scenes: true },
+  })
+
+  // Update idea status
+  await db.videoIdea.update({
+    where: { id: videoIdeaId },
+    data: { status: 'scripted' },
+  })
+
+  return {
+    content: fullContent,
+    outline: scriptData.outline || '',
+    hook: scriptData.hook || '',
+    callToAction: scriptData.callToAction || '',
+    scenes: scriptData.scenes || [],
+    wordCount,
+    estimatedMinutes,
+  }
+}
