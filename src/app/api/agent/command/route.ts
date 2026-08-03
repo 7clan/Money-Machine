@@ -53,6 +53,21 @@ export async function POST(request: NextRequest) {
         const processed = await processNextJob()
         return NextResponse.json({ ok: true, processed })
 
+      case 'collect-analytics':
+        // Trigger analytics collection
+        fetch('/api/agent/collect-analytics', { method: 'POST' }).catch(() => {})
+        return NextResponse.json({ ok: true, message: 'Collecting analytics...' })
+
+      case 'schedule-jobs':
+        // Schedule recurring jobs
+        fetch('/api/agent/schedule-jobs', { method: 'POST' }).catch(() => {})
+        return NextResponse.json({ ok: true, message: 'Scheduling recurring jobs...' })
+
+      case 'review-strategy':
+        // Strategy review - produce next with analysis
+        produceNextVideo().catch(e => console.error('Strategy review error:', e))
+        return NextResponse.json({ ok: true, message: 'Reviewing strategy and producing next...' })
+
       default:
         return NextResponse.json({ error: `Unknown command: ${command}` }, { status: 400 })
     }

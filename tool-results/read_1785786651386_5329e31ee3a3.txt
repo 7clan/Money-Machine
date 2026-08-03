@@ -1,0 +1,639 @@
+     1→     1→'use client'
+     2→     2→
+     3→     3→import React, { useState, useEffect, useCallback } from 'react'
+     4→     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+     5→     5→import { Button } from '@/components/ui/button'
+     6→     6→import { Badge } from '@/components/ui/badge'
+     7→     7→import { Progress } from '@/components/ui/progress'
+     8→     8→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+     9→     9→import { ScrollArea } from '@/components/ui/scroll-area'
+    10→    10→import { Separator } from '@/components/ui/separator'
+    11→    11→import { Switch } from '@/components/ui/switch'
+    12→    12→import {
+    13→    13→  Play, Pause, Square, AlertTriangle, Activity, Video,
+    14→    14→  TrendingUp, DollarSign, Eye, Clock, CheckCircle2,
+    15→    15→  XCircle, Loader2, Youtube, Shield, Brain, Zap,
+    16→    16→  FileText, Upload, BarChart3, Settings, AlertOctagon
+    17→    17→} from 'lucide-react'
+    18→    18→
+    19→    19→// Types
+    20→    20→interface AgentStatus {
+    21→    21→  state: string
+    22→    22→  currentJob: string | null
+    23→    23→  operatingMode: string
+    24→    24→  emergencyStop: boolean
+    25→    25→  niche: string | null
+    26→    26→  channelName: string | null
+    27→    27→  pipeline: { ideas: number; researched: number; scripted: number; producing: number; reviewing: number; approved: number; uploaded: number }
+    28→    28→  lastAction: string | null
+    29→    29→  lastError: string | null
+    30→    30→  nextAction: string | null
+    31→    31→}
+    32→    32→
+    33→    33→interface PipelineData {
+    34→    34→  ideas: any[]
+    35→    35→  projects: any[]
+    36→    36→  uploads: any[]
+    37→    37→  scripts: any[]
+    38→    38→  reviews: any[]
+    39→    39→}
+    40→    40→
+    41→    41→interface ChannelData {
+    42→    42→  channel: any
+    43→    43→  youtubeConnected: boolean
+    44→    44→  niches: any[]
+    45→    45→  pillars: any[]
+    46→    46→}
+    47→    47→
+    48→    48→export default function Dashboard() {
+    49→    49→  const [status, setStatus] = useState<AgentStatus | null>(null)
+    50→    50→  const [pipeline, setPipeline] = useState<PipelineData | null>(null)
+    51→    51→  const [channel, setChannel] = useState<ChannelData | null>(null)
+    52→    52→  const [jobs, setJobs] = useState<any[]>([])
+    53→    53→  const [logs, setLogs] = useState<any[]>([])
+    54→    54→  const [loading, setLoading] = useState(false)
+    55→    55→  const [activeTab, setActiveTab] = useState('overview')
+    56→    56→
+    57→    57→  // Poll for status
+    58→    58→  const fetchStatus = useCallback(async () => {
+    59→    59→    try {
+    60→    60→      const res = await fetch('/api/agent/status')
+    61→    61→      if (res.ok) setStatus(await res.json())
+    62→    62→    } catch {}
+    63→    63→  }, [])
+    64→    64→
+    65→    65→  const fetchPipeline = useCallback(async () => {
+    66→    66→    try {
+    67→    67→      const res = await fetch('/api/data/pipeline')
+    68→    68→      if (res.ok) setPipeline(await res.json())
+    69→    69→    } catch {}
+    70→    70→  }, [])
+    71→    71→
+    72→    72→  const fetchChannel = useCallback(async () => {
+    73→    73→    try {
+    74→    74→      const res = await fetch('/api/data/channel')
+    75→    75→      if (res.ok) setChannel(await res.json())
+    76→    76→    } catch {}
+    77→    77→  }, [])
+    78→    78→
+    79→    79→  const fetchJobs = useCallback(async () => {
+    80→    80→    try {
+    81→    81→      const res = await fetch('/api/data/jobs')
+    82→    82→      if (res.ok) setJobs(await res.json())
+    83→    83→    } catch {}
+    84→    84→  }, [])
+    85→    85→
+    86→    86→  const fetchLogs = useCallback(async () => {
+    87→    87→    try {
+    88→    88→      const res = await fetch('/api/data/audit-logs')
+    89→    89→      if (res.ok) setLogs(await res.json())
+    90→    90→    } catch {}
+    91→    91→  }, [])
+    92→    92→
+    93→    93→  useEffect(() => {
+    94→    94→    fetchStatus()
+    95→    95→    fetchPipeline()
+    96→    96→    fetchChannel()
+    97→    97→    fetchJobs()
+    98→    98→    fetchLogs()
+    99→    99→    const interval = setInterval(() => {
+   100→   100→      fetchStatus()
+   101→   101→      fetchPipeline()
+   102→   102→      fetchJobs()
+   103→   103→    }, 5000)
+   104→   104→    return () => clearInterval(interval)
+   105→   105→  }, [fetchStatus, fetchPipeline, fetchChannel, fetchJobs])
+   106→   106→
+   107→   107→  const sendCommand = async (command: string, extra?: any) => {
+   108→   108→    setLoading(true)
+   109→   109→    try {
+   110→   110→      const res = await fetch('/api/agent/command', {
+   111→   111→        method: 'POST',
+   112→   112→        headers: { 'Content-Type': 'application/json' },
+   113→   113→        body: JSON.stringify({ command, ...extra }),
+   114→   114→      })
+   115→   115→      const data = await res.json()
+   116→   116→      await fetchStatus()
+   117→   117→      return data
+   118→   118→    } catch (e: any) {
+   119→   119→      console.error(e)
+   120→   120→    } finally {
+   121→   121→      setLoading(false)
+   122→   122→    }
+   123→   123→  }
+   124→   124→
+   125→   125→  const stateColor = (state: string) => {
+   126→   126→    switch (state) {
+   127→   127→      case 'running': case 'researching_niches': case 'creating_strategy': case 'researching_topic': case 'writing_script': case 'producing_video': case 'reviewing': case 'uploading': case 'cycle_complete': return 'bg-emerald-500'
+   128→   128→      case 'error': return 'bg-red-500'
+   129→   129→      case 'paused': return 'bg-amber-500'
+   130→   130→      case 'idle': case 'ready': return 'bg-slate-400'
+   131→   131→      default: return 'bg-slate-400'
+   132→   132→    }
+   133→   133→  }
+   134→   134→
+   135→   135→  const modeLabel = (mode: string) => {
+   136→   136→    switch (mode) {
+   137→   137→      case 'simulation': return 'Simulation'
+   138→   138→      case 'private_production': return 'Private Production'
+   139→   139→      case 'autonomous_publication': return 'Autonomous Publication'
+   140→   140→      default: return mode
+   141→   141→    }
+   142→   142→  }
+   143→   143→
+   144→   144→  const totalPipeline = status ? Object.values(status.pipeline).reduce((a, b) => a + b, 0) : 0
+   145→   145→
+   146→   146→  return (
+   147→   147→    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+   148→   148→      {/* Header */}
+   149→   149→      <header className="border-b border-slate-800 px-6 py-3 flex items-center justify-between">
+   150→   150→        <div className="flex items-center gap-3">
+   151→   151→          <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center">
+   152→   152→            <Youtube className="w-5 h-5 text-white" />
+   153→   153→          </div>
+   154→   154→          <div>
+   155→   155→            <h1 className="text-lg font-bold tracking-tight">YouTube Revenue Studio</h1>
+   156→   156→            <p className="text-xs text-slate-400">Autonomous Content Agent</p>
+   157→   157→          </div>
+   158→   158→        </div>
+   159→   159→        <div className="flex items-center gap-4">
+   160→   160→          {/* Emergency Stop */}
+   161→   161→          <Button
+   162→   162→            variant={status?.emergencyStop ? 'outline' : 'destructive'}
+   163→   163→            size="sm"
+   164→   164→            onClick={() => sendCommand(status?.emergencyStop ? 'resume' : 'stop')}
+   165→   165→            className={status?.emergencyStop ? 'border-red-500 text-red-400' : ''}
+   166→   166→          >
+   167→   167→            {status?.emergencyStop ? (
+   168→   168→              <><AlertOctagon className="w-4 h-4 mr-1" /> STOPPED - Click to Resume</>
+   169→   169→            ) : (
+   170→   170→              <><Square className="w-4 h-4 mr-1" /> Emergency Stop</>
+   171→   171→            )}
+   172→   172→          </Button>
+   173→   173→          
+   174→   174→          {/* Mode indicator */}
+   175→   175→          <Badge variant="outline" className="text-xs border-slate-600">
+   176→   176→            {modeLabel(status?.operatingMode || 'private_production')}
+   177→   177→          </Badge>
+   178→   178→
+   179→   179→          {/* Connection status */}
+   180→   180→          <Badge variant={channel?.youtubeConnected ? 'default' : 'secondary'} className="text-xs">
+   181→   181→            <Youtube className="w-3 h-3 mr-1" />
+   182→   182→            {channel?.youtubeConnected ? 'Connected' : 'Not Connected'}
+   183→   183→          </Badge>
+   184→   184→        </div>
+   185→   185→      </header>
+   186→   186→
+   187→   187→      {/* Main content */}
+   188→   188→      <main className="flex-1 p-6 overflow-hidden">
+   189→   189→        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+   190→   190→          <TabsList className="mb-4 bg-slate-900">
+   191→   191→            <TabsTrigger value="overview" className="data-[state=active]:bg-slate-700">
+   192→   192→              <Activity className="w-4 h-4 mr-1" /> Overview
+   193→   193→            </TabsTrigger>
+   194→   194→            <TabsTrigger value="pipeline" className="data-[state=active]:bg-slate-700">
+   195→   195→              <Video className="w-4 h-4 mr-1" /> Pipeline
+   196→   196→            </TabsTrigger>
+   197→   197→            <TabsTrigger value="strategy" className="data-[state=active]:bg-slate-700">
+   198→   198→              <Brain className="w-4 h-4 mr-1" /> Strategy
+   199→   199→            </TabsTrigger>
+   200→   200→            <TabsTrigger value="jobs" className="data-[state=active]:bg-slate-700">
+   201→   201→              <Clock className="w-4 h-4 mr-1" /> Jobs
+   202→   202→            </TabsTrigger>
+   203→   203→            <TabsTrigger value="logs" className="data-[state=active]:bg-slate-700">
+   204→   204→              <FileText className="w-4 h-4 mr-1" /> Logs
+   205→   205→            </TabsTrigger>
+   206→   206→            <TabsTrigger value="settings" className="data-[state=active]:bg-slate-700">
+   207→   207→              <Settings className="w-4 h-4 mr-1" /> Settings
+   208→   208→            </TabsTrigger>
+   209→   209→          </TabsList>
+   210→   210→
+   211→   211→          {/* OVERVIEW TAB */}
+   212→   212→          <TabsContent value="overview" className="space-y-4">
+   213→   213→            {/* Agent State Card */}
+   214→   214→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   215→   215→              <Card className="bg-slate-900 border-slate-800">
+   216→   216→                <CardHeader className="pb-2">
+   217→   217→                  <CardDescription>Agent State</CardDescription>
+   218→   218→                </CardHeader>
+   219→   219→                <CardContent>
+   220→   220→                  <div className="flex items-center gap-2">
+   221→   221→                    <div className={`w-3 h-3 rounded-full ${stateColor(status?.state || 'idle')} ${status?.state === 'running' ? 'animate-pulse' : ''}`} />
+   222→   222→                    <span className="text-xl font-bold capitalize">{status?.state?.replace(/_/g, ' ') || 'Idle'}</span>
+   223→   223→                  </div>
+   224→   224→                  {status?.currentJob && (
+   225→   225→                    <p className="text-sm text-slate-400 mt-1">Working: {status.currentJob}</p>
+   226→   226→                  )}
+   227→   227→                  {status?.nextAction && (
+   228→   228→                    <p className="text-sm text-emerald-400 mt-1">Next: {status.nextAction}</p>
+   229→   229→                  )}
+   230→   230→                  {status?.lastError && (
+   231→   231→                    <p className="text-sm text-red-400 mt-1">Error: {status.lastError}</p>
+   232→   232→                  )}
+   233→   233→                </CardContent>
+   234→   234→              </Card>
+   235→   235→
+   236→   236→              <Card className="bg-slate-900 border-slate-800">
+   237→   237→                <CardHeader className="pb-2">
+   238→   238→                  <CardDescription>Channel</CardDescription>
+   239→   239→                </CardHeader>
+   240→   240→                <CardContent>
+   241→   241→                  <p className="text-xl font-bold">{status?.channelName || 'Not set'}</p>
+   242→   242→                  <p className="text-sm text-slate-400 mt-1">Niche: {status?.niche || 'Not selected'}</p>
+   243→   243→                </CardContent>
+   244→   244→              </Card>
+   245→   245→
+   246→   246→              <Card className="bg-slate-900 border-slate-800">
+   247→   247→                <CardHeader className="pb-2">
+   248→   248→                  <CardDescription>Production Pipeline</CardDescription>
+   249→   249→                </CardHeader>
+   250→   250→                <CardContent>
+   251→   251→                  <div className="space-y-1.5">
+   252→   252→                    {status && Object.entries(status.pipeline).map(([key, val]) => (
+   253→   253→                      <div key={key} className="flex justify-between text-sm">
+   254→   254→                        <span className="text-slate-400 capitalize">{key}</span>
+   255→   255→                        <span className="font-mono">{val}</span>
+   256→   256→                      </div>
+   257→   257→                    ))}
+   258→   258→                  </div>
+   259→   259→                </CardContent>
+   260→   260→              </Card>
+   261→   261→            </div>
+   262→   262→
+   263→   263→            {/* Controls */}
+   264→   264→            <Card className="bg-slate-900 border-slate-800">
+   265→   265→              <CardHeader className="pb-2">
+   266→   266→                <CardDescription>Controls</CardDescription>
+   267→   267→              </CardHeader>
+   268→   268→              <CardContent className="flex flex-wrap gap-2">
+   269→   269→                <Button onClick={() => sendCommand('full-cycle')} disabled={loading || status?.emergencyStop} className="bg-emerald-600 hover:bg-emerald-700">
+   270→   270→                  {loading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Zap className="w-4 h-4 mr-1" />}
+   271→   271→                  Start Full Cycle
+   272→   272→                </Button>
+   273→   273→                <Button onClick={() => sendCommand('initial-setup')} disabled={loading || status?.emergencyStop} variant="secondary">
+   274→   274→                  <Brain className="w-4 h-4 mr-1" /> Run Setup
+   275→   275→                </Button>
+   276→   276→                <Button onClick={() => sendCommand('produce-next')} disabled={loading || status?.emergencyStop} variant="secondary">
+   277→   277→                  <Video className="w-4 h-4 mr-1" /> Produce Next
+   278→   278→                </Button>
+   279→   279→                <Button onClick={() => sendCommand('pause')} disabled={loading} variant="outline">
+   280→   280→                  <Pause className="w-4 h-4 mr-1" /> Pause
+   281→   281→                </Button>
+   282→   282→                <Button onClick={() => sendCommand('resume')} disabled={loading} variant="outline">
+   283→   283→                  <Play className="w-4 h-4 mr-1" /> Resume
+   284→   284→                </Button>
+   285→   285→                <Button onClick={() => sendCommand('process-job')} disabled={loading} variant="outline">
+   286→   286→                  <Activity className="w-4 h-4 mr-1" /> Process Job
+   287→   287→                </Button>
+   288→   288→              </CardContent>
+   289→   289→            </Card>
+   290→   290→
+   291→   291→            {/* Recent activity */}
+   292→   292→            <Card className="bg-slate-900 border-slate-800">
+   293→   293→              <CardHeader className="pb-2">
+   294→   294→                <CardDescription>Recent Activity</CardDescription>
+   295→   295→              </CardHeader>
+   296→   296→              <CardContent>
+   297→   297→                <ScrollArea className="h-48">
+   298→   298→                  {logs.length === 0 ? (
+   299→   299→                    <p className="text-sm text-slate-500">No activity yet</p>
+   300→   300→                  ) : (
+   301→   301→                    <div className="space-y-1">
+   302→   302→                      {logs.slice(0, 20).map((log: any) => (
+   303→   303→                        <div key={log.id} className="flex gap-2 text-sm">
+   304→   304→                          <span className="text-slate-500 font-mono text-xs">
+   305→   305→                            {new Date(log.createdAt).toLocaleTimeString()}
+   306→   306→                          </span>
+   307→   307→                          <Badge variant="outline" className="text-xs h-5 border-slate-700">{log.action}</Badge>
+   308→   308→                          <span className="text-slate-300 truncate">{log.details}</span>
+   309→   309→                        </div>
+   310→   310→                      ))}
+   311→   311→                    </div>
+   312→   312→                  )}
+   313→   313→                </ScrollArea>
+   314→   314→              </CardContent>
+   315→   315→            </Card>
+   316→   316→          </TabsContent>
+   317→   317→
+   318→   318→          {/* PIPELINE TAB */}
+   319→   319→          <TabsContent value="pipeline" className="space-y-4">
+   320→   320→            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   321→   321→              {/* Video Ideas */}
+   322→   322→              <Card className="bg-slate-900 border-slate-800">
+   323→   323→                <CardHeader className="pb-2">
+   324→   324→                  <CardTitle className="text-base">Video Ideas</CardTitle>
+   325→   325→                </CardHeader>
+   326→   326→                <CardContent>
+   327→   327→                  <ScrollArea className="h-80">
+   328→   328→                    <div className="space-y-2">
+   329→   329→                      {pipeline?.ideas?.map((idea: any) => (
+   330→   330→                        <div key={idea.id} className="flex items-center gap-2 p-2 rounded bg-slate-800/50">
+   331→   331→                          <Badge variant="outline" className={`text-xs ${idea.type === 'short' ? 'border-purple-500 text-purple-400' : 'border-cyan-500 text-cyan-400'}`}>
+   332→   332→                            {idea.type === 'short' ? 'Short' : 'Long'}
+   333→   333→                          </Badge>
+   334→   334→                          <Badge variant="outline" className={`text-xs ${idea.status === 'uploaded' ? 'border-emerald-500 text-emerald-400' : idea.status === 'idea' ? 'border-slate-500 text-slate-400' : 'border-amber-500 text-amber-400'}`}>
+   335→   335→                            {idea.status}
+   336→   336→                          </Badge>
+   337→   337→                          <span className="text-sm truncate flex-1">{idea.title}</span>
+   338→   338→                        </div>
+   339→   339→                      )) || <p className="text-sm text-slate-500">No ideas yet</p>}
+   340→   340→                    </div>
+   341→   341→                  </ScrollArea>
+   342→   342→                </CardContent>
+   343→   343→              </Card>
+   344→   344→
+   345→   345→              {/* Video Projects */}
+   346→   346→              <Card className="bg-slate-900 border-slate-800">
+   347→   347→                <CardHeader className="pb-2">
+   348→   348→                  <CardTitle className="text-base">Video Projects</CardTitle>
+   349→   349→                </CardHeader>
+   350→   350→                <CardContent>
+   351→   351→                  <ScrollArea className="h-80">
+   352→   352→                    <div className="space-y-2">
+   353→   353→                      {pipeline?.projects?.map((project: any) => (
+   354→   354→                        <div key={project.id} className="p-2 rounded bg-slate-800/50 space-y-1">
+   355→   355→                          <div className="flex items-center gap-2">
+   356→   356→                            <span className="text-sm font-medium">{project.title}</span>
+   357→   357→                          </div>
+   358→   358→                          <div className="flex items-center gap-2">
+   359→   359→                            <Badge variant="outline" className={`text-xs ${project.status === 'approved' || project.status === 'uploaded' ? 'border-emerald-500 text-emerald-400' : project.status === 'failed' ? 'border-red-500 text-red-400' : 'border-amber-500 text-amber-400'}`}>
+   360→   360→                              {project.status}
+   361→   361→                            </Badge>
+   362→   362→                            {project.renderProgress > 0 && project.renderProgress < 100 && (
+   363→   363→                              <Progress value={project.renderProgress} className="h-2 flex-1" />
+   364→   364→                            )}
+   365→   365→                            {project.duration && (
+   366→   366→                              <span className="text-xs text-slate-400">{project.duration.toFixed(0)}s</span>
+   367→   367→                            )}
+   368→   368→                          </div>
+   369→   369→                        </div>
+   370→   370→                      )) || <p className="text-sm text-slate-500">No projects yet</p>}
+   371→   371→                    </div>
+   372→   372→                  </ScrollArea>
+   373→   373→                </CardContent>
+   374→   374→              </Card>
+   375→   375→            </div>
+   376→   376→
+   377→   377→            {/* Uploads */}
+   378→   378→            <Card className="bg-slate-900 border-slate-800">
+   379→   379→              <CardHeader className="pb-2">
+   380→   380→                <CardTitle className="text-base">Uploads</CardTitle>
+   381→   381→              </CardHeader>
+   382→   382→              <CardContent>
+   383→   383→                <ScrollArea className="h-40">
+   384→   384→                  {pipeline?.uploads?.length ? (
+   385→   385→                    <div className="space-y-1">
+   386→   386→                      {pipeline.uploads.map((upload: any) => (
+   387→   387→                        <div key={upload.id} className="flex items-center gap-2 text-sm">
+   388→   388→                          <Badge variant="outline" className={`text-xs ${upload.uploadStatus === 'completed' ? 'border-emerald-500 text-emerald-400' : 'border-red-500 text-red-400'}`}>
+   389→   389→                            {upload.uploadStatus}
+   390→   390→                          </Badge>
+   391→   391→                          <span className="text-slate-300">{upload.title}</span>
+   392→   392→                          {upload.youtubeVideoId && (
+   393→   393→                            <span className="text-xs text-slate-500 font-mono">{upload.youtubeVideoId}</span>
+   394→   394→                          )}
+   395→   395→                          <Badge variant="outline" className="text-xs border-slate-600">{upload.privacy}</Badge>
+   396→   396→                        </div>
+   397→   397→                      ))}
+   398→   398→                    </div>
+   399→   399→                  ) : (
+   400→   400→                    <p className="text-sm text-slate-500">No uploads yet</p>
+   401→   401→                  )}
+   402→   402→                </ScrollArea>
+   403→   403→              </CardContent>
+   404→   404→            </Card>
+   405→   405→          </TabsContent>
+   406→   406→
+   407→   407→          {/* STRATEGY TAB */}
+   408→   408→          <TabsContent value="strategy" className="space-y-4">
+   409→   409→            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   410→   410→              <Card className="bg-slate-900 border-slate-800">
+   411→   411→                <CardHeader>
+   412→   412→                  <CardTitle className="text-base">Channel</CardTitle>
+   413→   413→                </CardHeader>
+   414→   414→                <CardContent className="space-y-2">
+   415→   415→                  {channel?.channel ? (
+   416→   416→                    <>
+   417→   417→                      <p><span className="text-slate-400">Name:</span> {channel.channel.name}</p>
+   418→   418→                      <p><span className="text-slate-400">Niche:</span> {channel.channel.niche}</p>
+   419→   419→                      <p><span className="text-slate-400">Positioning:</span> {channel.channel.positioning}</p>
+   420→   420→                      <p><span className="text-slate-400">Target:</span> {channel.channel.targetViewer}</p>
+   421→   421→                      <p><span className="text-slate-400">Cadence:</span> {channel.channel.uploadCadence}</p>
+   422→   422→                    </>
+   423→   423→                  ) : (
+   424→   424→                    <p className="text-sm text-slate-500">Channel not configured. Run initial setup.</p>
+   425→   425→                  )}
+   426→   426→                </CardContent>
+   427→   427→              </Card>
+   428→   428→
+   429→   429→              <Card className="bg-slate-900 border-slate-800">
+   430→   430→                <CardHeader>
+   431→   431→                  <CardTitle className="text-base">Content Pillars</CardTitle>
+   432→   432→                </CardHeader>
+   433→   433→                <CardContent>
+   434→   434→                  {channel?.pillars?.length ? (
+   435→   435→                    <div className="space-y-2">
+   436→   436→                      {channel.pillars.map((pillar: any) => (
+   437→   437→                        <div key={pillar.id} className="flex items-center gap-2">
+   438→   438→                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: pillar.color || '#6366f1' }} />
+   439→   439→                          <span className="text-sm">{pillar.name}</span>
+   440→   440→                          {pillar.description && <span className="text-xs text-slate-400">- {pillar.description}</span>}
+   441→   441→                        </div>
+   442→   442→                      ))}
+   443→   443→                    </div>
+   444→   444→                  ) : (
+   445→   445→                    <p className="text-sm text-slate-500">No pillars defined</p>
+   446→   446→                  )}
+   447→   447→                </CardContent>
+   448→   448→              </Card>
+   449→   449→            </div>
+   450→   450→
+   451→   451→            {/* Niche Analysis */}
+   452→   452→            <Card className="bg-slate-900 border-slate-800">
+   453→   453→              <CardHeader>
+   454→   454→                <CardTitle className="text-base">Niche Analysis ({channel?.niches?.length || 0} niches)</CardTitle>
+   455→   455→              </CardHeader>
+   456→   456→              <CardContent>
+   457→   457→                <ScrollArea className="h-80">
+   458→   458→                  {channel?.niches?.length ? (
+   459→   459→                    <div className="space-y-1">
+   460→   460→                      {channel.niches.map((niche: any) => (
+   461→   461→                        <div key={niche.id} className={`flex items-center gap-2 p-1.5 rounded ${niche.isSelected ? 'bg-emerald-900/30 border border-emerald-700' : ''}`}>
+   462→   462→                          {niche.isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+   463→   463→                          <span className="text-sm flex-1">{niche.nicheName}</span>
+   464→   464→                          <span className="text-sm font-mono text-emerald-400">{niche.compositeScore.toFixed(1)}</span>
+   465→   465→                        </div>
+   466→   466→                      ))}
+   467→   467→                    </div>
+   468→   468→                  ) : (
+   469→   469→                    <p className="text-sm text-slate-500">No niche analysis yet. Run initial setup.</p>
+   470→   470→                  )}
+   471→   471→                </ScrollArea>
+   472→   472→              </CardContent>
+   473→   473→            </Card>
+   474→   474→          </TabsContent>
+   475→   475→
+   476→   476→          {/* JOBS TAB */}
+   477→   477→          <TabsContent value="jobs" className="space-y-4">
+   478→   478→            <Card className="bg-slate-900 border-slate-800">
+   479→   479→              <CardHeader>
+   480→   480→                <CardTitle className="text-base">Job Queue</CardTitle>
+   481→   481→              </CardHeader>
+   482→   482→              <CardContent>
+   483→   483→                <ScrollArea className="h-96">
+   484→   484→                  {jobs.length ? (
+   485→   485→                    <div className="space-y-2">
+   486→   486→                      {jobs.map((job: any) => (
+   487→   487→                        <div key={job.id} className="flex items-center gap-2 p-2 rounded bg-slate-800/50">
+   488→   488→                          <Badge variant="outline" className={`text-xs ${job.status === 'completed' ? 'border-emerald-500 text-emerald-400' : job.status === 'failed' ? 'border-red-500 text-red-400' : job.status === 'running' ? 'border-cyan-500 text-cyan-400' : 'border-slate-500 text-slate-400'}`}>
+   489→   489→                            {job.status}
+   490→   490→                          </Badge>
+   491→   491→                          <Badge variant="outline" className="text-xs border-slate-600">{job.type}</Badge>
+   492→   492→                          <span className="text-xs text-slate-500 font-mono">
+   493→   493→                            {new Date(job.scheduledAt).toLocaleString()}
+   494→   494→                          </span>
+   495→   495→                          {job.error && <span className="text-xs text-red-400 truncate">{job.error}</span>}
+   496→   496→                          {job.retryCount > 0 && <span className="text-xs text-amber-400">retry #{job.retryCount}</span>}
+   497→   497→                        </div>
+   498→   498→                      ))}
+   499→   499→                    </div>
+   500→   500→                  ) : (
+   501→   501→                    <p className="text-sm text-slate-500">No jobs yet</p>
+   502→   502→                  )}
+   503→   503→                </ScrollArea>
+   504→   504→              </CardContent>
+   505→   505→            </Card>
+   506→   506→          </TabsContent>
+   507→   507→
+   508→   508→          {/* LOGS TAB */}
+   509→   509→          <TabsContent value="logs" className="space-y-4">
+   510→   510→            <Card className="bg-slate-900 border-slate-800">
+   511→   511→              <CardHeader>
+   512→   512→                <CardTitle className="text-base">Audit Log</CardTitle>
+   513→   513→              </CardHeader>
+   514→   514→              <CardContent>
+   515→   515→                <ScrollArea className="h-96">
+   516→   516→                  {logs.length ? (
+   517→   517→                    <div className="space-y-1">
+   518→   518→                      {logs.map((log: any) => (
+   519→   519→                        <div key={log.id} className="flex gap-2 text-sm p-1">
+   520→   520→                          <span className="text-slate-500 font-mono text-xs w-20 shrink-0">
+   521→   521→                            {new Date(log.createdAt).toLocaleTimeString()}
+   522→   522→                          </span>
+   523→   523→                          <Badge variant="outline" className="text-xs h-5 shrink-0 border-slate-700">{log.action}</Badge>
+   524→   524→                          <Badge variant="outline" className="text-xs h-5 shrink-0 border-slate-700">{log.actor}</Badge>
+   525→   525→                          <span className="text-slate-300 text-xs truncate">{log.details}</span>
+   526→   526→                        </div>
+   527→   527→                      ))}
+   528→   528→                    </div>
+   529→   529→                  ) : (
+   530→   530→                    <p className="text-sm text-slate-500">No logs yet</p>
+   531→   531→                  )}
+   532→   532→                </ScrollArea>
+   533→   533→              </CardContent>
+   534→   534→            </Card>
+   535→   535→          </TabsContent>
+   536→   536→
+   537→   537→          {/* SETTINGS TAB */}
+   538→   538→          <TabsContent value="settings" className="space-y-4">
+   539→   539→            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   540→   540→              <Card className="bg-slate-900 border-slate-800">
+   541→   541→                <CardHeader>
+   542→   542→                  <CardTitle className="text-base">Operating Mode</CardTitle>
+   543→   543→                </CardHeader>
+   544→   544→                <CardContent className="space-y-4">
+   545→   545→                  <div className="space-y-2">
+   546→   546→                    {(['simulation', 'private_production', 'autonomous_publication'] as const).map(mode => (
+   547→   547→                      <div key={mode} className="flex items-center gap-2">
+   548→   548→                        <input
+   549→   549→                          type="radio"
+   550→   550→                          name="mode"
+   551→   551→                          checked={status?.operatingMode === mode}
+   552→   552→                          onChange={() => sendCommand('set-mode', { mode })}
+   553→   553→                          className="accent-emerald-500"
+   554→   554→                        />
+   555→   555→                        <label className="text-sm capitalize">{modeLabel(mode)}</label>
+   556→   556→                      </div>
+   557→   557→                    ))}
+   558→   558→                  </div>
+   559→   559→                  <p className="text-xs text-slate-500">
+   560→   560→                    Default: Private Production. Autonomous Publication only after YouTube API audit passes.
+   561→   561→                  </p>
+   562→   562→                </CardContent>
+   563→   563→              </Card>
+   564→   564→
+   565→   565→              <Card className="bg-slate-900 border-slate-800">
+   566→   566→                <CardHeader>
+   567→   567→                  <CardTitle className="text-base">YouTube Connection</CardTitle>
+   568→   568→                </CardHeader>
+   569→   569→                <CardContent className="space-y-3">
+   570→   570→                  <div className="flex items-center gap-2">
+   571→   571→                    <Youtube className="w-5 h-5 text-red-500" />
+   572→   572→                    <span className="text-sm">
+   573→   573→                      {channel?.youtubeConnected ? 'Connected' : 'Not connected'}
+   574→   574→                    </span>
+   575→   575→                  </div>
+   576→   576→                  {!channel?.youtubeConnected && (
+   577→   577→                    <div className="text-xs text-slate-500 space-y-1">
+   578→   578→                      <p>To connect YouTube:</p>
+   579→   579→                      <ol className="list-decimal ml-4 space-y-1">
+   580→   580→                        <li>Create a Google Cloud project</li>
+   581→   581→                        <li>Enable YouTube Data API v3</li>
+   582→   582→                        <li>Configure OAuth 2.0 credentials</li>
+   583→   583→                        <li>Set YOUTUBE_CLIENT_ID and YOUTUBE_CLIENT_SECRET in .env</li>
+   584→   584→                        <li>Click authorize in the OAuth flow</li>
+   585→   585→                      </ol>
+   586→   586→                    </div>
+   587→   587→                  )}
+   588→   588→                  <p className="text-xs text-slate-500">
+   589→   589→                    Uses official Google OAuth 2.0. Tokens encrypted at rest.
+   590→   590→                    Minimum scopes: youtube.upload, youtube.readonly.
+   591→   591→                  </p>
+   592→   592→                </CardContent>
+   593→   593→              </Card>
+   594→   594→
+   595→   595→              <Card className="bg-slate-900 border-slate-800">
+   596→   596→                <CardHeader>
+   597→   597→                  <CardTitle className="text-base">Security</CardTitle>
+   598→   598→                </CardHeader>
+   599→   599→                <CardContent className="space-y-2 text-xs text-slate-400">
+   600→   600→                  <p>✓ OAuth tokens encrypted at rest</p>
+   601→   601→                  <p>✓ CSRF protection on OAuth flow</p>
+   602→   602→                  <p>✓ Emergency stop control</p>
+   603→   603→                  <p>✓ All uploads default to private</p>
+   604→   604→                  <p>✓ Audit logging enabled</p>
+   605→   605→                  <p>✓ No credentials in source code</p>
+   606→   606→                  <p>✓ No passwords or 2FA codes stored</p>
+   607→   607→                  <p>✓ Least-privilege API scopes</p>
+   608→   608→                </CardContent>
+   609→   609→              </Card>
+   610→   610→
+   611→   611→              <Card className="bg-slate-900 border-slate-800">
+   612→   612→                <CardHeader>
+   613→   613→                  <CardTitle className="text-base">Content Policy</CardTitle>
+   614→   614→                </CardHeader>
+   615→   615→                <CardContent className="space-y-2 text-xs text-slate-400">
+   616→   616→                  <p>✓ Original content only</p>
+   617→   617→                  <p>✓ No copied scripts or videos</p>
+   618→   618→                  <p>✓ Source attribution required</p>
+   619→   619→                  <p>✓ AI content disclosed</p>
+   620→   620→                  <p>✓ No fake engagement</p>
+   621→   621→                  <p>✓ No misleading thumbnails</p>
+   622→   622→                  <p>✓ Asset licence tracking</p>
+   623→   623→                  <p>✓ Quality review before upload</p>
+   624→   624→                </CardContent>
+   625→   625→              </Card>
+   626→   626→            </div>
+   627→   627→          </TabsContent>
+   628→   628→        </Tabs>
+   629→   629→      </main>
+   630→   630→
+   631→   631→      {/* Footer */}
+   632→   632→      <footer className="border-t border-slate-800 px-6 py-2 flex items-center justify-between text-xs text-slate-500">
+   633→   633→        <span>YouTube Revenue Studio v1.0 • Z.AI Autonomous Agent</span>
+   634→   634→        <span>Last updated: {new Date().toLocaleTimeString()}</span>
+   635→   635→      </footer>
+   636→   636→    </div>
+   637→   637→  )
+   638→   638→}
+   639→   639→

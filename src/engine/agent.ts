@@ -300,9 +300,11 @@ export async function phase7_upload(videoProjectId: string): Promise<string> {
   const ytConnected = await isYouTubeConnected()
   
   if (!ytConnected) {
-    logAction('YouTube not connected - marking for manual upload')
-    await setAgentState('last_error', 'YouTube not connected. Complete OAuth setup first.')
-    await setAgentState('next_action', 'Connect YouTube account')
+    logAction('YouTube not connected - video approved but awaiting YouTube connection')
+    await setAgentState('last_error', 'YouTube not connected. Complete OAuth setup to upload.')
+    await setAgentState('next_action', 'Connect YouTube account, or produce next video')
+    await setAgentState('agent_state', 'ready')
+    await setAgentState('current_job', '')
     return videoProjectId
   }
 
@@ -428,8 +430,9 @@ export async function produceNextVideo(): Promise<string | null> {
     }
 
     // No work available
-    await setAgentState('agent_state', 'idle')
-    await setAgentState('next_action', 'All pipeline items processed. Generate more ideas.')
+    await setAgentState('agent_state', 'ready')
+    await setAgentState('current_job', '')
+    await setAgentState('next_action', 'All pipeline items processed. Click "Produce Next" to continue.')
     return null
   } catch (e: any) {
     await setAgentState('agent_state', 'error')
