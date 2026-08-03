@@ -1,0 +1,702 @@
+     1→   700→                                    project.status === 'failed' ? 'border-red-500/50 text-red-400' :
+     2→   701→                                    'border-amber-500/50 text-amber-400'
+     3→   702→                                  }`}>
+     4→   703→                                    {project.status}
+     5→   704→                                  </Badge>
+     6→   705→                                  {project.renderProgress > 0 && project.renderProgress < 100 && (
+     7→   706→                                    <div className="flex-1 flex items-center gap-2">
+     8→   707→                                      <Progress value={project.renderProgress} className="h-1.5 flex-1" />
+     9→   708→                                      <span className="text-[10px] text-slate-500 font-mono">{project.renderProgress}%</span>
+    10→   709→                                    </div>
+    11→   710→                                  )}
+    12→   711→                                  {project.status === 'approved' && (
+    13→   712→                                    <Badge variant="outline" className="text-[10px] border-violet-500/40 text-violet-300 ml-auto">
+    14→   713→                                      <Play className="w-2.5 h-2.5 mr-1" />Preview
+    15→   714→                                    </Badge>
+    16→   715→                                  )}
+    17→   716→                                </div>
+    18→   717→                              </motion.button>
+    19→   718→                            ))}
+    20→   719→                          </div>
+    21→   720→                        ) : (
+    22→   721→                          <EmptyState icon={Film} title="No projects yet" desc="Produce a video to see it appear here." />
+    23→   722→                        )}
+    24→   723→                      </ScrollArea>
+    25→   724→                    </CardContent>
+    26→   725→                  </GlassCard>
+    27→   726→                </div>
+    28→   727→
+    29→   728→                {/* Uploads */}
+    30→   729→                <GradientCard>
+    31→   730→                  <CardHeader className="pb-2">
+    32→   731→                    <CardTitle className="text-sm flex items-center gap-2">
+    33→   732→                      <CloudUpload className="w-4 h-4 text-cyan-400" /> Uploads
+    34→   733→                      <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{pipeline?.uploads?.length || 0}</Badge>
+    35→   734→                    </CardTitle>
+    36→   735→                  </CardHeader>
+    37→   736→                  <CardContent>
+    38→   737→                    <ScrollArea className="h-40">
+    39→   738→                      {pipeline?.uploads?.length ? (
+    40→   739→                        <div className="space-y-1">
+    41→   740→                          {pipeline.uploads.map((upload: any) => (
+    42→   741→                            <div key={upload.id} className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-800/30 text-xs">
+    43→   742→                              <Badge variant="outline" className={`text-[10px] shrink-0 ${upload.uploadStatus === 'completed' ? 'border-emerald-500/50 text-emerald-400' : 'border-red-500/50 text-red-400'}`}>
+    44→   743→                                {upload.uploadStatus}
+    45→   744→                              </Badge>
+    46→   745→                              <span className="text-slate-300 truncate flex-1">{upload.title}</span>
+    47→   746→                              {upload.youtubeVideoId && (
+    48→   747→                                <span className="text-[10px] text-slate-500 font-mono">{upload.youtubeVideoId}</span>
+    49→   748→                              )}
+    50→   749→                              <Badge variant="outline" className="text-[10px] border-slate-600 shrink-0">{upload.privacy}</Badge>
+    51→   750→                            </div>
+    52→   751→                          ))}
+    53→   752→                        </div>
+    54→   753→                      ) : (
+    55→   754→                        <EmptyState icon={CloudUpload} title="No uploads yet" desc="Videos will appear here after YouTube upload." />
+    56→   755→                      )}
+    57→   756→                    </ScrollArea>
+    58→   757→                  </CardContent>
+    59→   758→                </GradientCard>
+    60→   759→
+    61→   760→                {/* Quality Review Panel */}
+    62→   761→                <GlassCard variant="glow" glowFrom="from-rose-500" glowTo="to-violet-500">
+    63→   762→                  <CardHeader className="pb-2">
+    64→   763→                    <CardTitle className="text-sm flex items-center gap-2">
+    65→   764→                      <ShieldCheck className="w-4 h-4 text-rose-400" /> Quality Review History
+    66→   765→                      <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{pipeline?.reviews?.length || 0}</Badge>
+    67→   766→                    </CardTitle>
+    68→   767→                    <CardDescription className="text-[10px]">Fact-check, originality, copyright & policy compliance for every produced video</CardDescription>
+    69→   768→                  </CardHeader>
+    70→   769→                  <CardContent>
+    71→   770→                    {pipeline?.reviews?.length || pipeline?.projects?.length ? (
+    72→   771→                      <QualityReviewPanel
+    73→   772→                        reviews={pipeline?.reviews || []}
+    74→   773→                        projects={pipeline?.projects || []}
+    75→   774→                      />
+    76→   775→                    ) : initialLoaded ? (
+    77→   776→                      <EmptyState icon={ShieldCheck} title="No quality reviews yet" desc="Produce a video to trigger automated review." />
+    78→   777→                    ) : (
+    79→   778→                      <IdeaListSkeleton count={3} />
+    80→   779→                    )}
+    81→   780→                  </CardContent>
+    82→   781→                </GlassCard>
+    83→   782→              </motion.div>
+    84→   783→            </AnimatePresence>
+    85→   784→          </TabsContent>
+    86→   785→
+    87→   786→          {/* ══════════════════════════════════════════════════════════
+    88→   787→              STRATEGY TAB
+    89→   788→              ══════════════════════════════════════════════════════════ */}
+    90→   789→          <TabsContent value="strategy" className="space-y-4">
+    91→   790→            <AnimatePresence mode="wait">
+    92→   791→              <motion.div key="strategy-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+    93→   792→                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    94→   793→                  {/* Channel Info */}
+    95→   794→                  <GradientCard glow="from-violet-500/5 to-blue-500/5">
+    96→   795→                    <CardHeader className="pb-2">
+    97→   796→                      <CardTitle className="text-sm flex items-center gap-2">
+    98→   797→                        <Globe className="w-4 h-4 text-blue-400" /> Channel Identity
+    99→   798→                      </CardTitle>
+   100→   799→                    </CardHeader>
+   101→   800→                    <CardContent className="space-y-2.5">
+   102→   801→                      {channel?.channel ? (
+   103→   802→                        <>
+   104→   803→                          {[
+   105→   804→                            { label: 'Name', value: channel.channel.name, icon: Youtube },
+   106→   805→                            { label: 'Niche', value: channel.channel.niche, icon: Target },
+   107→   806→                            { label: 'Positioning', value: channel.channel.positioning, icon: Compass },
+   108→   807→                            { label: 'Target Viewer', value: channel.channel.targetViewer, icon: Users },
+   109→   808→                            { label: 'Upload Cadence', value: channel.channel.uploadCadence, icon: Calendar },
+   110→   809→                          ].map((item, i) => item.value && (
+   111→   810→                            <div key={i} className="flex items-start gap-2.5 text-xs">
+   112→   811→                              <item.icon className="w-3.5 h-3.5 text-slate-500 mt-0.5 shrink-0" />
+   113→   812→                              <div>
+   114→   813→                                <span className="text-slate-500">{item.label}:</span>
+   115→   814→                                <span className="text-slate-200 ml-1.5">{item.value}</span>
+   116→   815→                              </div>
+   117→   816→                            </div>
+   118→   817→                          ))}
+   119→   818→                        </>
+   120→   819→                      ) : (
+   121→   820→                        <EmptyState icon={Globe} title="Channel not configured" desc="Run initial setup to create your channel strategy." />
+   122→   821→                      )}
+   123→   822→                    </CardContent>
+   124→   823→                  </GradientCard>
+   125→   824→
+   126→   825→                  {/* Content Pillars */}
+   127→   826→                  <GradientCard glow="from-amber-500/5 to-emerald-500/5">
+   128→   827→                    <CardHeader className="pb-2">
+   129→   828→                      <CardTitle className="text-sm flex items-center gap-2">
+   130→   829→                        <Layers className="w-4 h-4 text-amber-400" /> Content Pillars
+   131→   830→                      </CardTitle>
+   132→   831→                    </CardHeader>
+   133→   832→                    <CardContent>
+   134→   833→                      {channel?.pillars?.length ? (
+   135→   834→                        <div className="space-y-2">
+   136→   835→                          {channel.pillars.map((pillar: any, i: number) => (
+   137→   836→                            <motion.div
+   138→   837→                              key={pillar.id}
+   139→   838→                              initial={{ opacity: 0, x: -5 }}
+   140→   839→                              animate={{ opacity: 1, x: 0 }}
+   141→   840→                              transition={{ delay: i * 0.08 }}
+   142→   841→                              className="flex items-start gap-3 p-2 rounded-lg bg-slate-800/40 border border-slate-700/30"
+   143→   842→                            >
+   144→   843→                              <div className="w-3 h-3 rounded-full mt-1 shrink-0" style={{ backgroundColor: pillar.color || '#6366f1' }} />
+   145→   844→                              <div>
+   146→   845→                                <p className="text-xs font-medium text-slate-200">{pillar.name}</p>
+   147→   846→                                {pillar.description && <p className="text-[10px] text-slate-400 mt-0.5">{pillar.description}</p>}
+   148→   847→                              </div>
+   149→   848→                            </motion.div>
+   150→   849→                          ))}
+   151→   850→                        </div>
+   152→   851→                      ) : (
+   153→   852→                        <EmptyState icon={Layers} title="No pillars defined" desc="Content pillars are created during initial setup." />
+   154→   853→                      )}
+   155→   854→                    </CardContent>
+   156→   855→                  </GradientCard>
+   157→   856→                </div>
+   158→   857→
+   159→   858→                {/* Niche Rankings */}
+   160→   859→                <GradientCard glow="from-emerald-500/5 to-cyan-500/5">
+   161→   860→                  <CardHeader className="pb-2">
+   162→   861→                    <CardTitle className="text-sm flex items-center gap-2">
+   163→   862→                      <Award className="w-4 h-4 text-emerald-400" /> Niche Analysis
+   164→   863→                      <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{channel?.niches?.length || 0} niches scored</Badge>
+   165→   864→                    </CardTitle>
+   166→   865→                  </CardHeader>
+   167→   866→                  <CardContent>
+   168→   867→                    {channel?.niches?.length ? (
+   169→   868→                      <div className="space-y-3">
+   170→   869→                        {/* Bar chart */}
+   171→   870→                        <div className="h-64">
+   172→   871→                          <ResponsiveContainer width="100%" height="100%">
+   173→   872→                            <BarChart data={nicheBarData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+   174→   873→                              <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
+   175→   874→                              <XAxis type="number" domain={[0, 10]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+   176→   875→                              <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+   177→   876→                              <RechartsTooltip
+   178→   877→                                contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
+   179→   878→                                labelStyle={{ color: '#e2e8f0' }}
+   180→   879→                              />
+   181→   880→                              <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={20}>
+   182→   881→                                {nicheBarData.map((entry, index) => (
+   183→   882→                                  <Cell key={`cell-${index}`} fill={entry.selected ? '#10b981' : '#6366f1'} fillOpacity={entry.selected ? 0.9 : 0.5} />
+   184→   883→                                ))}
+   185→   884→                              </Bar>
+   186→   885→                            </BarChart>
+   187→   886→                          </ResponsiveContainer>
+   188→   887→                        </div>
+   189→   888→                        {/* Selected niche highlight */}
+   190→   889→                        {channel.niches.find((n: any) => n.isSelected) && (
+   191→   890→                          <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2">
+   192→   891→                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+   193→   892→                            <span className="text-xs text-emerald-300">
+   194→   893→                              Selected: <strong>{channel.niches.find((n: any) => n.isSelected).nicheName}</strong>
+   195→   894→                              {' '}(Score: {channel.niches.find((n: any) => n.isSelected).compositeScore.toFixed(1)})
+   196→   895→                            </span>
+   197→   896→                          </div>
+   198→   897→                        )}
+   199→   898→                      </div>
+   200→   899→                    ) : (
+   201→   900→                      <EmptyState icon={Target} title="No niche analysis" desc="Run initial setup to research and score niches." />
+   202→   901→                    )}
+   203→   902→                  </CardContent>
+   204→   903→                </GradientCard>
+   205→   904→              </motion.div>
+   206→   905→            </AnimatePresence>
+   207→   906→          </TabsContent>
+   208→   907→
+   209→   908→          {/* ══════════════════════════════════════════════════════════
+   210→   909→              REVENUE TAB
+   211→   910→              ══════════════════════════════════════════════════════════ */}
+   212→   911→          <TabsContent value="revenue" className="space-y-4">
+   213→   912→            <AnimatePresence mode="wait">
+   214→   913→              <motion.div key="revenue-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+   215→   914→                {/* YPP Progress */}
+   216→   915→                <GradientCard glow="from-amber-500/5 to-emerald-500/5">
+   217→   916→                  <CardHeader className="pb-2">
+   218→   917→                    <CardTitle className="text-sm flex items-center gap-2">
+   219→   918→                      <CreditCard className="w-4 h-4 text-amber-400" /> YouTube Partner Program Progress
+   220→   919→                    </CardTitle>
+   221→   920→                    <CardDescription className="text-[10px]">Track your path toward monetization thresholds</CardDescription>
+   222→   921→                  </CardHeader>
+   223→   922→                  <CardContent>
+   224→   923→                    <div className="space-y-4">
+   225→   924→                      {Object.entries(YPP_THRESHOLDS).map(([key, threshold]) => {
+   226→   925→                        const current = key === 'subscribers' ? (analytics?.totalSubscribers || 0)
+   227→   926→                          : key === 'watchHours' ? (analytics?.totalWatchTime || 0)
+   228→   927→                          : (status?.pipeline?.uploaded || 0)
+   229→   928→                        const pct = Math.min(100, (current / threshold.target) * 100)
+   230→   929→                        const Icon = threshold.icon
+   231→   930→                        return (
+   232→   931→                          <div key={key} className="space-y-1.5">
+   233→   932→                            <div className="flex items-center justify-between text-xs">
+   234→   933→                              <div className="flex items-center gap-2">
+   235→   934→                                <Icon className="w-3.5 h-3.5 text-slate-400" />
+   236→   935→                                <span className="text-slate-300">{threshold.label}</span>
+   237→   936→                              </div>
+   238→   937→                              <div className="flex items-center gap-1.5">
+   239→   938→                                <span className="font-mono text-slate-200">{current.toLocaleString()}</span>
+   240→   939→                                <span className="text-slate-500">/</span>
+   241→   940→                                <span className="font-mono text-slate-400">{threshold.target.toLocaleString()}</span>
+   242→   941→                                <Badge variant="outline" className={`text-[10px] ${pct >= 100 ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-400'}`}>
+   243→   942→                                  {pct >= 100 ? '✓' : `${pct.toFixed(0)}%`}
+   244→   943→                                </Badge>
+   245→   944→                              </div>
+   246→   945→                            </div>
+   247→   946→                            <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+   248→   947→                              <motion.div
+   249→   948→                                initial={{ width: 0 }}
+   250→   949→                                animate={{ width: `${pct}%` }}
+   251→   950→                                transition={{ duration: 1, ease: 'easeOut' }}
+   252→   951→                                className={`h-full rounded-full ${pct >= 100 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-amber-500 to-amber-400'}`}
+   253→   952→                              />
+   254→   953→                            </div>
+   255→   954→                          </div>
+   256→   955→                        )
+   257→   956→                      })}
+   258→   957→                    </div>
+   259→   958→                  </CardContent>
+   260→   959→                </GradientCard>
+   261→   960→
+   262→   961→                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+   263→   962→                  {/* Revenue Tracking */}
+   264→   963→                  <GradientCard glow="from-emerald-500/5 to-green-500/5">
+   265→   964→                    <CardHeader className="pb-2">
+   266→   965→                      <CardTitle className="text-sm flex items-center gap-2">
+   267→   966→                        <DollarSign className="w-4 h-4 text-emerald-400" /> Revenue Tracking
+   268→   967→                      </CardTitle>
+   269→   968→                    </CardHeader>
+   270→   969→                    <CardContent>
+   271→   970→                      {analytics?.estimatedRevenue ? (
+   272→   971→                        <div className="space-y-3">
+   273→   972→                          <div className="text-3xl font-bold text-emerald-400">
+   274→   973→                            ${(analytics.estimatedRevenue || 0).toFixed(2)}
+   275→   974→                          </div>
+   276→   975→                          <p className="text-xs text-slate-400">Estimated lifetime revenue</p>
+   277→   976→                          <div className="grid grid-cols-2 gap-2">
+   278→   977→                            <div className="p-2 rounded-lg bg-slate-800/40">
+   279→   978→                              <p className="text-[10px] text-slate-500">RPM</p>
+   280→   979→                              <p className="text-sm font-mono text-slate-200">${(analytics.estimatedRevenue / Math.max(1, analytics.totalViews || 1) * 1000).toFixed(2)}</p>
+   281→   980→                            </div>
+   282→   981→                            <div className="p-2 rounded-lg bg-slate-800/40">
+   283→   982→                              <p className="text-[10px] text-slate-500">Total Views</p>
+   284→   983→                              <p className="text-sm font-mono text-slate-200">{(analytics.totalViews || 0).toLocaleString()}</p>
+   285→   984→                            </div>
+   286→   985→                          </div>
+   287→   986→                        </div>
+   288→   987→                      ) : (
+   289→   988→                        <EmptyState icon={DollarSign} title="No revenue data" desc="Connect YouTube and enable monetization to see revenue data." />
+   290→   989→                      )}
+   291→   990→                    </CardContent>
+   292→   991→                  </GradientCard>
+   293→   992→
+   294→   993→                  {/* Monetization Opportunities */}
+   295→   994→                  <GradientCard glow="from-violet-500/5 to-pink-500/5">
+   296→   995→                    <CardHeader className="pb-2">
+   297→   996→                      <CardTitle className="text-sm flex items-center gap-2">
+   298→   997→                        <Sparkles className="w-4 h-4 text-violet-400" /> Monetization Opportunities
+   299→   998→                      </CardTitle>
+   300→   999→                    </CardHeader>
+   301→  1000→                    <CardContent className="space-y-2">
+   302→  1001→                      {[
+   303→  1002→                        { label: 'YouTube Partner Program', status: 'Thresholds not met', icon: Award, met: false },
+   304→  1003→                        { label: 'Ad Revenue', status: 'Requires YPP', icon: DollarSign, met: false },
+   305→  1004→                        { label: 'Channel Memberships', status: 'Requires 1K subscribers', icon: Users, met: false },
+   306→  1005→                        { label: 'Super Chat', status: 'Requires YPP + livestream', icon: MessageSquare, met: false },
+   307→  1006→                        { label: 'Merch Shelf', status: 'Requires 10K subscribers', icon: CreditCard, met: false },
+   308→  1007→                        { label: 'Sponsorships', status: 'Available with audience', icon: Megaphone, met: false },
+   309→  1008→                      ].map((opp, i) => (
+   310→  1009→                        <div key={i} className="flex items-center gap-2.5 p-2 rounded-lg bg-slate-800/30 border border-slate-700/30 text-xs">
+   311→  1010→                          <opp.icon className={`w-3.5 h-3.5 ${opp.met ? 'text-emerald-400' : 'text-slate-500'}`} />
+   312→  1011→                          <span className="text-slate-200 flex-1">{opp.label}</span>
+   313→  1012→                          <span className="text-slate-500">{opp.status}</span>
+   314→  1013→                        </div>
+   315→  1014→                      ))}
+   316→  1015→                    </CardContent>
+   317→  1016→                  </GradientCard>
+   318→  1017→                </div>
+   319→  1018→              </motion.div>
+   320→  1019→            </AnimatePresence>
+   321→  1020→          </TabsContent>
+   322→  1021→
+   323→  1022→          {/* ══════════════════════════════════════════════════════════
+   324→  1023→              ANALYTICS TAB
+   325→  1024→              ══════════════════════════════════════════════════════════ */}
+   326→  1025→          <TabsContent value="analytics" className="space-y-4">
+   327→  1026→            <AnimatePresence mode="wait">
+   328→  1027→              <motion.div key="analytics-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+   329→  1028→                {/* Analytics Stats */}
+   330→  1029→                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+   331→  1030→                  <StatusCard icon={Eye} label="Total Views" value={(analytics?.totalViews || 0).toLocaleString()} color="text-blue-400" />
+   332→  1031→                  <StatusCard icon={Users} label="Subscribers" value={(analytics?.totalSubscribers || 0).toLocaleString()} color="text-emerald-400" />
+   333→  1032→                  <StatusCard icon={Clock} label="Watch Hours" value={(analytics?.totalWatchTime || 0).toLocaleString()} color="text-amber-400" />
+   334→  1033→                  <StatusCard icon={DollarSign} label="Est. Revenue" value={`$${(analytics?.estimatedRevenue || 0).toFixed(2)}`} color="text-emerald-400" />
+   335→  1034→                </div>
+   336→  1035→
+   337→  1036→                {/* Pipeline Progress Over Time */}
+   338→  1037→                <GradientCard glow="from-blue-500/5 to-violet-500/5">
+   339→  1038→                  <CardHeader className="pb-2">
+   340→  1039→                    <CardTitle className="text-sm flex items-center gap-2">
+   341→  1040→                      <TrendingUp className="w-4 h-4 text-blue-400" /> Pipeline Progress Over Time
+   342→  1041→                    </CardTitle>
+   343→  1042→                  </CardHeader>
+   344→  1043→                  <CardContent>
+   345→  1044→                    {pipelineChartData.length > 0 ? (
+   346→  1045→                      <div className="h-64">
+   347→  1046→                        <ResponsiveContainer width="100%" height="100%">
+   348→  1047→                          <AreaChart data={pipelineChartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+   349→  1048→                            <defs>
+   350→  1049→                              <linearGradient id="colorIdeas" x1="0" y1="0" x2="0" y2="1">
+   351→  1050→                                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+   352→  1051→                                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+   353→  1052→                              </linearGradient>
+   354→  1053→                              <linearGradient id="colorProduced" x1="0" y1="0" x2="0" y2="1">
+   355→  1054→                                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+   356→  1055→                                <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+   357→  1056→                              </linearGradient>
+   358→  1057→                              <linearGradient id="colorUploaded" x1="0" y1="0" x2="0" y2="1">
+   359→  1058→                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+   360→  1059→                                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+   361→  1060→                              </linearGradient>
+   362→  1061→                            </defs>
+   363→  1062→                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+   364→  1063→                            <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+   365→  1064→                            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} />
+   366→  1065→                            <RechartsTooltip
+   367→  1066→                              contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
+   368→  1067→                              labelStyle={{ color: '#e2e8f0' }}
+   369→  1068→                            />
+   370→  1069→                            <Area type="monotone" dataKey="ideas" stroke="#8b5cf6" fill="url(#colorIdeas)" strokeWidth={2} />
+   371→  1070→                            <Area type="monotone" dataKey="produced" stroke="#06b6d4" fill="url(#colorProduced)" strokeWidth={2} />
+   372→  1071→                            <Area type="monotone" dataKey="uploaded" stroke="#10b981" fill="url(#colorUploaded)" strokeWidth={2} />
+   373→  1072→                          </AreaChart>
+   374→  1073→                        </ResponsiveContainer>
+   375→  1074→                      </div>
+   376→  1075→                    ) : (
+   377→  1076→                      <EmptyState icon={BarChart3} title="No analytics data" desc="Data will appear as the pipeline produces content." />
+   378→  1077→                    )}
+   379→  1078→                  </CardContent>
+   380→  1079→                </GradientCard>
+   381→  1080→
+   382→  1081→                {/* Recent Videos Performance */}
+   383→  1082→                <GradientCard>
+   384→  1083→                  <CardHeader className="pb-2">
+   385→  1084→                    <CardTitle className="text-sm flex items-center gap-2">
+   386→  1085→                      <Video className="w-4 h-4 text-cyan-400" /> Video Performance
+   387→  1086→                    </CardTitle>
+   388→  1087→                  </CardHeader>
+   389→  1088→                  <CardContent>
+   390→  1089→                    {analytics?.recentVideos?.length ? (
+   391→  1090→                      <ScrollArea className="h-48">
+   392→  1091→                        <div className="space-y-1.5">
+   393→  1092→                          {analytics.recentVideos.map((v: any, i: number) => (
+   394→  1093→                            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-slate-800/30 text-xs">
+   395→  1094→                              <span className="text-slate-200 truncate flex-1">{v.title}</span>
+   396→  1095→                              <span className="text-slate-400 font-mono">{(v.views || 0).toLocaleString()} views</span>
+   397→  1096→                            </div>
+   398→  1097→                          ))}
+   399→  1098→                        </div>
+   400→  1099→                      </ScrollArea>
+   401→  1100→                    ) : (
+   402→  1101→                      <EmptyState icon={Video} title="No video performance data" desc="Upload videos and connect YouTube to see analytics." />
+   403→  1102→                    )}
+   404→  1103→                  </CardContent>
+   405→  1104→                </GradientCard>
+   406→  1105→              </motion.div>
+   407→  1106→            </AnimatePresence>
+   408→  1107→          </TabsContent>
+   409→  1108→
+   410→  1109→          {/* ══════════════════════════════════════════════════════════
+   411→  1110→              LOGS TAB
+   412→  1111→              ══════════════════════════════════════════════════════════ */}
+   413→  1112→          <TabsContent value="logs" className="space-y-4">
+   414→  1113→            <AnimatePresence mode="wait">
+   415→  1114→              <motion.div key="logs-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+   416→  1115→                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+   417→  1116→                  {/* Audit Log */}
+   418→  1117→                  <GradientCard glow="from-violet-500/5 to-slate-500/5">
+   419→  1118→                    <CardHeader className="pb-2">
+   420→  1119→                      <CardTitle className="text-sm flex items-center gap-2">
+   421→  1120→                        <FileText className="w-4 h-4 text-violet-400" /> Audit Log
+   422→  1121→                        <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{logs.length}</Badge>
+   423→  1122→                      </CardTitle>
+   424→  1123→                    </CardHeader>
+   425→  1124→                    <CardContent>
+   426→  1125→                      <ScrollArea className="h-[400px]">
+   427→  1126→                        {logs.length ? (
+   428→  1127→                          <div className="space-y-0.5">
+   429→  1128→                            {logs.map((log: any, i: number) => (
+   430→  1129→                              <motion.div
+   431→  1130→                                key={log.id}
+   432→  1131→                                initial={{ opacity: 0 }}
+   433→  1132→                                animate={{ opacity: 1 }}
+   434→  1133→                                transition={{ delay: i * 0.01 }}
+   435→  1134→                                className="flex gap-2 p-1.5 rounded-lg hover:bg-slate-800/40 transition-colors text-xs"
+   436→  1135→                              >
+   437→  1136→                                <span className="text-slate-600 font-mono text-[10px] w-16 shrink-0 pt-0.5">
+   438→  1137→                                  {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+   439→  1138→                                </span>
+   440→  1139→                                <Badge variant="outline" className={`text-[10px] h-5 shrink-0 ${actionColor(log.action)}`}>
+   441→  1140→                                  {actionLabel(log.action)}
+   442→  1141→                                </Badge>
+   443→  1142→                                {log.target && (
+   444→  1143→                                  <Badge variant="outline" className="text-[9px] h-5 shrink-0 border-cyan-500/30 text-cyan-300 font-mono">
+   445→  1144→                                    {log.target.slice(-6)}
+   446→  1145→                                  </Badge>
+   447→  1146→                                )}
+   448→  1147→                                <span className="text-slate-300 text-[11px] truncate flex-1" title={log.detail || log.message}>
+   449→  1148→                                  {log.message || log.details}
+   450→  1149→                                </span>
+   451→  1150→                              </motion.div>
+   452→  1151→                            ))}
+   453→  1152→                          </div>
+   454→  1153→                        ) : (
+   455→  1154→                          <EmptyState icon={FileText} title="No logs yet" desc="Audit logs appear as the agent takes actions." />
+   456→  1155→                        )}
+   457→  1156→                      </ScrollArea>
+   458→  1157→                    </CardContent>
+   459→  1158→                  </GradientCard>
+   460→  1159→
+   461→  1160→                  {/* Jobs Queue */}
+   462→  1161→                  <GradientCard glow="from-amber-500/5 to-slate-500/5">
+   463→  1162→                    <CardHeader className="pb-2">
+   464→  1163→                      <CardTitle className="text-sm flex items-center gap-2">
+   465→  1164→                        <Server className="w-4 h-4 text-amber-400" /> Job Queue
+   466→  1165→                        <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{jobs.length}</Badge>
+   467→  1166→                      </CardTitle>
+   468→  1167→                    </CardHeader>
+   469→  1168→                    <CardContent>
+   470→  1169→                      <ScrollArea className="h-[400px]">
+   471→  1170→                        {jobs.length ? (
+   472→  1171→                          <div className="space-y-1.5">
+   473→  1172→                            {jobs.map((job: any, i: number) => (
+   474→  1173→                              <motion.div
+   475→  1174→                                key={job.id}
+   476→  1175→                                initial={{ opacity: 0, x: -5 }}
+   477→  1176→                                animate={{ opacity: 1, x: 0 }}
+   478→  1177→                                transition={{ delay: i * 0.03 }}
+   479→  1178→                                className="p-2 rounded-lg bg-slate-800/30 border border-slate-700/30 space-y-1.5"
+   480→  1179→                              >
+   481→  1180→                                <div className="flex items-center gap-2">
+   482→  1181→                                  <Badge variant="outline" className={`text-[10px] shrink-0 ${
+   483→  1182→                                    job.status === 'completed' ? 'border-emerald-500/50 text-emerald-400' :
+   484→  1183→                                    job.status === 'failed' ? 'border-red-500/50 text-red-400' :
+   485→  1184→                                    job.status === 'running' ? 'border-cyan-500/50 text-cyan-400' :
+   486→  1185→                                    'border-slate-500/50 text-slate-400'
+   487→  1186→                                  }`}>
+   488→  1187→                                    {job.status === 'running' && <Loader2 className="w-3 h-3 mr-1 animate-spin" />}
+   489→  1188→                                    {job.status}
+   490→  1189→                                  </Badge>
+   491→  1190→                                  <Badge variant="outline" className="text-[10px] border-slate-600 shrink-0">{job.type}</Badge>
+   492→  1191→                                  <span className="text-[10px] text-slate-500 font-mono ml-auto">
+   493→  1192→                                    {new Date(job.scheduledAt).toLocaleString()}
+   494→  1193→                                  </span>
+   495→  1194→                                </div>
+   496→  1195→                                {(job.error || job.retryCount > 0) && (
+   497→  1196→                                  <div className="flex items-center gap-2 text-[10px]">
+   498→  1197→                                    {job.error && <span className="text-red-400 truncate">{job.error}</span>}
+   499→  1198→                                    {job.retryCount > 0 && <span className="text-amber-400">retry #{job.retryCount}</span>}
+   500→  1199→                                  </div>
+   501→  1200→                                )}
+   502→  1201→                                {job.status === 'running' && (
+   503→  1202→                                  <Progress value={45} className="h-1" />
+   504→  1203→                                )}
+   505→  1204→                              </motion.div>
+   506→  1205→                            ))}
+   507→  1206→                          </div>
+   508→  1207→                        ) : (
+   509→  1208→                          <EmptyState icon={Server} title="No jobs queued" desc="Jobs are scheduled as the agent processes content." />
+   510→  1209→                        )}
+   511→  1210→                      </ScrollArea>
+   512→  1211→                    </CardContent>
+   513→  1212→                  </GradientCard>
+   514→  1213→                </div>
+   515→  1214→              </motion.div>
+   516→  1215→            </AnimatePresence>
+   517→  1216→          </TabsContent>
+   518→  1217→
+   519→  1218→          {/* ══════════════════════════════════════════════════════════
+   520→  1219→              CALENDAR TAB
+   521→  1220→              ══════════════════════════════════════════════════════════ */}
+   522→  1221→          <TabsContent value="calendar" className="space-y-4">
+   523→  1222→            <AnimatePresence mode="wait">
+   524→  1223→              <motion.div key="calendar-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+   525→  1224→                <GlassCard variant="glow" glowFrom="from-violet-500" glowTo="to-cyan-500">
+   526→  1225→                  <CardHeader className="pb-2">
+   527→  1226→                    <CardTitle className="text-sm flex items-center gap-2">
+   528→  1227→                      <CalendarDays className="w-4 h-4 text-violet-400" /> Content Calendar
+   529→  1228→                    </CardTitle>
+   530→  1229→                    <CardDescription className="text-[10px]">Scheduled releases, published videos, and upcoming production queue</CardDescription>
+   531→  1230→                  </CardHeader>
+   532→  1231→                  <CardContent>
+   533→  1232→                    {pipeline?.ideas?.length || pipeline?.uploads?.length ? (
+   534→  1233→                      <ContentCalendar
+   535→  1234→                        ideas={pipeline?.ideas || []}
+   536→  1235→                        uploads={pipeline?.uploads || []}
+   537→  1236→                      />
+   538→  1237→                    ) : (
+   539→  1238→                      <EmptyState icon={CalendarDays} title="No calendar data" desc="Produce or schedule videos to populate the calendar." />
+   540→  1239→                    )}
+   541→  1240→                  </CardContent>
+   542→  1241→                </GlassCard>
+   543→  1242→              </motion.div>
+   544→  1243→            </AnimatePresence>
+   545→  1244→          </TabsContent>
+   546→  1245→
+   547→  1246→          {/* ══════════════════════════════════════════════════════════
+   548→  1247→              SETTINGS TAB
+   549→  1248→              ══════════════════════════════════════════════════════════ */}
+   550→  1249→          <TabsContent value="settings" className="space-y-4">
+   551→  1250→            <AnimatePresence mode="wait">
+   552→  1251→              <motion.div key="settings-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+   553→  1252→                {/* Operating Mode - Radio Cards */}
+   554→  1253→                <GradientCard glow="from-violet-500/5 to-emerald-500/5">
+   555→  1254→                  <CardHeader className="pb-2">
+   556→  1255→                    <CardTitle className="text-sm flex items-center gap-2">
+   557→  1256→                      <ToggleLeft className="w-4 h-4 text-violet-400" /> Operating Mode
+   558→  1257→                    </CardTitle>
+   559→  1258→                    <CardDescription className="text-[10px]">Controls what the agent is allowed to do autonomously</CardDescription>
+   560→  1259→                  </CardHeader>
+   561→  1260→                  <CardContent>
+   562→  1261→                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+   563→  1262→                      {MODES.map((mode) => {
+   564→  1263→                        const isActive = status?.operatingMode === mode.key
+   565→  1264→                        const Icon = mode.icon
+   566→  1265→                        return (
+   567→  1266→                          <motion.button
+   568→  1267→                            key={mode.key}
+   569→  1268→                            whileHover={{ scale: 1.02 }}
+   570→  1269→                            whileTap={{ scale: 0.98 }}
+   571→  1270→                            onClick={() => sendCommand('set-mode', { mode: mode.key })}
+   572→  1271→                            className={`p-4 rounded-xl border-2 text-left transition-all duration-200 ${
+   573→  1272→                              isActive
+   574→  1273→                                ? mode.activeColor + ' ring-1 ring-current'
+   575→  1274→                                : mode.color + ' bg-slate-800/30 hover:bg-slate-800/50'
+   576→  1275→                            }`}
+   577→  1276→                          >
+   578→  1277→                            <div className="flex items-center gap-2 mb-2">
+   579→  1278→                              <Icon className={`w-5 h-5 ${isActive ? 'text-current' : 'text-slate-500'}`} />
+   580→  1279→                              {isActive && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 rounded-full bg-emerald-400" />}
+   581→  1280→                            </div>
+   582→  1281→                            <p className={`text-sm font-semibold ${isActive ? 'text-slate-100' : 'text-slate-300'}`}>{mode.label}</p>
+   583→  1282→                            <p className="text-[10px] text-slate-400 mt-1">{mode.desc}</p>
+   584→  1283→                          </motion.button>
+   585→  1284→                        )
+   586→  1285→                      })}
+   587→  1286→                    </div>
+   588→  1287→                  </CardContent>
+   589→  1288→                </GradientCard>
+   590→  1289→
+   591→  1290→                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+   592→  1291→                  {/* YouTube Connection */}
+   593→  1292→                  <GradientCard glow="from-red-500/5 to-rose-500/5">
+   594→  1293→                    <CardHeader className="pb-2">
+   595→  1294→                      <CardTitle className="text-sm flex items-center gap-2">
+   596→  1295→                        <Youtube className="w-4 h-4 text-red-400" /> YouTube Connection
+   597→  1296→                      </CardTitle>
+   598→  1297→                    </CardHeader>
+   599→  1298→                    <CardContent className="space-y-3">
+   600→  1299→                      <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/40 border border-slate-700/30">
+   601→  1300→                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${channel?.youtubeConnected ? 'bg-red-500/20' : 'bg-slate-700/50'}`}>
+   602→  1301→                          <Youtube className={`w-5 h-5 ${channel?.youtubeConnected ? 'text-red-400' : 'text-slate-500'}`} />
+   603→  1302→                        </div>
+   604→  1303→                        <div>
+   605→  1304→                          <p className="text-sm font-medium">{channel?.youtubeConnected ? 'Connected' : 'Not Connected'}</p>
+   606→  1305→                          <p className="text-[10px] text-slate-500">{channel?.youtubeConnected ? 'OAuth tokens active' : 'OAuth credentials required'}</p>
+   607→  1306→                        </div>
+   608→  1307→                        {channel?.youtubeConnected && (
+   609→  1308→                          <CheckCircle2 className="w-5 h-5 text-emerald-400 ml-auto" />
+   610→  1309→                        )}
+   611→  1310→                      </div>
+   612→  1311→                      {!channel?.youtubeConnected && (
+   613→  1312→                        <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/30 space-y-2">
+   614→  1313→                          <p className="text-xs font-medium text-slate-300">Setup Instructions</p>
+   615→  1314→                          <ol className="list-decimal ml-4 space-y-1 text-[10px] text-slate-400">
+   616→  1315→                            <li>Create a Google Cloud project</li>
+   617→  1316→                            <li>Enable YouTube Data API v3</li>
+   618→  1317→                            <li>Configure OAuth 2.0 credentials</li>
+   619→  1318→                            <li>Set <code className="text-cyan-400 bg-slate-800 px-1 rounded">YOUTUBE_CLIENT_ID</code> and <code className="text-cyan-400 bg-slate-800 px-1 rounded">YOUTUBE_CLIENT_SECRET</code> in .env</li>
+   620→  1319→                            <li>Click authorize in the OAuth flow</li>
+   621→  1320→                          </ol>
+   622→  1321→                        </div>
+   623→  1322→                      )}
+   624→  1323→                      <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
+   625→  1324→                        <Lock className="w-3 h-3" />
+   626→  1325→                        Uses official Google OAuth 2.0. Tokens encrypted at rest. Minimum scopes: youtube.upload, youtube.readonly.
+   627→  1326→                      </p>
+   628→  1327→                    </CardContent>
+   629→  1328→                  </GradientCard>
+   630→  1329→
+   631→  1330→                  {/* Security Checklist */}
+   632→  1331→                  <GradientCard glow="from-emerald-500/5 to-green-500/5">
+   633→  1332→                    <CardHeader className="pb-2">
+   634→  1333→                      <CardTitle className="text-sm flex items-center gap-2">
+   635→  1334→                        <ShieldCheck className="w-4 h-4 text-emerald-400" /> Security & Compliance
+   636→  1335→                      </CardTitle>
+   637→  1336→                    </CardHeader>
+   638→  1337→                    <CardContent>
+   639→  1338→                      <div className="grid grid-cols-1 gap-1.5">
+   640→  1339→                        {[
+   641→  1340→                          { label: 'OAuth tokens encrypted at rest', icon: Lock },
+   642→  1341→                          { label: 'CSRF protection on OAuth flow', icon: Shield },
+   643→  1342→                          { label: 'Emergency stop control', icon: AlertOctagon },
+   644→  1343→                          { label: 'All uploads default to private', icon: Lock },
+   645→  1344→                          { label: 'Audit logging enabled', icon: FileText },
+   646→  1345→                          { label: 'No credentials in source code', icon: Shield },
+   647→  1346→                          { label: 'No passwords or 2FA codes stored', icon: ShieldCheck },
+   648→  1347→                          { label: 'Least-privilege API scopes', icon: Lock },
+   649→  1348→                        ].map((item, i) => (
+   650→  1349→                          <div key={i} className="flex items-center gap-2 text-[10px] p-1.5 rounded bg-emerald-500/5">
+   651→  1350→                            <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+   652→  1351→                            <span className="text-slate-300">{item.label}</span>
+   653→  1352→                          </div>
+   654→  1353→                        ))}
+   655→  1354→                      </div>
+   656→  1355→                      <Separator className="my-3 bg-slate-800" />
+   657→  1356→                      <p className="text-[10px] font-medium text-slate-300 mb-2">Content Policy</p>
+   658→  1357→                      <div className="grid grid-cols-1 gap-1.5">
+   659→  1358→                        {[
+   660→  1359→                          'Original content only — no copied scripts or videos',
+   661→  1360→                          'Source attribution required on all claims',
+   662→  1361→                          'AI-generated content disclosed in descriptions',
+   663→  1362→                          'No fake engagement or misleading thumbnails',
+   664→  1363→                          'Asset license tracking enforced',
+   665→  1364→                          'Quality review gate before every upload',
+   666→  1365→                        ].map((item, i) => (
+   667→  1366→                          <div key={i} className="flex items-center gap-2 text-[10px] p-1.5 rounded bg-emerald-500/5">
+   668→  1367→                            <FileCheck className="w-3 h-3 text-emerald-500 shrink-0" />
+   669→  1368→                            <span className="text-slate-300">{item}</span>
+   670→  1369→                          </div>
+   671→  1370→                        ))}
+   672→  1371→                      </div>
+   673→  1372→                    </CardContent>
+   674→  1373→                  </GradientCard>
+   675→  1374→                </div>
+   676→  1375→              </motion.div>
+   677→  1376→            </AnimatePresence>
+   678→  1377→          </TabsContent>
+   679→  1378→        </Tabs>
+   680→  1379→
+   681→  1380→        {/* ═══ VIDEO PREVIEW MODAL ═══ */}
+   682→  1381→        <VideoPreviewModal
+   683→  1382→          videoProjectId={previewVideoId}
+   684→  1383→          onClose={() => setPreviewVideoId(null)}
+   685→  1384→        />
+   686→  1385→      </main>
+   687→  1386→
+   688→  1387→      {/* ═══ FOOTER ═══ */}
+   689→  1388→      <footer className="border-t border-slate-800/60 px-4 md:px-6 py-2 flex items-center justify-between text-[10px] text-slate-600">
+   690→  1389→        <div className="flex items-center gap-2">
+   691→  1390→          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+   692→  1391→          <span>YouTube Revenue Studio v2.0 &middot; Z.AI Autonomous Agent</span>
+   693→  1392→        </div>
+   694→  1393→        <div className="flex items-center gap-3">
+   695→  1394→          <span>Poll: {lastPoll.toLocaleTimeString()}</span>
+   696→  1395→          <span>5s interval</span>
+   697→  1396→        </div>
+   698→  1397→      </footer>
+   699→  1398→    </div>
+   700→  1399→  )
+
+[showing lines 1-700 of 702; use offset=701 with limit to continue reading]

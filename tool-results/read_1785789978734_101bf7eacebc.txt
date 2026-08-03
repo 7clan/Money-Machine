@@ -1,0 +1,951 @@
+     1→'use client'
+     2→
+     3→import React, { useMemo, useState } from 'react'
+     4→import { motion, AnimatePresence } from 'framer-motion'
+     5→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+     6→import { Badge } from '@/components/ui/badge'
+     7→import { Button } from '@/components/ui/button'
+     8→import { ScrollArea } from '@/components/ui/scroll-area'
+     9→import { Separator } from '@/components/ui/separator'
+    10→import {
+    11→  Sheet,
+    12→  SheetContent,
+    13→  SheetDescription,
+    14→  SheetHeader,
+    15→  SheetTitle,
+    16→} from '@/components/ui/sheet'
+    17→import {
+    18→  ChevronLeft,
+    19→  ChevronRight,
+    20→  CalendarDays,
+    21→  CheckCircle2,
+    22→  Clock,
+    23→  Video,
+    24→  CalendarClock,
+    25→  CircleDot,
+    26→  Radio,
+    27→  Sparkles,
+    28→} from 'lucide-react'
+    29→import { cn } from '@/lib/utils'
+    30→
+    31→// ─── Types ────────────────────────────────────────────────────────────
+    32→
+    33→/** Derived from VideoIdea + (optional) nested pillar relation. */
+    34→export interface CalendarIdea {
+    35→  id: string
+    36→  title: string
+    37→  pillarId?: string | null
+    38→  pillar?: { id?: string; name?: string | null; color?: string | null } | null
+    39→  type?: string | null
+    40→  status?: string | null
+    41→  scheduledDate?: string | Date | null
+    42→}
+    43→
+    44→/** Derived from Upload. */
+    45→export interface CalendarUpload {
+    46→  id: string
+    47→  title: string
+    48→  videoProjectId?: string
+    49→  youtubeVideoId?: string | null
+    50→  privacy?: string | null
+    51→  uploadStatus?: string | null
+    52→  publishedAt?: string | Date | null
+    53→}
+    54→
+    55→export interface ContentCalendarProps {
+    56→  /** VideoIdea[] with scheduledDate */
+    57→  ideas?: any[]
+    58→  /** Upload[] with publishedAt */
+    59→  uploads?: any[]
+    60→  className?: string
+    61→}
+    62→
+    63→interface DayEvent {
+    64→  kind: 'scheduled' | 'published'
+    65→  id: string
+    66→  title: string
+    67→  date: Date
+    68→  pillar?: PaletteEntry
+    69→  type?: string
+    70→  status?: string
+    71→  privacy?: string
+    72→}
+    73→
+    74→// ─── Constants ────────────────────────────────────────────────────────
+    75→
+    76→const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    77→const MONTH_NAMES = [
+    78→  'January', 'February', 'March', 'April', 'May', 'June',
+    79→  'July', 'August', 'September', 'October', 'November', 'December',
+    80→]
+    81→
+    82→interface PaletteEntry {
+    83→  name: string
+    84→  dot: string
+    85→  text: string
+    86→  soft: string
+    87→  ring: string
+    88→  border: string
+    89→}
+    90→
+    91→const PILLAR_PALETTE: PaletteEntry[] = [
+    92→  { name: 'violet',  dot: 'bg-violet-500',  text: 'text-violet-300',  soft: 'bg-violet-500/15',  ring: 'ring-violet-500/40',  border: 'border-violet-500/40' },
+    93→  { name: 'cyan',    dot: 'bg-cyan-500',    text: 'text-cyan-300',    soft: 'bg-cyan-500/15',    ring: 'ring-cyan-500/40',    border: 'border-cyan-500/40' },
+    94→  { name: 'emerald', dot: 'bg-emerald-500', text: 'text-emerald-300', soft: 'bg-emerald-500/15', ring: 'ring-emerald-500/40', border: 'border-emerald-500/40' },
+    95→  { name: 'amber',   dot: 'bg-amber-500',   text: 'text-amber-300',   soft: 'bg-amber-500/15',   ring: 'ring-amber-500/40',   border: 'border-amber-500/40' },
+    96→  { name: 'rose',    dot: 'bg-rose-500',    text: 'text-rose-300',    soft: 'bg-rose-500/15',    ring: 'ring-rose-500/40',    border: 'border-rose-500/40' },
+    97→  { name: 'fuchsia', dot: 'bg-fuchsia-500', text: 'text-fuchsia-300', soft: 'bg-fuchsia-500/15', ring: 'ring-fuchsia-500/40', border: 'border-fuchsia-500/40' },
+    98→  { name: 'teal',    dot: 'bg-teal-500',    text: 'text-teal-300',    soft: 'bg-teal-500/15',    ring: 'ring-teal-500/40',    border: 'border-teal-500/40' },
+    99→  { name: 'orange',  dot: 'bg-orange-500',  text: 'text-orange-300',  soft: 'bg-orange-500/15',  ring: 'ring-orange-500/40',  border: 'border-orange-500/40' },
+   100→]
+   101→
+   102→const DEFAULT_PALETTE = PILLAR_PALETTE[0]
+   103→
+   104→// ─── Helpers ──────────────────────────────────────────────────────────
+   105→
+   106→function toDate(v: string | Date | null | undefined): Date | null {
+   107→  if (!v) return null
+   108→  const d = typeof v === 'string' ? new Date(v) : v
+   109→  return isNaN(d.getTime()) ? null : d
+   110→}
+   111→
+   112→function dayKey(d: Date): string {
+   113→  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+   114→    d.getDate()
+   115→  ).padStart(2, '0')}`
+   116→}
+   117→
+   118→function isSameDay(a: Date, b: Date): boolean {
+   119→  return (
+   120→    a.getFullYear() === b.getFullYear() &&
+   121→    a.getMonth() === b.getMonth() &&
+   122→    a.getDate() === b.getDate()
+   123→  )
+   124→}
+   125→
+   126→function startOfDay(d: Date): Date {
+   127→  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+   128→}
+   129→
+   130→function hashString(s: string): number {
+   131→  let h = 0
+   132→  for (let i = 0; i < s.length; i++) {
+   133→    h = (Math.imul(h, 31) + s.charCodeAt(i)) >>> 0
+   134→  }
+   135→  return h
+   136→}
+   137→
+   138→function resolvePillar(
+   139→  pillarId?: string | null,
+   140→  pillar?: { name?: string | null; color?: string | null } | null,
+   141→  fallbackKey?: string
+   142→): PaletteEntry {
+   143→  const colorStr = pillar?.color
+   144→  if (colorStr) {
+   145→    const lower = colorStr.toLowerCase()
+   146→    const match = PILLAR_PALETTE.find((p) => lower.includes(p.name))
+   147→    if (match) return match
+   148→  }
+   149→  const key = pillarId || pillar?.name || fallbackKey || 'default'
+   150→  if (!key || key === 'default') return DEFAULT_PALETTE
+   151→  return PILLAR_PALETTE[hashString(key) % PILLAR_PALETTE.length]
+   152→}
+   153→
+   154→function buildCalendarGrid(monthDate: Date): Date[] {
+   155→  const year = monthDate.getFullYear()
+   156→  const month = monthDate.getMonth()
+   157→  const firstDay = new Date(year, month, 1)
+   158→  const startDayOfWeek = firstDay.getDay() // 0 = Sunday
+   159→  const start = new Date(year, month, 1 - startDayOfWeek)
+   160→  const cells: Date[] = []
+   161→  for (let i = 0; i < 42; i++) {
+   162→    cells.push(
+   163→      new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
+   164→    )
+   165→  }
+   166→  return cells
+   167→}
+   168→
+   169→function formatFullDate(d: Date): string {
+   170→  return d.toLocaleDateString(undefined, {
+   171→    weekday: 'long',
+   172→    year: 'numeric',
+   173→    month: 'long',
+   174→    day: 'numeric',
+   175→  })
+   176→}
+   177→
+   178→function formatShortDate(d: Date): string {
+   179→  return d.toLocaleDateString(undefined, {
+   180→    month: 'short',
+   181→    day: 'numeric',
+   182→  })
+   183→}
+   184→
+   185→function formatTime(d: Date): string {
+   186→  return d.toLocaleTimeString(undefined, {
+   187→    hour: 'numeric',
+   188→    minute: '2-digit',
+   189→  })
+   190→}
+   191→
+   192→function relativeDays(d: Date): string {
+   193→  const today = startOfDay(new Date())
+   194→  const target = startOfDay(d)
+   195→  const diffDays = Math.round(
+   196→    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+   197→  )
+   198→  if (diffDays === 0) return 'Today'
+   199→  if (diffDays === 1) return 'Tomorrow'
+   200→  if (diffDays === -1) return 'Yesterday'
+   201→  if (diffDays > 0) return `in ${diffDays} days`
+   202→  return `${Math.abs(diffDays)} days ago`
+   203→}
+   204→
+   205→// ─── Animation variants ───────────────────────────────────────────────
+   206→
+   207→const slideVariants = {
+   208→  enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
+   209→  center: { x: 0, opacity: 1 },
+   210→  exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
+   211→}
+   212→
+   213→const listVariants = {
+   214→  hidden: { opacity: 0 },
+   215→  show: { opacity: 1, transition: { staggerChildren: 0.05 } },
+   216→}
+   217→
+   218→const itemVariants = {
+   219→  hidden: { opacity: 0, y: 8 },
+   220→  show: { opacity: 1, y: 0 },
+   221→}
+   222→
+   223→// ─── Component ────────────────────────────────────────────────────────
+   224→
+   225→export function ContentCalendar({
+   226→  ideas = [],
+   227→  uploads = [],
+   228→  className,
+   229→}: ContentCalendarProps) {
+   230→  const today = useMemo(() => startOfDay(new Date()), [])
+   231→  const [viewDate, setViewDate] = useState<Date>(
+   232→    () => new Date(today.getFullYear(), today.getMonth(), 1)
+   233→  )
+   234→  const [direction, setDirection] = useState(1)
+   235→  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+   236→
+   237→  // Normalize inputs into events.
+   238→  const { eventsByDay, scheduledEvents, publishedEvents, pillarsUsed } =
+   239→    useMemo(() => {
+   240→      const map = new Map<string, DayEvent[]>()
+   241→      const scheduled: DayEvent[] = []
+   242→      const published: DayEvent[] = []
+   243→      const pillarSet = new Map<string, PaletteEntry>()
+   244→
+   245→      for (const raw of ideas) {
+   246→        const idea = raw as CalendarIdea
+   247→        const date = toDate(idea.scheduledDate)
+   248→        if (!date) continue
+   249→        const pillar = resolvePillar(idea.pillarId, idea.pillar, idea.id)
+   250→        pillarSet.set(pillar.name, pillar)
+   251→        const ev: DayEvent = {
+   252→          kind: 'scheduled',
+   253→          id: idea.id,
+   254→          title: idea.title || 'Untitled idea',
+   255→          date,
+   256→          pillar,
+   257→          type: idea.type || 'longform',
+   258→          status: idea.status || undefined,
+   259→        }
+   260→        scheduled.push(ev)
+   261→        const key = dayKey(date)
+   262→        const arr = map.get(key) || []
+   263→        arr.push(ev)
+   264→        map.set(key, arr)
+   265→      }
+   266→
+   267→      for (const raw of uploads) {
+   268→        const up = raw as CalendarUpload
+   269→        const date = toDate(up.publishedAt)
+   270→        if (!date) continue
+   271→        const ev: DayEvent = {
+   272→          kind: 'published',
+   273→          id: up.id,
+   274→          title: up.title || 'Untitled upload',
+   275→          date,
+   276→          privacy: up.privacy || undefined,
+   277→          status: up.uploadStatus || undefined,
+   278→        }
+   279→        published.push(ev)
+   280→        const key = dayKey(date)
+   281→        const arr = map.get(key) || []
+   282→        arr.push(ev)
+   283→        map.set(key, arr)
+   284→      }
+   285→
+   286→      // Sort each day's events: scheduled first, then by time.
+   287→      for (const arr of map.values()) {
+   288→        arr.sort((a, b) => {
+   289→          if (a.kind !== b.kind) return a.kind === 'scheduled' ? -1 : 1
+   290→          return a.date.getTime() - b.date.getTime()
+   291→        })
+   292→      }
+   293→
+   294→      return {
+   295→        eventsByDay: map,
+   296→        scheduledEvents: scheduled,
+   297→        publishedEvents: published,
+   298→        pillarsUsed: Array.from(pillarSet.values()),
+   299→      }
+   300→    }, [ideas, uploads])
+   301→
+   302→  const grid = useMemo(() => buildCalendarGrid(viewDate), [viewDate])
+   303→
+   304→  // Stats for the currently-viewed month.
+   305→  const monthStats = useMemo(() => {
+   306→    const y = viewDate.getFullYear()
+   307→    const m = viewDate.getMonth()
+   308→    const inMonthScheduled = scheduledEvents.filter(
+   309→      (e) => e.date.getFullYear() === y && e.date.getMonth() === m
+   310→    ).length
+   311→    const inMonthPublished = publishedEvents.filter(
+   312→      (e) => e.date.getFullYear() === y && e.date.getMonth() === m
+   313→    ).length
+   314→    const upcoming = scheduledEvents.filter(
+   315→      (e) => e.date.getTime() >= today.getTime()
+   316→    ).length
+   317→    return {
+   318→      scheduled: inMonthScheduled,
+   319→      published: inMonthPublished,
+   320→      upcoming,
+   321→    }
+   322→  }, [viewDate, scheduledEvents, publishedEvents, today])
+   323→
+   324→  // Upcoming queue: next 5 scheduled ideas from today onward.
+   325→  const upcomingQueue = useMemo(() => {
+   326→    return scheduledEvents
+   327→      .filter((e) => e.date.getTime() >= today.getTime())
+   328→      .sort((a, b) => a.date.getTime() - b.date.getTime())
+   329→      .slice(0, 5)
+   330→  }, [scheduledEvents, today])
+   331→
+   332→  const goPrev = () => {
+   333→    setDirection(-1)
+   334→    setViewDate((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))
+   335→  }
+   336→  const goNext = () => {
+   337→    setDirection(1)
+   338→    setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))
+   339→  }
+   340→  const goToday = () => {
+   341→    const cur = new Date(today.getFullYear(), today.getMonth(), 1)
+   342→    setDirection(cur.getTime() > viewDate.getTime() ? 1 : -1)
+   343→    setViewDate(cur)
+   344→  }
+   345→
+   346→  const monthLabel = `${MONTH_NAMES[viewDate.getMonth()]} ${viewDate.getFullYear()}`
+   347→
+   348→  const selectedEvents = selectedDate
+   349→    ? eventsByDay.get(dayKey(selectedDate)) || []
+   350→    : []
+   351→
+   352→  return (
+   353→    <Card
+   354→      className={cn(
+   355→        'bg-slate-900/60 border border-slate-800/50 backdrop-blur-sm text-slate-100',
+   356→        className
+   357→      )}
+   358→    >
+   359→      <CardHeader className="pb-4">
+   360→        <div className="flex items-start justify-between gap-3 flex-wrap">
+   361→          <div className="space-y-1">
+   362→            <CardTitle className="flex items-center gap-2 text-lg">
+   363→              <CalendarDays className="size-5 text-cyan-400" />
+   364→              Content Calendar
+   365→            </CardTitle>
+   366→            <CardDescription className="text-slate-400">
+   367→              Scheduled publications and historical uploads.
+   368→            </CardDescription>
+   369→          </div>
+   370→
+   371→          {/* Month navigation */}
+   372→          <div className="flex items-center gap-1.5">
+   373→            <Button
+   374→              variant="outline"
+   375→              size="icon"
+   376→              onClick={goPrev}
+   377→              className="size-8 bg-slate-800/60 border-slate-700 hover:bg-slate-700 hover:text-white text-slate-300"
+   378→              aria-label="Previous month"
+   379→            >
+   380→              <ChevronLeft className="size-4" />
+   381→            </Button>
+   382→            <div className="min-w-[9rem] text-center">
+   383→              <div className="text-sm font-semibold text-slate-100">
+   384→                {monthLabel}
+   385→              </div>
+   386→            </div>
+   387→            <Button
+   388→              variant="outline"
+   389→              size="icon"
+   390→              onClick={goNext}
+   391→              className="size-8 bg-slate-800/60 border-slate-700 hover:bg-slate-700 hover:text-white text-slate-300"
+   392→              aria-label="Next month"
+   393→            >
+   394→              <ChevronRight className="size-4" />
+   395→            </Button>
+   396→            <Button
+   397→              variant="ghost"
+   398→              size="sm"
+   399→              onClick={goToday}
+   400→              className="ml-1 h-8 text-xs text-slate-300 hover:text-white hover:bg-slate-800"
+   401→            >
+   402→              Today
+   403→            </Button>
+   404→          </div>
+   405→        </div>
+   406→      </CardHeader>
+   407→
+   408→      <CardContent className="space-y-5">
+   409→        {/* Stats summary */}
+   410→        <div className="grid grid-cols-3 gap-2.5">
+   411→          <MiniStat
+   412→            label="Scheduled"
+   413→            value={monthStats.scheduled}
+   414→            icon={<CalendarClock className="size-4" />}
+   415→            tone="violet"
+   416→          />
+   417→          <MiniStat
+   418→            label="Published"
+   419→            value={monthStats.published}
+   420→            icon={<CheckCircle2 className="size-4" />}
+   421→            tone="emerald"
+   422→          />
+   423→          <MiniStat
+   424→            label="Upcoming"
+   425→            value={monthStats.upcoming}
+   426→            icon={<Radio className="size-4" />}
+   427→            tone="cyan"
+   428→          />
+   429→        </div>
+   430→
+   431→        {/* Calendar grid (desktop / tablet) */}
+   432→        <div className="hidden sm:block">
+   433→          {/* Weekday header */}
+   434→          <div className="grid grid-cols-7 gap-1.5 mb-1.5">
+   435→            {WEEKDAYS.map((d) => (
+   436→              <div
+   437→                key={d}
+   438→                className="text-center text-[11px] font-medium uppercase tracking-wide text-slate-500 py-1"
+   439→              >
+   440→                {d}
+   441→              </div>
+   442→            ))}
+   443→          </div>
+   444→
+   445→          {/* Day cells with slide transition */}
+   446→          <div className="overflow-hidden">
+   447→            <AnimatePresence custom={direction} mode="popLayout" initial={false}>
+   448→              <motion.div
+   449→                key={`${viewDate.getFullYear()}-${viewDate.getMonth()}`}
+   450→                custom={direction}
+   451→                variants={slideVariants}
+   452→                initial="enter"
+   453→                animate="center"
+   454→                exit="exit"
+   455→                transition={{ duration: 0.22, ease: 'easeOut' }}
+   456→                className="grid grid-cols-7 gap-1.5"
+   457→              >
+   458→                {grid.map((cellDate) => {
+   459→                  const key = dayKey(cellDate)
+   460→                  const dayEvents = eventsByDay.get(key) || []
+   461→                  const inMonth = cellDate.getMonth() === viewDate.getMonth()
+   462→                  const isToday = isSameDay(cellDate, today)
+   463→                  return (
+   464→                    <DayCell
+   465→                      key={key}
+   466→                      date={cellDate}
+   467→                      inMonth={inMonth}
+   468→                      isToday={isToday}
+   469→                      events={dayEvents}
+   470→                      onClick={() => setSelectedDate(cellDate)}
+   471→                    />
+   472→                  )
+   473→                })}
+   474→              </motion.div>
+   475→            </AnimatePresence>
+   476→          </div>
+   477→        </div>
+   478→
+   479→        {/* Mobile vertical list of days with events */}
+   480→        <div className="sm:hidden">
+   481→          <MobileDayList
+   482→            viewDate={viewDate}
+   483→            eventsByDay={eventsByDay}
+   484→            today={today}
+   485→            onSelect={setSelectedDate}
+   486→          />
+   487→        </div>
+   488→
+   489→        {/* Legend */}
+   490→        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400">
+   491→          {pillarsUsed.length > 0 ? (
+   492→            pillarsUsed.map((p) => (
+   493→              <span key={p.name} className="flex items-center gap-1.5">
+   494→                <span className={cn('size-2.5 rounded-full', p.dot)} />
+   495→                <span className="capitalize">{p.name}</span>
+   496→              </span>
+   497→            ))
+   498→          ) : (
+   499→            <>
+   500→              <span className="flex items-center gap-1.5">
+   501→                <span className="size-2.5 rounded-full bg-violet-500" />
+   502→                <span>Pillar A</span>
+   503→              </span>
+   504→              <span className="flex items-center gap-1.5">
+   505→                <span className="size-2.5 rounded-full bg-cyan-500" />
+   506→                <span>Pillar B</span>
+   507→              </span>
+   508→            </>
+   509→          )}
+   510→          <span className="flex items-center gap-1.5">
+   511→            <CircleDot className="size-3.5 text-slate-400" />
+   512→            <span>Scheduled</span>
+   513→          </span>
+   514→          <span className="flex items-center gap-1.5">
+   515→            <CheckCircle2 className="size-3.5 text-emerald-400" />
+   516→            <span>Published</span>
+   517→          </span>
+   518→        </div>
+   519→
+   520→        {/* Upcoming queue */}
+   521→        <div className="rounded-lg border border-slate-800 bg-slate-950/40 p-3.5">
+   522→          <div className="flex items-center gap-2 mb-3">
+   523→            <Clock className="size-4 text-amber-400" />
+   524→            <h4 className="text-sm font-medium text-slate-200">Upcoming queue</h4>
+   525→            <Badge
+   526→              variant="outline"
+   527→              className="ml-auto bg-slate-800/60 text-slate-300 border-slate-700 text-[11px]"
+   528→            >
+   529→              Next {upcomingQueue.length}
+   530→            </Badge>
+   531→          </div>
+   532→          {upcomingQueue.length === 0 ? (
+   533→            <p className="text-xs text-slate-500 py-2 text-center">
+   534→              No upcoming scheduled videos.
+   535→            </p>
+   536→          ) : (
+   537→            <motion.ul
+   538→              variants={listVariants}
+   539→              initial="hidden"
+   540→              animate="show"
+   541→              className="space-y-2"
+   542→            >
+   543→              {upcomingQueue.map((ev) => (
+   544→                <motion.li
+   545→                  key={ev.id}
+   546→                  variants={itemVariants}
+   547→                  className="flex items-center gap-2.5 rounded-md bg-slate-900/40 px-2.5 py-2"
+   548→                >
+   549→                  <span
+   550→                    className={cn(
+   551→                      'size-2.5 rounded-full shrink-0',
+   552→                      ev.pillar?.dot || 'bg-violet-500'
+   553→                    )}
+   554→                  />
+   555→                  <div className="min-w-0 flex-1">
+   556→                    <div className="text-sm text-slate-200 truncate">
+   557→                      {ev.title}
+   558→                    </div>
+   559→                    <div className="text-[11px] text-slate-500">
+   560→                      {formatShortDate(ev.date)} · {relativeDays(ev.date)}
+   561→                    </div>
+   562→                  </div>
+   563→                  {ev.type === 'short' && (
+   564→                    <Badge
+   565→                      variant="outline"
+   566→                      className="bg-amber-500/15 text-amber-300 border-amber-500/30 text-[10px]"
+   567→                    >
+   568→                      Short
+   569→                    </Badge>
+   570→                  )}
+   571→                </motion.li>
+   572→              ))}
+   573→            </motion.ul>
+   574→          )}
+   575→        </div>
+   576→      </CardContent>
+   577→
+   578→      {/* Day detail side panel */}
+   579→      <Sheet
+   580→        open={selectedDate !== null}
+   581→        onOpenChange={(o) => !o && setSelectedDate(null)}
+   582→      >
+   583→        <SheetContent
+   584→          side="right"
+   585→          className="bg-slate-950 border-l border-slate-800 text-slate-100 w-full sm:max-w-md"
+   586→        >
+   587→          <SheetHeader className="pb-2">
+   588→            <SheetTitle className="flex items-center gap-2 text-lg">
+   589→              <CalendarDays className="size-5 text-cyan-400" />
+   590→              {selectedDate ? formatFullDate(selectedDate) : ''}
+   591→            </SheetTitle>
+   592→            <SheetDescription className="text-slate-400">
+   593→              {selectedEvents.length === 0
+   594→                ? 'No events scheduled for this day.'
+   595→                : `${selectedEvents.length} event${selectedEvents.length === 1 ? '' : 's'} on this day.`}
+   596→            </SheetDescription>
+   597→          </SheetHeader>
+   598→
+   599→          <Separator className="bg-slate-800" />
+   600→
+   601→          <ScrollArea className="flex-1 -mx-1">
+   602→            <div className="px-4 pb-6 space-y-4">
+   603→              {selectedEvents.length === 0 ? (
+   604→                <div className="rounded-lg border border-dashed border-slate-800 p-6 text-center">
+   605→                  <CalendarDays className="size-8 text-slate-600 mx-auto mb-2" />
+   606→                  <p className="text-sm text-slate-400">
+   607→                    Nothing scheduled. Pick another day to inspect events.
+   608→                  </p>
+   609→                </div>
+   610→              ) : (
+   611→                <DayDetailSections events={selectedEvents} />
+   612→              )}
+   613→            </div>
+   614→          </ScrollArea>
+   615→        </SheetContent>
+   616→      </Sheet>
+   617→    </Card>
+   618→  )
+   619→}
+   620→
+   621→// ─── Sub-components ───────────────────────────────────────────────────
+   622→
+   623→function MiniStat({
+   624→  label,
+   625→  value,
+   626→  icon,
+   627→  tone,
+   628→}: {
+   629→  label: string
+   630→  value: number
+   631→  icon: React.ReactNode
+   632→  tone: 'violet' | 'cyan' | 'emerald' | 'amber'
+   633→}) {
+   634→  const toneMap: Record<typeof tone, string> = {
+   635→    violet: 'border-violet-500/30 bg-violet-500/10 text-violet-300',
+   636→    cyan: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
+   637→    emerald: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300',
+   638→    amber: 'border-amber-500/30 bg-amber-500/10 text-amber-300',
+   639→  }
+   640→  return (
+   641→    <div
+   642→      className={cn(
+   643→        'rounded-lg border px-3 py-2.5 flex items-center gap-2.5',
+   644→        toneMap[tone]
+   645→      )}
+   646→    >
+   647→      <div className="size-7 rounded-md bg-slate-950/40 flex items-center justify-center shrink-0">
+   648→        {icon}
+   649→      </div>
+   650→      <div className="min-w-0">
+   651→        <div className="text-[10px] uppercase tracking-wide text-slate-400 truncate">
+   652→          {label}
+   653→        </div>
+   654→        <div className="text-lg font-semibold leading-tight tabular-nums">
+   655→          {value}
+   656→        </div>
+   657→      </div>
+   658→    </div>
+   659→  )
+   660→}
+   661→
+   662→function DayCell({
+   663→  date,
+   664→  inMonth,
+   665→  isToday,
+   666→  events,
+   667→  onClick,
+   668→}: {
+   669→  date: Date
+   670→  inMonth: boolean
+   671→  isToday: boolean
+   672→  events: DayEvent[]
+   673→  onClick: () => void
+   674→}) {
+   675→  const scheduled = events.filter((e) => e.kind === 'scheduled')
+   676→  const published = events.filter((e) => e.kind === 'published')
+   677→  const visibleDots = scheduled.slice(0, 3)
+   678→  const extra = Math.max(0, scheduled.length - visibleDots.length)
+   679→  const hasEvents = events.length > 0
+   680→
+   681→  return (
+   682→    <button
+   683→      type="button"
+   684→      onClick={onClick}
+   685→      className={cn(
+   686→        'relative min-h-[84px] sm:min-h-[96px] rounded-md border p-1.5 text-left transition-colors flex flex-col gap-1',
+   687→        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50',
+   688→        inMonth
+   689→          ? 'bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/70'
+   690→          : 'bg-slate-950/40 border-slate-900/60 opacity-50',
+   691→        isToday && 'ring-2 ring-violet-500/70 ring-offset-0',
+   692→        hasEvents && inMonth && 'border-slate-700'
+   693→      )}
+   694→      aria-label={`${date.toDateString()}${hasEvents ? `, ${events.length} events` : ''}`}
+   695→    >
+   696→      <div className="flex items-center justify-between">
+   697→        <span
+   698→          className={cn(
+   699→            'text-xs font-medium tabular-nums',
+   700→            isToday
+   701→              ? 'text-violet-300'
+   702→              : inMonth
+   703→                ? 'text-slate-300'
+   704→                : 'text-slate-600'
+   705→          )}
+   706→        >
+   707→          {date.getDate()}
+   708→        </span>
+   709→        {published.length > 0 && (
+   710→          <CheckCircle2 className="size-3.5 text-emerald-400" />
+   711→        )}
+   712→      </div>
+   713→
+   714→      {visibleDots.length > 0 && (
+   715→        <div className="flex flex-wrap gap-1 mt-auto">
+   716→          {visibleDots.map((ev, i) => (
+   717→            <span
+   718→              key={`${ev.id}-${i}`}
+   719→              className={cn(
+   720→                'size-2 rounded-full',
+   721→                ev.pillar?.dot || 'bg-violet-500'
+   722→              )}
+   723→              title={ev.title}
+   724→            />
+   725→          ))}
+   726→          {extra > 0 && (
+   727→            <span className="text-[9px] text-slate-400 leading-none self-center">
+   728→              +{extra}
+   729→            </span>
+   730→          )}
+   731→        </div>
+   732→      )}
+   733→
+   734→      {scheduled.length === 0 && published.length > 0 && (
+   735→        <div className="mt-auto flex items-center gap-1 text-[10px] text-emerald-400/80">
+   736→          <Video className="size-3" />
+   737→          <span>{published.length}</span>
+   738→        </div>
+   739→      )}
+   740→    </button>
+   741→  )
+   742→}
+   743→
+   744→function MobileDayList({
+   745→  viewDate,
+   746→  eventsByDay,
+   747→  today,
+   748→  onSelect,
+   749→}: {
+   750→  viewDate: Date
+   751→  eventsByDay: Map<string, DayEvent[]>
+   752→  today: Date
+   753→  onSelect: (d: Date) => void
+   754→}) {
+   755→  const y = viewDate.getFullYear()
+   756→  const m = viewDate.getMonth()
+   757→  const daysInMonth = new Date(y, m + 1, 0).getDate()
+   758→  const rows: { date: Date; events: DayEvent[] }[] = []
+   759→  for (let d = 1; d <= daysInMonth; d++) {
+   760→    const date = new Date(y, m, d)
+   761→    const events = eventsByDay.get(dayKey(date)) || []
+   762→    if (events.length > 0) rows.push({ date, events })
+   763→  }
+   764→
+   765→  if (rows.length === 0) {
+   766→    return (
+   767→      <div className="rounded-lg border border-dashed border-slate-800 bg-slate-950/40 p-6 text-center">
+   768→        <CalendarDays className="size-7 text-slate-600 mx-auto mb-2" />
+   769→        <p className="text-sm text-slate-400">
+   770→          No events in {MONTH_NAMES[m]} {y}.
+   771→        </p>
+   772→      </div>
+   773→    )
+   774→  }
+   775→
+   776→  return (
+   777→    <motion.ul
+   778→      variants={listVariants}
+   779→      initial="hidden"
+   780→      animate="show"
+   781→      className="space-y-2 max-h-80 overflow-y-auto pr-1"
+   782→    >
+   783→      {rows.map(({ date, events }) => {
+   784→        const isToday = isSameDay(date, today)
+   785→        return (
+   786→          <motion.li key={dayKey(date)} variants={itemVariants}>
+   787→            <button
+   788→              type="button"
+   789→              onClick={() => onSelect(date)}
+   790→              className={cn(
+   791→                'w-full text-left rounded-lg border p-3 flex items-center gap-3 transition-colors',
+   792→                isToday
+   793→                  ? 'border-violet-500/50 bg-violet-500/10'
+   794→                  : 'border-slate-800 bg-slate-950/40 hover:bg-slate-900/60'
+   795→              )}
+   796→            >
+   797→              <div className="text-center shrink-0 w-10">
+   798→                <div className="text-[10px] uppercase text-slate-500">
+   799→                  {WEEKDAYS[date.getDay()]}
+   800→                </div>
+   801→                <div
+   802→                  className={cn(
+   803→                    'text-lg font-semibold tabular-nums',
+   804→                    isToday ? 'text-violet-300' : 'text-slate-200'
+   805→                  )}
+   806→                >
+   807→                  {date.getDate()}
+   808→                </div>
+   809→              </div>
+   810→              <div className="min-w-0 flex-1">
+   811→                <div className="flex flex-wrap gap-1">
+   812→                  {events.slice(0, 4).map((ev) => (
+   813→                    <span
+   814→                      key={ev.id}
+   815→                      className={cn(
+   816→                        'size-2 rounded-full',
+   817→                        ev.kind === 'published'
+   818→                          ? 'bg-emerald-500'
+   819→                          : ev.pillar?.dot || 'bg-violet-500'
+   820→                      )}
+   821→                    />
+   822→                  ))}
+   823→                </div>
+   824→                <div className="text-xs text-slate-400 mt-1 truncate">
+   825→                  {events
+   826→                    .map((e) => e.title)
+   827→                    .slice(0, 2)
+   828→                    .join(' · ')}
+   829→                  {events.length > 2 && ` +${events.length - 2} more`}
+   830→                </div>
+   831→              </div>
+   832→              <ChevronRight className="size-4 text-slate-500 shrink-0" />
+   833→            </button>
+   834→          </motion.li>
+   835→        )
+   836→      })}
+   837→    </motion.ul>
+   838→  )
+   839→}
+   840→
+   841→function DayDetailSections({ events }: { events: DayEvent[] }) {
+   842→  const scheduled = events.filter((e) => e.kind === 'scheduled')
+   843→  const published = events.filter((e) => e.kind === 'published')
+   844→
+   845→  return (
+   846→    <div className="space-y-4">
+   847→      {scheduled.length > 0 && (
+   848→        <section>
+   849→          <h5 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">
+   850→            <CircleDot className="size-3.5" />
+   851→            Scheduled
+   852→            <Badge className="bg-slate-800 text-slate-300 border-transparent ml-1">
+   853→              {scheduled.length}
+   854→            </Badge>
+   855→          </h5>
+   856→          <ul className="space-y-2">
+   857→            {scheduled.map((ev) => (
+   858→              <li
+   859→                key={ev.id}
+   860→                className="rounded-md border border-slate-800 bg-slate-900/40 p-2.5"
+   861→              >
+   862→                <div className="flex items-start gap-2.5">
+   863→                  <span
+   864→                    className={cn(
+   865→                      'size-2.5 rounded-full mt-1 shrink-0',
+   866→                      ev.pillar?.dot || 'bg-violet-500'
+   867→                    )}
+   868→                  />
+   869→                  <div className="min-w-0 flex-1">
+   870→                    <div className="text-sm text-slate-100 font-medium break-words">
+   871→                      {ev.title}
+   872→                    </div>
+   873→                    <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
+   874→                      <span className="capitalize">
+   875→                        {ev.pillar?.name || 'pillar'}
+   876→                      </span>
+   877→                      <span>·</span>
+   878→                      <span>{formatTime(ev.date)}</span>
+   879→                      {ev.type === 'short' && (
+   880→                        <>
+   881→                          <span>·</span>
+   882→                          <Badge className="bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px]">
+   883→                            Short
+   884→                          </Badge>
+   885→                        </>
+   886→                      )}
+   887→                    </div>
+   888→                  </div>
+   889→                </div>
+   890→              </li>
+   891→            ))}
+   892→          </ul>
+   893→        </section>
+   894→      )}
+   895→
+   896→      {published.length > 0 && (
+   897→        <section>
+   898→          <h5 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">
+   899→            <CheckCircle2 className="size-3.5 text-emerald-400" />
+   900→            Published
+   901→            <Badge className="bg-slate-800 text-slate-300 border-transparent ml-1">
+   902→              {published.length}
+   903→            </Badge>
+   904→          </h5>
+   905→          <ul className="space-y-2">
+   906→            {published.map((ev) => (
+   907→              <li
+   908→                key={ev.id}
+   909→                className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-2.5"
+   910→              >
+   911→                <div className="flex items-start gap-2.5">
+   912→                  <CheckCircle2 className="size-4 text-emerald-400 mt-0.5 shrink-0" />
+   913→                  <div className="min-w-0 flex-1">
+   914→                    <div className="text-sm text-slate-100 font-medium break-words">
+   915→                      {ev.title}
+   916→                    </div>
+   917→                    <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2 flex-wrap">
+   918→                      <span>{formatTime(ev.date)}</span>
+   919→                      {ev.privacy && (
+   920→                        <>
+   921→                          <span>·</span>
+   922→                          <span className="capitalize">{ev.privacy}</span>
+   923→                        </>
+   924→                      )}
+   925→                      {ev.status && ev.status !== 'completed' && (
+   926→                        <>
+   927→                          <span>·</span>
+   928→                          <span className="capitalize">{ev.status}</span>
+   929→                        </>
+   930→                      )}
+   931→                    </div>
+   932→                  </div>
+   933→                </div>
+   934→              </li>
+   935→            ))}
+   936→          </ul>
+   937→        </section>
+   938→      )}
+   939→
+   940→      {scheduled.length === 0 && published.length === 0 && (
+   941→        <div className="flex items-center gap-2 text-sm text-slate-500">
+   942→          <Sparkles className="size-4" />
+   943→          Nothing on this day.
+   944→        </div>
+   945→      )}
+   946→    </div>
+   947→  )
+   948→}
+   949→
+   950→export default ContentCalendar
+   951→

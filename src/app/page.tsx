@@ -27,7 +27,9 @@ import {
   ArrowUpRight, ArrowDownRight, Minus, Megaphone,
   Lightbulb, Wand2, Film, ThumbsUp, Users, Hash, CalendarDays,
   ChevronDown, ChevronLeft, Download, Quote,
-  CheckCircle, AlertCircle, Clock3, FileWarning, ScanLine
+  CheckCircle, AlertCircle, Clock3, FileWarning, ScanLine,
+  Keyboard, FlaskConical, HeartPulse, Handshake,
+  Bell, RefreshCw, Image as ImageIcon
 } from 'lucide-react'
 
 // ─── New Agent Feature Components ───────────────────────────────────
@@ -36,6 +38,12 @@ import { IdeaExplorer } from '@/components/agent/idea-explorer'
 import { QualityReviewPanel } from '@/components/agent/quality-review-panel'
 import { ContentCalendar } from '@/components/agent/content-calendar'
 import { GlassCard } from '@/components/agent/glass-card'
+import { YPPProgressTracker } from '@/components/agent/ypp-progress-tracker'
+import { RevenueProjections } from '@/components/agent/revenue-projections'
+import { SponsorshipDiscovery } from '@/components/agent/sponsorship-discovery'
+import { ExperimentManager } from '@/components/agent/experiment-manager'
+import { HealthDiagnostics } from '@/components/agent/health-diagnostics'
+import { KeyboardShortcuts } from '@/components/agent/keyboard-shortcuts'
 import {
   StatusCardSkeleton,
   PipelineFlowSkeleton,
@@ -346,6 +354,7 @@ export default function Dashboard() {
   const [lastPoll, setLastPoll] = useState<Date>(new Date())
   const [previewVideoId, setPreviewVideoId] = useState<string | null>(null)
   const [initialLoaded, setInitialLoaded] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
 
   // ── Polling ─────────────────────────────────────────────────────
   const fetchStatus = useCallback(async () => {
@@ -447,6 +456,13 @@ export default function Dashboard() {
   // ── Render ──────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+      {/* ═══ Decorative Background ═══ */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-violet-500/[0.03] rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-cyan-500/[0.03] rounded-full blur-3xl" />
+        <div className="absolute top-1/3 left-1/2 w-64 h-64 bg-emerald-500/[0.02] rounded-full blur-3xl" />
+      </div>
+
       {/* ═══ TOP BAR ═══ */}
       <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
         <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
@@ -509,18 +525,28 @@ export default function Dashboard() {
               { v: 'calendar', icon: CalendarDays, label: 'Calendar' },
               { v: 'revenue', icon: DollarSign, label: 'Revenue' },
               { v: 'analytics', icon: BarChart3, label: 'Analytics' },
+              { v: 'opportunities', icon: Handshake, label: 'Opportunities' },
+              { v: 'experiments', icon: FlaskConical, label: 'Experiments' },
               { v: 'logs', icon: FileText, label: 'Logs' },
               { v: 'settings', icon: Settings, label: 'Settings' },
             ].map(tab => (
               <TabsTrigger
                 key={tab.v}
                 value={tab.v}
-                className="data-[state=active]:bg-slate-700/80 data-[state=active]:text-white text-slate-400 text-xs px-3 py-1.5"
+                className="data-[state=active]:bg-slate-700/80 data-[state=active]:text-white text-slate-400 text-xs px-3 py-1.5 transition-all duration-200 hover:bg-slate-800/60"
               >
                 <tab.icon className="w-3.5 h-3.5 mr-1.5" />
                 {tab.label}
               </TabsTrigger>
             ))}
+            {/* Keyboard Shortcuts Button */}
+            <button
+              onClick={() => setShortcutsOpen(true)}
+              className="ml-auto text-slate-500 hover:text-slate-300 transition-colors p-1.5 rounded-md hover:bg-slate-800/50"
+              title="Keyboard Shortcuts (Ctrl+/)"
+            >
+              <Keyboard className="w-3.5 h-3.5" />
+            </button>
           </TabsList>
 
           {/* ══════════════════════════════════════════════════════════
@@ -901,62 +927,63 @@ export default function Dashboard() {
                     )}
                   </CardContent>
                 </GradientCard>
+
+                {/* Agent Health Diagnostics — New Component */}
+                <GlassCard variant="gradient" glowFrom="from-cyan-500" glowTo="to-violet-500">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <HeartPulse className="w-4 h-4 text-cyan-400" /> Agent Health & Diagnostics
+                    </CardTitle>
+                    <CardDescription className="text-[10px]">System status, engine health, and runtime diagnostics</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <HealthDiagnostics
+                      agentState={status?.state || 'idle'}
+                      operatingMode={status?.operatingMode || 'simulation'}
+                      emergencyStop={status?.emergencyStop || false}
+                      lastAction={status?.lastAction || null}
+                      youtubeConnected={channel?.youtubeConnected || false}
+                      niche={status?.niche || null}
+                    />
+                  </CardContent>
+                </GlassCard>
               </motion.div>
             </AnimatePresence>
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════════
-              REVENUE TAB
+              REVENUE TAB — Enhanced
               ══════════════════════════════════════════════════════════ */}
           <TabsContent value="revenue" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="revenue-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
-                {/* YPP Progress */}
-                <GradientCard glow="from-amber-500/5 to-emerald-500/5">
+                {/* YPP Progress — New Component */}
+                <GlassCard variant="gradient" glowFrom="from-amber-500" glowTo="to-emerald-500">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-amber-400" /> YouTube Partner Program Progress
+                      <CreditCard className="w-4 h-4 text-amber-400" /> YouTube Partner Program
                     </CardTitle>
-                    <CardDescription className="text-[10px]">Track your path toward monetization thresholds</CardDescription>
+                    <CardDescription className="text-[10px]">Track your path toward monetization eligibility</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {Object.entries(YPP_THRESHOLDS).map(([key, threshold]) => {
-                        const current = key === 'subscribers' ? (analytics?.totalSubscribers || 0)
-                          : key === 'watchHours' ? (analytics?.totalWatchTime || 0)
-                          : (status?.pipeline?.uploaded || 0)
-                        const pct = Math.min(100, (current / threshold.target) * 100)
-                        const Icon = threshold.icon
-                        return (
-                          <div key={key} className="space-y-1.5">
-                            <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center gap-2">
-                                <Icon className="w-3.5 h-3.5 text-slate-400" />
-                                <span className="text-slate-300">{threshold.label}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-mono text-slate-200">{current.toLocaleString()}</span>
-                                <span className="text-slate-500">/</span>
-                                <span className="font-mono text-slate-400">{threshold.target.toLocaleString()}</span>
-                                <Badge variant="outline" className={`text-[10px] ${pct >= 100 ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-400'}`}>
-                                  {pct >= 100 ? '✓' : `${pct.toFixed(0)}%`}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${pct}%` }}
-                                transition={{ duration: 1, ease: 'easeOut' }}
-                                className={`h-full rounded-full ${pct >= 100 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-amber-500 to-amber-400'}`}
-                              />
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
+                    <YPPProgressTracker
+                      subscribers={analytics?.totalSubscribers || 0}
+                      watchHours={analytics?.totalWatchTime || 0}
+                      publicUploads={status?.pipeline?.uploaded || 0}
+                      communityStrikes={0}
+                      twoStepVerified={false}
+                      adsenseLinked={false}
+                    />
                   </CardContent>
-                </GradientCard>
+                </GlassCard>
+
+                {/* Revenue Projections — New Component */}
+                <RevenueProjections
+                  totalViews={analytics?.totalViews || 0}
+                  totalSubscribers={analytics?.totalSubscribers || 0}
+                  estimatedRevenue={analytics?.estimatedRevenue || 0}
+                  videos={status?.pipeline?.uploaded || 0}
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   {/* Revenue Tracking */}
@@ -1006,11 +1033,19 @@ export default function Dashboard() {
                         { label: 'Merch Shelf', status: 'Requires 10K subscribers', icon: CreditCard, met: false },
                         { label: 'Sponsorships', status: 'Available with audience', icon: Megaphone, met: false },
                       ].map((opp, i) => (
-                        <div key={i} className="flex items-center gap-2.5 p-2 rounded-lg bg-slate-800/30 border border-slate-700/30 text-xs">
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -5 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.06 }}
+                          className="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:border-slate-600/50 transition-colors text-xs"
+                        >
                           <opp.icon className={`w-3.5 h-3.5 ${opp.met ? 'text-emerald-400' : 'text-slate-500'}`} />
                           <span className="text-slate-200 flex-1">{opp.label}</span>
-                          <span className="text-slate-500">{opp.status}</span>
-                        </div>
+                          <Badge variant="outline" className={`text-[10px] ${opp.met ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-500'}`}>
+                            {opp.status}
+                          </Badge>
+                        </motion.div>
                       ))}
                     </CardContent>
                   </GradientCard>
@@ -1107,6 +1142,33 @@ export default function Dashboard() {
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════════
+              OPPORTUNITIES TAB — New
+              ══════════════════════════════════════════════════════════ */}
+          <TabsContent value="opportunities" className="space-y-4">
+            <AnimatePresence mode="wait">
+              <motion.div key="opportunities-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                <SponsorshipDiscovery
+                  onDiscover={() => sendCommand('discover-opportunities')}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* ══════════════════════════════════════════════════════════
+              EXPERIMENTS TAB — New
+              ══════════════════════════════════════════════════════════ */}
+          <TabsContent value="experiments" className="space-y-4">
+            <AnimatePresence mode="wait">
+              <motion.div key="experiments-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                <ExperimentManager
+                  onCreate={(exp) => sendCommand('create-experiment', { experiment: exp })}
+                  onCancel={(id) => sendCommand('cancel-experiment', { experimentId: id })}
+                />
+              </motion.div>
+            </AnimatePresence>
+          </TabsContent>
+
+          {/* ═════════════════════════════!═════════════════════════════
               LOGS TAB
               ══════════════════════════════════════════════════════════ */}
           <TabsContent value="logs" className="space-y-4">
@@ -1244,7 +1306,7 @@ export default function Dashboard() {
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════════
-              SETTINGS TAB
+              SETTINGS TAB — Enhanced
               ══════════════════════════════════════════════════════════ */}
           <TabsContent value="settings" className="space-y-4">
             <AnimatePresence mode="wait">
@@ -1372,6 +1434,76 @@ export default function Dashboard() {
                     </CardContent>
                   </GradientCard>
                 </div>
+
+                {/* Advanced Agent Configuration — New */}
+                <GradientCard glow="from-cyan-500/5 to-violet-500/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-cyan-400" /> Advanced Agent Configuration
+                    </CardTitle>
+                    <CardDescription className="text-[10px]">Fine-tune agent behavior, scheduling, and production parameters</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[
+                        { label: 'Max Concurrent Jobs', value: '3', desc: 'Parallel job execution limit', icon: Layers },
+                        { label: 'Retry Limit', value: '3', desc: 'Max retries per failed job', icon: RefreshCw },
+                        { label: 'Poll Interval', value: '5s', desc: 'Dashboard refresh frequency', icon: Clock },
+                        { label: 'Script Target Length', value: '8 min', desc: 'Target video duration', icon: FileText },
+                        { label: 'Quality Gate Score', value: '7.5/10', desc: 'Minimum quality to approve', icon: Shield },
+                        { label: 'Thumbnail Resolution', value: '1280×720', desc: 'Generated thumbnail size', icon: ImageIcon },
+                      ].map((config, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.06 }}
+                          className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/30 space-y-1.5"
+                        >
+                          <div className="flex items-center gap-2">
+                            <config.icon className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="text-xs font-medium text-slate-200">{config.label}</span>
+                          </div>
+                          <p className="text-lg font-bold text-slate-100 pl-5">{config.value}</p>
+                          <p className="text-[10px] text-slate-500 pl-5">{config.desc}</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </GradientCard>
+
+                {/* Notification Preferences — New */}
+                <GradientCard glow="from-amber-500/5 to-rose-500/5">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-amber-400" /> Notification Preferences
+                    </CardTitle>
+                    <CardDescription className="text-[10px]">Configure when and how you receive agent notifications</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2.5">
+                      {[
+                        { label: 'Video production complete', enabled: true, icon: Film },
+                        { label: 'Quality review failed', enabled: true, icon: AlertTriangle },
+                        { label: 'Upload succeeded', enabled: true, icon: CloudUpload },
+                        { label: 'New sponsorship opportunity', enabled: false, icon: Megaphone },
+                        { label: 'Revenue milestone reached', enabled: false, icon: DollarSign },
+                        { label: 'Agent error or crash', enabled: true, icon: AlertOctagon },
+                        { label: 'Experiment completed', enabled: false, icon: FlaskConical },
+                      ].map((notif, i) => (
+                        <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/30 border border-slate-700/30">
+                          <div className="flex items-center gap-2.5">
+                            <notif.icon className={`w-3.5 h-3.5 ${notif.enabled ? 'text-slate-300' : 'text-slate-600'}`} />
+                            <span className={`text-xs ${notif.enabled ? 'text-slate-200' : 'text-slate-500'}`}>{notif.label}</span>
+                          </div>
+                          <div className={`w-9 h-5 rounded-full transition-colors ${notif.enabled ? 'bg-emerald-500' : 'bg-slate-700'} relative`}>
+                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${notif.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </GradientCard>
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -1382,17 +1514,38 @@ export default function Dashboard() {
           videoProjectId={previewVideoId}
           onClose={() => setPreviewVideoId(null)}
         />
+
+        {/* ═══ KEYBOARD SHORTCUTS ═══ */}
+        <KeyboardShortcuts
+          open={shortcutsOpen}
+          onOpenChange={setShortcutsOpen}
+          onCommand={(cmd) => {
+            if (cmd === 'emergency-stop') sendCommand(status?.emergencyStop ? 'resume' : 'stop')
+            else if (cmd === 'produce-next') sendCommand('produce-next')
+            else if (cmd === 'refresh') pollAll()
+            else if (cmd === 'pause') sendCommand('pause')
+            else if (cmd === 'resume') sendCommand('resume')
+            else if (cmd.startsWith('tab-')) {
+              const tabs = ['overview', 'pipeline', 'strategy', 'calendar', 'revenue', 'analytics', 'opportunities', 'experiments', 'logs', 'settings']
+              const idx = parseInt(cmd.split('-')[1]) - 1
+              if (idx >= 0 && idx < tabs.length) setActiveTab(tabs[idx])
+            }
+          }}
+        />
       </main>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="border-t border-slate-800/60 px-4 md:px-6 py-2 flex items-center justify-between text-[10px] text-slate-600">
+      <footer className="border-t border-slate-800/60 px-4 md:px-6 py-2 flex items-center justify-between text-[10px] text-slate-600 bg-slate-950/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>YouTube Revenue Studio v2.0 &middot; Z.AI Autonomous Agent</span>
+          <span>YouTube Revenue Studio v2.1 &middot; Z.AI Autonomous Agent</span>
         </div>
         <div className="flex items-center gap-3">
           <span>Poll: {lastPoll.toLocaleTimeString()}</span>
+          <span className="text-slate-700">|</span>
           <span>5s interval</span>
+          <span className="text-slate-700">|</span>
+          <span>{totalPipeline} pipeline items</span>
         </div>
       </footer>
     </div>

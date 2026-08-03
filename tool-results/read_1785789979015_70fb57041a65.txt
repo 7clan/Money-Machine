@@ -1,0 +1,1199 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useMemo, useEffect, useCallback } from 'react'
+     4→import { motion, AnimatePresence } from 'framer-motion'
+     5→import { Input } from '@/components/ui/input'
+     6→import {
+     7→  Select,
+     8→  SelectContent,
+     9→  SelectItem,
+    10→  SelectTrigger,
+    11→  SelectValue,
+    12→} from '@/components/ui/select'
+    13→import {
+    14→  Sheet,
+    15→  SheetContent,
+    16→  SheetHeader,
+    17→  SheetTitle,
+    18→  SheetDescription,
+    19→  SheetFooter,
+    20→} from '@/components/ui/sheet'
+    21→import { Badge } from '@/components/ui/badge'
+    22→import { Button } from '@/components/ui/button'
+    23→import { ScrollArea } from '@/components/ui/scroll-area'
+    24→import { Separator } from '@/components/ui/separator'
+    25→import { Skeleton } from '@/components/ui/skeleton'
+    26→import {
+    27→  Tooltip,
+    28→  TooltipContent,
+    29→  TooltipTrigger,
+    30→} from '@/components/ui/tooltip'
+    31→import {
+    32→  Search,
+    33→  ArrowUpDown,
+    34→  Lightbulb,
+    35→  Calendar,
+    36→  Clock,
+    37→  X,
+    38→  ChevronDown,
+    39→  Sparkles,
+    40→  FileText,
+    41→  TrendingUp,
+    42→  Target,
+    43→  AlertTriangle,
+    44→  Flame,
+    45→  Gauge,
+    46→  DollarSign,
+    47→  Layers,
+    48→  Hash,
+    49→  CheckCircle2,
+    50→  Film,
+    51→  Video,
+    52→  Filter,
+    53→  Inbox,
+    54→} from 'lucide-react'
+    55→import { cn } from '@/lib/utils'
+    56→
+    57→// ─── Types ───────────────────────────────────────────────────────────
+    58→
+    59→export type IdeaType = 'short' | 'longform'
+    60→export type IdeaStatus =
+    61→  | 'idea'
+    62→  | 'researched'
+    63→  | 'scripted'
+    64→  | 'producing'
+    65→  | 'reviewing'
+    66→  | 'approved'
+    67→  | 'uploaded'
+    68→  | 'failed'
+    69→
+    70→export interface IdeaPillar {
+    71→  id: string
+    72→  name: string
+    73→  description?: string | null
+    74→  color?: string | null
+    75→  priority?: number | null
+    76→}
+    77→
+    78→export interface Idea {
+    79→  id: string
+    80→  title: string
+    81→  type: IdeaType
+    82→  status: IdeaStatus
+    83→  pillarId?: string | null
+    84→  pillar?: IdeaPillar | null
+    85→  searchVolume?: number | null
+    86→  competitionScore?: number | null
+    87→  originalityScore?: number | null
+    88→  retentionPrediction?: number | null
+    89→  revenuePotential?: number | null
+    90→  productionEffort?: number | null
+    91→  riskScore?: number | null
+    92→  compositeScore?: number | null
+    93→  tags?: string[] | null
+    94→  scheduledDate?: string | Date | null
+    95→  createdAt?: string | Date | null
+    96→  updatedAt?: string | Date | null
+    97→}
+    98→
+    99→interface IdeaExplorerProps {
+   100→  ideas: Idea[]
+   101→  onSelectIdea?: (ideaId: string) => void
+   102→  className?: string
+   103→}
+   104→
+   105→type SortKey =
+   106→  | 'created_desc'
+   107→  | 'created_asc'
+   108→  | 'title_asc'
+   109→  | 'title_desc'
+   110→  | 'composite_desc'
+   111→  | 'scheduled_asc'
+   112→
+   113→// ─── Status Config ───────────────────────────────────────────────────
+   114→
+   115→const STATUS_CONFIG: Record<
+   116→  IdeaStatus,
+   117→  { label: string; badgeClass: string; dotClass: string }
+   118→> = {
+   119→  idea: {
+   120→    label: 'Idea',
+   121→    badgeClass: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+   122→    dotClass: 'bg-slate-400',
+   123→  },
+   124→  researched: {
+   125→    label: 'Researched',
+   126→    badgeClass: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+   127→    dotClass: 'bg-blue-400',
+   128→  },
+   129→  scripted: {
+   130→    label: 'Scripted',
+   131→    badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+   132→    dotClass: 'bg-amber-400',
+   133→  },
+   134→  producing: {
+   135→    label: 'Producing',
+   136→    badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+   137→    dotClass: 'bg-emerald-400',
+   138→  },
+   139→  reviewing: {
+   140→    label: 'Reviewing',
+   141→    badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+   142→    dotClass: 'bg-rose-400',
+   143→  },
+   144→  approved: {
+   145→    label: 'Approved',
+   146→    badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+   147→    dotClass: 'bg-emerald-400',
+   148→  },
+   149→  uploaded: {
+   150→    label: 'Uploaded',
+   151→    badgeClass: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+   152→    dotClass: 'bg-cyan-400',
+   153→  },
+   154→  failed: {
+   155→    label: 'Failed',
+   156→    badgeClass: 'bg-red-500/15 text-red-300 border-red-500/30',
+   157→    dotClass: 'bg-red-400',
+   158→  },
+   159→}
+   160→
+   161→const TYPE_CONFIG: Record<
+   162→  IdeaType,
+   163→  { label: string; badgeClass: string; icon: React.ComponentType<{ className?: string }> }
+   164→> = {
+   165→  short: {
+   166→    label: 'Short',
+   167→    badgeClass: 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+   168→    icon: Film,
+   169→  },
+   170→  longform: {
+   171→    label: 'Long',
+   172→    badgeClass: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+   173→    icon: Video,
+   174→  },
+   175→}
+   176→
+   177→const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+   178→  { value: 'created_desc', label: 'Created (newest)' },
+   179→  { value: 'created_asc', label: 'Created (oldest)' },
+   180→  { value: 'title_asc', label: 'Title A-Z' },
+   181→  { value: 'title_desc', label: 'Title Z-A' },
+   182→  { value: 'composite_desc', label: 'Composite Score (high→low)' },
+   183→  { value: 'scheduled_asc', label: 'Scheduled Date' },
+   184→]
+   185→
+   186→const VISIBLE_INCREMENT = 50
+   187→
+   188→// ─── Helpers ─────────────────────────────────────────────────────────
+   189→
+   190→function toTimestamp(value?: string | Date | null): number {
+   191→  if (!value) return 0
+   192→  const d = value instanceof Date ? value : new Date(value)
+   193→  const t = d.getTime()
+   194→  return Number.isNaN(t) ? 0 : t
+   195→}
+   196→
+   197→function relativeTime(value?: string | Date | null): string {
+   198→  const t = toTimestamp(value)
+   199→  if (!t) return '—'
+   200→  const diff = Date.now() - t
+   201→  if (diff < 0) return 'just now'
+   202→  const sec = Math.floor(diff / 1000)
+   203→  if (sec < 60) return `${sec}s ago`
+   204→  const min = Math.floor(sec / 60)
+   205→  if (min < 60) return `${min}m ago`
+   206→  const hr = Math.floor(min / 60)
+   207→  if (hr < 24) return `${hr}h ago`
+   208→  const day = Math.floor(hr / 24)
+   209→  if (day < 7) return `${day}d ago`
+   210→  const week = Math.floor(day / 7)
+   211→  if (week < 4) return `${week}w ago`
+   212→  const month = Math.floor(day / 30)
+   213→  if (month < 12) return `${month}mo ago`
+   214→  const year = Math.floor(day / 365)
+   215→  return `${year}y ago`
+   216→}
+   217→
+   218→function formatDate(value?: string | Date | null): string {
+   219→  const t = toTimestamp(value)
+   220→  if (!t) return '—'
+   221→  return new Date(t).toLocaleDateString(undefined, {
+   222→    year: 'numeric',
+   223→    month: 'short',
+   224→    day: 'numeric',
+   225→    hour: '2-digit',
+   226→    minute: '2-digit',
+   227→  })
+   228→}
+   229→
+   230→function clampScore(value?: number | null): number {
+   231→  if (value === null || value === undefined || Number.isNaN(value)) return 0
+   232→  if (value < 0) return 0
+   233→  if (value > 100) return 100
+   234→  return Math.round(value)
+   235→}
+   236→
+   237→function truncate(text: string, max: number): string {
+   238→  if (text.length <= max) return text
+   239→  return text.slice(0, max - 1).trimEnd() + '…'
+   240→}
+   241→
+   242→function scoreBarColor(metric: string, value: number): string {
+   243→  // Higher-is-better metrics
+   244→  const higherBetter = [
+   245→    'originalityScore',
+   246→    'retentionPrediction',
+   247→    'revenuePotential',
+   248→    'compositeScore',
+   249→    'searchVolume',
+   250→  ]
+   251→  // Lower-is-better metrics
+   252→  const lowerBetter = ['competitionScore', 'productionEffort', 'riskScore']
+   253→  if (higherBetter.includes(metric)) {
+   254→    if (value >= 75) return 'bg-gradient-to-r from-violet-500 to-cyan-500'
+   255→    if (value >= 50) return 'bg-gradient-to-r from-emerald-500 to-cyan-500'
+   256→    if (value >= 30) return 'bg-amber-500'
+   257→    return 'bg-rose-500'
+   258→  }
+   259→  if (lowerBetter.includes(metric)) {
+   260→    if (value <= 30) return 'bg-gradient-to-r from-emerald-500 to-cyan-500'
+   261→    if (value <= 50) return 'bg-amber-500'
+   262→    return 'bg-rose-500'
+   263→  }
+   264→  return 'bg-primary'
+   265→}
+   266→
+   267→function pillarColor(color?: string | null): string {
+   268→  if (!color) return 'bg-slate-400'
+   269→  // Map known hex / named colors to closest tailwind-ish dot color
+   270→  const c = color.toLowerCase()
+   271→  if (c.includes('violet') || c.includes('purple')) return 'bg-violet-400'
+   272→  if (c.includes('cyan') || c.includes('teal')) return 'bg-cyan-400'
+   273→  if (c.includes('emerald') || c.includes('green')) return 'bg-emerald-400'
+   274→  if (c.includes('amber') || c.includes('orange') || c.includes('yellow'))
+   275→    return 'bg-amber-400'
+   276→  if (c.includes('rose') || c.includes('pink') || c.includes('red'))
+   277→    return 'bg-rose-400'
+   278→  if (c.includes('#')) {
+   279→    // try to use the raw color via inline style fallback in component
+   280→    return ''
+   281→  }
+   282→  return 'bg-slate-400'
+   283→}
+   284→
+   285→// ─── Component ───────────────────────────────────────────────────────
+   286→
+   287→export function IdeaExplorer({
+   288→  ideas,
+   289→  onSelectIdea,
+   290→  className,
+   291→}: IdeaExplorerProps) {
+   292→  const [searchInput, setSearchInput] = useState('')
+   293→  const [debouncedSearch, setDebouncedSearch] = useState('')
+   294→  const [typeFilter, setTypeFilter] = useState<'all' | IdeaType>('all')
+   295→  const [statusFilter, setStatusFilter] = useState<'all' | IdeaStatus>('all')
+   296→  const [pillarFilter, setPillarFilter] = useState<'all' | string>('all')
+   297→  const [sortKey, setSortKey] = useState<SortKey>('created_desc')
+   298→  const [drawerIdeaId, setDrawerIdeaId] = useState<string | null>(null)
+   299→
+   300→  // Debounced search (200ms)
+   301→  useEffect(() => {
+   302→    const handle = setTimeout(() => {
+   303→      setDebouncedSearch(searchInput.trim().toLowerCase())
+   304→    }, 200)
+   305→    return () => clearTimeout(handle)
+   306→  }, [searchInput])
+   307→
+   308→  // Reset visible count when filters change.
+   309→  // Pattern: store a signature alongside the count; when the signature
+   310→  // changes during render, reset the count to the baseline. This is the
+   311→  // React-recommended "derive state during render" pattern and avoids
+   312→  // both the setState-in-effect and ref-during-render lint rules.
+   313→  const filterSignature = `${debouncedSearch}|${typeFilter}|${statusFilter}|${pillarFilter}|${sortKey}`
+   314→  const [visibleState, setVisibleState] = useState<{
+   315→    sig: string
+   316→    count: number
+   317→  }>({ sig: filterSignature, count: VISIBLE_INCREMENT })
+   318→  if (visibleState.sig !== filterSignature) {
+   319→    setVisibleState({ sig: filterSignature, count: VISIBLE_INCREMENT })
+   320→  }
+   321→  const visibleCount = visibleState.count
+   322→
+   323→  // Derive pillar list from ideas
+   324→  const pillars = useMemo(() => {
+   325→    const map = new Map<string, { id: string; name: string }>()
+   326→    for (const idea of ideas) {
+   327→      const p = idea.pillar
+   328→      if (p?.id && p?.name) {
+   329→        if (!map.has(p.id)) {
+   330→          map.set(p.id, { id: p.id, name: p.name })
+   331→        }
+   332→      } else if (idea.pillarId) {
+   333→        if (!map.has(idea.pillarId)) {
+   334→          map.set(idea.pillarId, { id: idea.pillarId, name: idea.pillarId })
+   335→        }
+   336→      }
+   337→    }
+   338→    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
+   339→  }, [ideas])
+   340→
+   341→  const activeFilterCount = useMemo(() => {
+   342→    let n = 0
+   343→    if (debouncedSearch) n++
+   344→    if (typeFilter !== 'all') n++
+   345→    if (statusFilter !== 'all') n++
+   346→    if (pillarFilter !== 'all') n++
+   347→    return n
+   348→  }, [debouncedSearch, typeFilter, statusFilter, pillarFilter])
+   349→
+   350→  const filteredIdeas = useMemo(() => {
+   351→    const out: Idea[] = []
+   352→    for (const idea of ideas) {
+   353→      if (
+   354→        debouncedSearch &&
+   355→        !idea.title.toLowerCase().includes(debouncedSearch)
+   356→      ) {
+   357→        continue
+   358→      }
+   359→      if (typeFilter !== 'all' && idea.type !== typeFilter) continue
+   360→      if (statusFilter !== 'all' && idea.status !== statusFilter) continue
+   361→      if (pillarFilter !== 'all') {
+   362→        const pid = idea.pillar?.id ?? idea.pillarId ?? null
+   363→        if (pid !== pillarFilter) continue
+   364→      }
+   365→      out.push(idea)
+   366→    }
+   367→
+   368→    out.sort((a, b) => {
+   369→      switch (sortKey) {
+   370→        case 'created_asc':
+   371→          return toTimestamp(a.createdAt) - toTimestamp(b.createdAt)
+   372→        case 'created_desc':
+   373→          return toTimestamp(b.createdAt) - toTimestamp(a.createdAt)
+   374→        case 'title_asc':
+   375→          return a.title.localeCompare(b.title)
+   376→        case 'title_desc':
+   377→          return b.title.localeCompare(a.title)
+   378→        case 'composite_desc':
+   379→          return (
+   380→            (b.compositeScore ?? -1) - (a.compositeScore ?? -1)
+   381→          )
+   382→        case 'scheduled_asc': {
+   383→          const ta = toTimestamp(a.scheduledDate)
+   384→          const tb = toTimestamp(b.scheduledDate)
+   385→          // unscheduled go to end
+   386→          if (!ta && !tb) return 0
+   387→          if (!ta) return 1
+   388→          if (!tb) return -1
+   389→          return ta - tb
+   390→        }
+   391→        default:
+   392→          return 0
+   393→      }
+   394→    })
+   395→    return out
+   396→  }, [
+   397→    ideas,
+   398→    debouncedSearch,
+   399→    typeFilter,
+   400→    statusFilter,
+   401→    pillarFilter,
+   402→    sortKey,
+   403→  ])
+   404→
+   405→  const visibleIdeas = filteredIdeas.slice(0, visibleCount)
+   406→  const hasMore = filteredIdeas.length > visibleCount
+   407→
+   408→  const selectedIdea = useMemo(() => {
+   409→    if (!drawerIdeaId) return null
+   410→    return ideas.find((i) => i.id === drawerIdeaId) ?? null
+   411→  }, [drawerIdeaId, ideas])
+   412→
+   413→  const clearFilters = useCallback(() => {
+   414→    setSearchInput('')
+   415→    setDebouncedSearch('')
+   416→    setTypeFilter('all')
+   417→    setStatusFilter('all')
+   418→    setPillarFilter('all')
+   419→    setSortKey('created_desc')
+   420→  }, [])
+   421→
+   422→  const handleCardClick = useCallback((ideaId: string) => {
+   423→    setDrawerIdeaId(ideaId)
+   424→  }, [])
+   425→
+   426→  const handleSelectFromDrawer = useCallback(() => {
+   427→    if (drawerIdeaId && onSelectIdea) {
+   428→      onSelectIdea(drawerIdeaId)
+   429→    }
+   430→  }, [drawerIdeaId, onSelectIdea])
+   431→
+   432→  const isLoading = ideas.length === 0
+   433→
+   434→  // ─── Render ────────────────────────────────────────────────────────
+   435→
+   436→  return (
+   437→    <div
+   438→      className={cn(
+   439→        'w-full rounded-xl bg-slate-950 p-3 sm:p-4',
+   440→        'border border-slate-800/50',
+   441→        className,
+   442→      )}
+   443→    >
+   444→      {/* ─── Header / Search ─── */}
+   445→      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+   446→        <div className="flex items-center gap-2">
+   447→          <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-violet-500/30">
+   448→            <Lightbulb className="size-4 text-violet-300" />
+   449→          </div>
+   450→          <div>
+   451→            <h3 className="text-sm font-semibold text-slate-100">
+   452→              Idea Explorer
+   453→            </h3>
+   454→            <p className="text-[11px] text-slate-400">
+   455→              Search, filter &amp; inspect video ideas
+   456→            </p>
+   457→          </div>
+   458→        </div>
+   459→
+   460→        <div className="relative w-full sm:w-80">
+   461→          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+   462→          <Input
+   463→            value={searchInput}
+   464→            onChange={(e) => setSearchInput(e.target.value)}
+   465→            placeholder="Search ideas by title…"
+   466→            className="h-9 border-slate-700/60 bg-slate-900/60 pl-9 pr-8 text-sm text-slate-100 placeholder:text-slate-500 focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20"
+   467→          />
+   468→          {searchInput && (
+   469→            <button
+   470→              type="button"
+   471→              onClick={() => setSearchInput('')}
+   472→              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+   473→              aria-label="Clear search"
+   474→            >
+   475→              <X className="size-3.5" />
+   476→            </button>
+   477→          )}
+   478→        </div>
+   479→      </div>
+   480→
+   481→      {/* ─── Filter Row ─── */}
+   482→      <div className="mb-3 flex flex-wrap items-center gap-2">
+   483→        {/* Type pills */}
+   484→        <div className="flex items-center rounded-lg border border-slate-700/60 bg-slate-900/40 p-0.5">
+   485→          {(['all', 'short', 'longform'] as const).map((t) => {
+   486→            const isActive = typeFilter === t
+   487→            const label =
+   488→              t === 'all' ? 'All' : t === 'short' ? 'Short' : 'Long'
+   489→            return (
+   490→              <button
+   491→                key={t}
+   492→                type="button"
+   493→                onClick={() => setTypeFilter(t)}
+   494→                className={cn(
+   495→                  'relative rounded-md px-3 py-1 text-xs font-medium transition-colors',
+   496→                  isActive
+   497→                    ? 'text-white'
+   498→                    : 'text-slate-400 hover:text-slate-200',
+   499→                )}
+   500→              >
+   501→                {isActive && (
+   502→                  <motion.span
+   503→                    layoutId="type-pill-bg"
+   504→                    className="absolute inset-0 rounded-md bg-gradient-to-r from-violet-500/80 to-cyan-500/80"
+   505→                    transition={{ type: 'spring', duration: 0.3, bounce: 0.2 }}
+   506→                  />
+   507→                )}
+   508→                <span className="relative z-10">{label}</span>
+   509→              </button>
+   510→            )
+   511→          })}
+   512→        </div>
+   513→
+   514→        {/* Status filter */}
+   515→        <Select
+   516→          value={statusFilter}
+   517→          onValueChange={(v) => setStatusFilter(v as 'all' | IdeaStatus)}
+   518→        >
+   519→          <SelectTrigger
+   520→            size="sm"
+   521→            className="h-8 w-[150px] border-slate-700/60 bg-slate-900/60 text-xs text-slate-200 hover:bg-slate-800/60"
+   522→          >
+   523→            <Filter className="size-3.5 text-slate-500" />
+   524→            <SelectValue placeholder="Status" />
+   525→          </SelectTrigger>
+   526→          <SelectContent className="border-slate-700/60 bg-slate-900 text-slate-200">
+   527→            <SelectItem value="all">All statuses</SelectItem>
+   528→            <Separator className="bg-slate-700/60" />
+   529→            {(Object.keys(STATUS_CONFIG) as IdeaStatus[]).map((s) => (
+   530→              <SelectItem key={s} value={s}>
+   531→                <span className="flex items-center gap-2">
+   532→                  <span
+   533→                    className={cn(
+   534→                      'size-1.5 rounded-full',
+   535→                      STATUS_CONFIG[s].dotClass,
+   536→                    )}
+   537→                  />
+   538→                  {STATUS_CONFIG[s].label}
+   539→                </span>
+   540→              </SelectItem>
+   541→            ))}
+   542→          </SelectContent>
+   543→        </Select>
+   544→
+   545→        {/* Pillar filter */}
+   546→        <Select
+   547→          value={pillarFilter}
+   548→          onValueChange={(v) => setPillarFilter(v)}
+   549→        >
+   550→          <SelectTrigger
+   551→            size="sm"
+   552→            className="h-8 w-[160px] border-slate-700/60 bg-slate-900/60 text-xs text-slate-200 hover:bg-slate-800/60"
+   553→          >
+   554→            <Layers className="size-3.5 text-slate-500" />
+   555→            <SelectValue placeholder="Pillar" />
+   556→          </SelectTrigger>
+   557→          <SelectContent className="border-slate-700/60 bg-slate-900 text-slate-200">
+   558→            <SelectItem value="all">All pillars</SelectItem>
+   559→            {pillars.length > 0 && (
+   560→              <Separator className="bg-slate-700/60" />
+   561→            )}
+   562→            {pillars.map((p) => (
+   563→              <SelectItem key={p.id} value={p.id}>
+   564→                <span className="line-clamp-1">{p.name}</span>
+   565→              </SelectItem>
+   566→            ))}
+   567→          </SelectContent>
+   568→        </Select>
+   569→
+   570→        {/* Sort */}
+   571→        <Select
+   572→          value={sortKey}
+   573→          onValueChange={(v) => setSortKey(v as SortKey)}
+   574→        >
+   575→          <SelectTrigger
+   576→            size="sm"
+   577→            className="h-8 w-[180px] border-slate-700/60 bg-slate-900/60 text-xs text-slate-200 hover:bg-slate-800/60"
+   578→          >
+   579→            <ArrowUpDown className="size-3.5 text-slate-500" />
+   580→            <SelectValue placeholder="Sort" />
+   581→          </SelectTrigger>
+   582→          <SelectContent className="border-slate-700/60 bg-slate-900 text-slate-200">
+   583→            {SORT_OPTIONS.map((opt) => (
+   584→              <SelectItem key={opt.value} value={opt.value}>
+   585→                {opt.label}
+   586→              </SelectItem>
+   587→            ))}
+   588→          </SelectContent>
+   589→        </Select>
+   590→
+   591→        {/* Active filter count */}
+   592→        {activeFilterCount > 0 && (
+   593→          <Badge className="border-violet-500/30 bg-violet-500/15 text-violet-300">
+   594→            <Filter className="size-3" />
+   595→            {activeFilterCount} active
+   596→          </Badge>
+   597→        )}
+   598→      </div>
+   599→
+   600→      {/* ─── Result Count & Clear ─── */}
+   601→      <div className="mb-3 flex items-center justify-between gap-2">
+   602→        <p className="text-xs text-slate-400">
+   603→          <span className="font-semibold text-slate-200">
+   604→            {filteredIdeas.length}
+   605→          </span>{' '}
+   606→          of {ideas.length} ideas
+   607→        </p>
+   608→        {activeFilterCount > 0 && (
+   609→          <Button
+   610→            variant="ghost"
+   611→            size="sm"
+   612→            onClick={clearFilters}
+   613→            className="h-7 gap-1.5 px-2 text-xs text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+   614→          >
+   615→            <X className="size-3" />
+   616→            Clear filters
+   617→          </Button>
+   618→        )}
+   619→      </div>
+   620→
+   621→      <Separator className="mb-3 bg-slate-800/60" />
+   622→
+   623→      {/* ─── List ─── */}
+   624→      <ScrollArea className="max-h-[60vh]">
+   625→        {isLoading ? (
+   626→          <LoadingSkeleton />
+   627→        ) : filteredIdeas.length === 0 ? (
+   628→          <EmptyState onClear={clearFilters} hasFilters={activeFilterCount > 0} />
+   629→        ) : (
+   630→          <div className="flex flex-col gap-2 pr-2">
+   631→            <AnimatePresence mode="popLayout" initial={false}>
+   632→              {visibleIdeas.map((idea, i) => (
+   633→                <motion.div
+   634→                  key={idea.id}
+   635→                  layout
+   636→                  initial={{ opacity: 0, y: 6 }}
+   637→                  animate={{ opacity: 1, y: 0 }}
+   638→                  exit={{ opacity: 0, y: -6 }}
+   639→                  transition={{
+   640→                    duration: 0.25,
+   641→                    delay: Math.min(i * 0.03, 0.3),
+   642→                    ease: 'easeOut',
+   643→                  }}
+   644→                >
+   645→                  <IdeaCard
+   646→                    idea={idea}
+   647→                    onClick={() => handleCardClick(idea.id)}
+   648→                  />
+   649→                </motion.div>
+   650→              ))}
+   651→            </AnimatePresence>
+   652→
+   653→            {hasMore && (
+   654→              <div className="flex justify-center py-3">
+   655→                <Button
+   656→                  variant="outline"
+   657→                  size="sm"
+   658→                  onClick={() =>
+   659→                    setVisibleState((s) => ({
+   660→                      sig: s.sig,
+   661→                      count: s.count + VISIBLE_INCREMENT,
+   662→                    }))
+   663→                  }
+   664→                  className="gap-1.5 border-slate-700/60 bg-slate-900/40 text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
+   665→                >
+   666→                  <ChevronDown className="size-3.5" />
+   667→                  Load more ({filteredIdeas.length - visibleCount} remaining)
+   668→                </Button>
+   669→              </div>
+   670→            )}
+   671→          </div>
+   672→        )}
+   673→      </ScrollArea>
+   674→
+   675→      {/* ─── Detail Drawer ─── */}
+   676→      <Sheet
+   677→        open={!!drawerIdeaId}
+   678→        onOpenChange={(open) => {
+   679→          if (!open) setDrawerIdeaId(null)
+   680→        }}
+   681→      >
+   682→        <SheetContent
+   683→          side="right"
+   684→          className="w-full border-l border-slate-800/60 bg-slate-950 p-0 sm:max-w-md md:max-w-lg"
+   685→        >
+   686→          {selectedIdea ? (
+   687→            <IdeaDrawerContent
+   688→              idea={selectedIdea}
+   689→              onSelect={handleSelectFromDrawer}
+   690→              onClose={() => setDrawerIdeaId(null)}
+   691→              hasSelectHandler={!!onSelectIdea}
+   692→            />
+   693→          ) : (
+   694→            <div className="flex h-full items-center justify-center p-8 text-sm text-slate-500">
+   695→              Loading…
+   696→            </div>
+   697→          )}
+   698→        </SheetContent>
+   699→      </Sheet>
+   700→    </div>
+   701→  )
+   702→}
+   703→
+   704→// ─── Idea Card ───────────────────────────────────────────────────────
+   705→
+   706→interface IdeaCardProps {
+   707→  idea: Idea
+   708→  onClick: () => void
+   709→}
+   710→
+   711→function IdeaCard({ idea, onClick }: IdeaCardProps) {
+   712→  const typeCfg = TYPE_CONFIG[idea.type] ?? TYPE_CONFIG.short
+   713→  const statusCfg = STATUS_CONFIG[idea.status] ?? STATUS_CONFIG.idea
+   714→  const TypeIcon = typeCfg.icon
+   715→  const composite = clampScore(idea.compositeScore)
+   716→  const hasComposite =
+   717→    idea.compositeScore !== null && idea.compositeScore !== undefined
+   718→  const pillarDot = pillarColor(idea.pillar?.color)
+   719→  const pillarDotStyle =
+   720→    idea.pillar?.color && idea.pillar.color.startsWith('#')
+   721→      ? { backgroundColor: idea.pillar.color }
+   722→      : undefined
+   723→
+   724→  return (
+   725→    <motion.button
+   726→      type="button"
+   727→      onClick={onClick}
+   728→      whileHover={{ scale: 1.01 }}
+   729→      whileTap={{ scale: 0.99 }}
+   730→      className={cn(
+   731→        'group relative w-full overflow-hidden rounded-lg',
+   732→        'bg-slate-900/60 border border-slate-800/50 backdrop-blur-sm',
+   733→        'p-3 sm:p-4 text-left transition-all duration-200',
+   734→        'hover:border-violet-500/40 hover:bg-slate-900/80',
+   735→        'hover:shadow-[0_0_20px_-5px_rgba(139,92,246,0.35)]',
+   736→        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/40',
+   737→      )}
+   738→    >
+   739→      {/* Glow accent line */}
+   740→      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-500/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+   741→
+   742→      <div className="flex items-start gap-3">
+   743→        <div className="flex flex-1 flex-col gap-2">
+   744→          {/* Top row: badges */}
+   745→          <div className="flex flex-wrap items-center gap-1.5">
+   746→            <Badge
+   747→              variant="outline"
+   748→              className={cn('gap-1 px-1.5 py-0 text-[10px]', typeCfg.badgeClass)}
+   749→            >
+   750→              <TypeIcon className="size-3" />
+   751→              {typeCfg.label}
+   752→            </Badge>
+   753→            <Badge
+   754→              variant="outline"
+   755→              className={cn('gap-1 px-1.5 py-0 text-[10px]', statusCfg.badgeClass)}
+   756→            >
+   757→              <span className={cn('size-1.5 rounded-full', statusCfg.dotClass)} />
+   758→              {statusCfg.label}
+   759→            </Badge>
+   760→
+   761→            {idea.pillar?.name && (
+   762→              <Tooltip>
+   763→                <TooltipTrigger asChild>
+   764→                  <span className="inline-flex items-center gap-1 rounded-md border border-slate-700/40 bg-slate-800/40 px-1.5 py-0.5 text-[10px] text-slate-300">
+   765→                    <span
+   766→                      className={cn('size-1.5 rounded-full', pillarDot)}
+   767→                      style={pillarDotStyle}
+   768→                    />
+   769→                    <span className="max-w-[120px] truncate">
+   770→                      {idea.pillar.name}
+   771→                    </span>
+   772→                  </span>
+   773→                </TooltipTrigger>
+   774→                <TooltipContent className="bg-slate-800 text-slate-100">
+   775→                  Pillar: {idea.pillar.name}
+   776→                  {idea.pillar.description
+   777→                    ? ` — ${idea.pillar.description}`
+   778→                    : ''}
+   779→                </TooltipContent>
+   780→              </Tooltip>
+   781→            )}
+   782→          </div>
+   783→
+   784→          {/* Title */}
+   785→          <Tooltip>
+   786→            <TooltipTrigger asChild>
+   787→              <h4 className="cursor-help text-sm font-medium leading-snug text-slate-100">
+   788→                {truncate(idea.title, 60)}
+   789→              </h4>
+   790→            </TooltipTrigger>
+   791→            {idea.title.length > 60 && (
+   792→              <TooltipContent className="max-w-xs bg-slate-800 text-slate-100">
+   793→                {idea.title}
+   794→              </TooltipContent>
+   795→            )}
+   796→          </Tooltip>
+   797→
+   798→          {/* Bottom row: composite score + dates */}
+   799→          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-slate-400">
+   800→            {hasComposite && (
+   801→              <div className="flex items-center gap-1.5">
+   802→                <Gauge className="size-3 text-violet-400" />
+   803→                <span className="font-medium text-slate-300">{composite}</span>
+   804→                <div className="h-1.5 w-12 overflow-hidden rounded-full bg-slate-800">
+   805→                  <div
+   806→                    className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-500"
+   807→                    style={{ width: `${composite}%` }}
+   808→                  />
+   809→                </div>
+   810→              </div>
+   811→            )}
+   812→
+   813→            {idea.scheduledDate && (
+   814→              <div className="flex items-center gap-1">
+   815→                <Calendar className="size-3 text-cyan-400" />
+   816→                <span>
+   817→                  {new Date(toTimestamp(idea.scheduledDate)).toLocaleDateString(
+   818→                    undefined,
+   819→                    { month: 'short', day: 'numeric' },
+   820→                  )}
+   821→                </span>
+   822→              </div>
+   823→            )}
+   824→
+   825→            {idea.createdAt && (
+   826→              <div className="flex items-center gap-1">
+   827→                <Clock className="size-3 text-slate-500" />
+   828→                <span>{relativeTime(idea.createdAt)}</span>
+   829→              </div>
+   830→            )}
+   831→          </div>
+   832→        </div>
+   833→
+   834→        {/* Chevron */}
+   835→        <ChevronDown className="size-4 -rotate-90 shrink-0 text-slate-600 transition-all group-hover:translate-x-0.5 group-hover:text-violet-400" />
+   836→      </div>
+   837→    </motion.button>
+   838→  )
+   839→}
+   840→
+   841→// ─── Drawer Content ──────────────────────────────────────────────────
+   842→
+   843→interface DrawerContentProps {
+   844→  idea: Idea
+   845→  onSelect: () => void
+   846→  onClose: () => void
+   847→  hasSelectHandler: boolean
+   848→}
+   849→
+   850→function IdeaDrawerContent({
+   851→  idea,
+   852→  onSelect,
+   853→  onClose,
+   854→  hasSelectHandler,
+   855→}: DrawerContentProps) {
+   856→  const typeCfg = TYPE_CONFIG[idea.type] ?? TYPE_CONFIG.short
+   857→  const statusCfg = STATUS_CONFIG[idea.status] ?? STATUS_CONFIG.idea
+   858→  const TypeIcon = typeCfg.icon
+   859→
+   860→  const scores: { key: string; label: string; value: number; icon: React.ComponentType<{ className?: string }> }[] = [
+   861→    {
+   862→      key: 'searchVolume',
+   863→      label: 'Search Volume',
+   864→      value: clampScore(idea.searchVolume),
+   865→      icon: TrendingUp,
+   866→    },
+   867→    {
+   868→      key: 'competitionScore',
+   869→      label: 'Competition',
+   870→      value: clampScore(idea.competitionScore),
+   871→      icon: Target,
+   872→    },
+   873→    {
+   874→      key: 'originalityScore',
+   875→      label: 'Originality',
+   876→      value: clampScore(idea.originalityScore),
+   877→      icon: Sparkles,
+   878→    },
+   879→    {
+   880→      key: 'retentionPrediction',
+   881→      label: 'Retention Pred.',
+   882→      value: clampScore(idea.retentionPrediction),
+   883→      icon: Gauge,
+   884→    },
+   885→    {
+   886→      key: 'revenuePotential',
+   887→      label: 'Revenue Potential',
+   888→      value: clampScore(idea.revenuePotential),
+   889→      icon: DollarSign,
+   890→    },
+   891→    {
+   892→      key: 'productionEffort',
+   893→      label: 'Production Effort',
+   894→      value: clampScore(idea.productionEffort),
+   895→      icon: Film,
+   896→    },
+   897→    {
+   898→      key: 'riskScore',
+   899→      label: 'Risk Score',
+   900→      value: clampScore(idea.riskScore),
+   901→      icon: AlertTriangle,
+   902→    },
+   903→    {
+   904→      key: 'compositeScore',
+   905→      label: 'Composite Score',
+   906→      value: clampScore(idea.compositeScore),
+   907→      icon: Flame,
+   908→    },
+   909→  ]
+   910→
+   911→  return (
+   912→    <ScrollArea className="h-full">
+   913→      <SheetHeader className="border-b border-slate-800/60 bg-slate-900/40 p-5">
+   914→        <div className="flex flex-wrap items-center gap-2">
+   915→          <Badge
+   916→            variant="outline"
+   917→            className={cn('gap-1', typeCfg.badgeClass)}
+   918→          >
+   919→            <TypeIcon className="size-3" />
+   920→            {typeCfg.label}
+   921→          </Badge>
+   922→          <Badge
+   923→            variant="outline"
+   924→            className={cn('gap-1', statusCfg.badgeClass)}
+   925→          >
+   926→            <span className={cn('size-1.5 rounded-full', statusCfg.dotClass)} />
+   927→            {statusCfg.label}
+   928→          </Badge>
+   929→          {idea.pillar?.name && (
+   930→            <Badge
+   931→              variant="outline"
+   932→              className="gap-1 border-slate-700/40 bg-slate-800/40 text-slate-300"
+   933→            >
+   934→              <span
+   935→                className={cn('size-1.5 rounded-full', pillarColor(idea.pillar.color))}
+   936→                style={
+   937→                  idea.pillar.color?.startsWith('#')
+   938→                    ? { backgroundColor: idea.pillar.color }
+   939→                    : undefined
+   940→                }
+   941→              />
+   942→              {idea.pillar.name}
+   943→            </Badge>
+   944→          )}
+   945→        </div>
+   946→        <SheetTitle className="text-lg font-semibold leading-tight text-slate-100">
+   947→          {idea.title}
+   948→        </SheetTitle>
+   949→        <SheetDescription className="text-xs text-slate-400">
+   950→          Idea ID:{' '}
+   951→          <code className="rounded bg-slate-800/60 px-1 py-0.5 text-[10px] text-slate-300">
+   952→            {idea.id}
+   953→          </code>
+   954→        </SheetDescription>
+   955→      </SheetHeader>
+   956→
+   957→      <div className="flex flex-col gap-5 p-5">
+   958→        {/* Metadata grid */}
+   959→        <section>
+   960→          <h5 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+   961→            <FileText className="size-3" />
+   962→            Metadata
+   963→          </h5>
+   964→          <div className="grid grid-cols-2 gap-2 text-xs">
+   965→            <MetaItem label="Type" value={typeCfg.label} />
+   966→            <MetaItem label="Status" value={statusCfg.label} />
+   967→            <MetaItem
+   968→              label="Pillar"
+   969→              value={idea.pillar?.name ?? 'Unassigned'}
+   970→            />
+   971→            <MetaItem
+   972→              label="Composite"
+   973→              value={
+   974→                idea.compositeScore !== null &&
+   975→                idea.compositeScore !== undefined
+   976→                  ? String(clampScore(idea.compositeScore))
+   977→                  : '—'
+   978→              }
+   979→            />
+   980→            <MetaItem
+   981→              label="Scheduled"
+   982→              value={
+   983→                idea.scheduledDate
+   984→                  ? formatDate(idea.scheduledDate)
+   985→                  : 'Not scheduled'
+   986→              }
+   987→            />
+   988→            <MetaItem
+   989→              label="Created"
+   990→              value={idea.createdAt ? formatDate(idea.createdAt) : '—'}
+   991→            />
+   992→            <MetaItem
+   993→              label="Updated"
+   994→              value={idea.updatedAt ? formatDate(idea.updatedAt) : '—'}
+   995→            />
+   996→            <MetaItem
+   997→              label="Created (rel.)"
+   998→              value={idea.createdAt ? relativeTime(idea.createdAt) : '—'}
+   999→            />
+  1000→          </div>
+  1001→        </section>
+  1002→
+  1003→        <Separator className="bg-slate-800/60" />
+  1004→
+  1005→        {/* Scores */}
+  1006→        <section>
+  1007→          <h5 className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+  1008→            <Gauge className="size-3" />
+  1009→            Score Metrics
+  1010→          </h5>
+  1011→          <div className="flex flex-col gap-3">
+  1012→            {scores.map((s) => {
+  1013→              const Icon = s.icon
+  1014→              const rawValue = (idea as unknown as Record<string, unknown>)[s.key]
+  1015→              const isSet = rawValue !== null && rawValue !== undefined
+  1016→              return (
+  1017→                <div key={s.key}>
+  1018→                  <div className="mb-1 flex items-center justify-between text-xs">
+  1019→                    <span className="flex items-center gap-1.5 text-slate-400">
+  1020→                      <Icon className="size-3 text-slate-500" />
+  1021→                      {s.label}
+  1022→                    </span>
+  1023→                    <span className="font-mono font-medium text-slate-200">
+  1024→                      {isSet ? s.value : '—'}
+  1025→                    </span>
+  1026→                  </div>
+  1027→                  <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-slate-800/80">
+  1028→                    <div
+  1029→                      className={cn(
+  1030→                        'h-full rounded-full transition-all duration-300',
+  1031→                        scoreBarColor(s.key, s.value),
+  1032→                      )}
+  1033→                      style={{ width: `${isSet ? s.value : 0}%` }}
+  1034→                    />
+  1035→                  </div>
+  1036→                </div>
+  1037→              )
+  1038→            })}
+  1039→          </div>
+  1040→        </section>
+  1041→
+  1042→        {/* Tags */}
+  1043→        {idea.tags && idea.tags.length > 0 && (
+  1044→          <>
+  1045→            <Separator className="bg-slate-800/60" />
+  1046→            <section>
+  1047→              <h5 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+  1048→                <Hash className="size-3" />
+  1049→                Tags
+  1050→              </h5>
+  1051→              <div className="flex flex-wrap gap-1.5">
+  1052→                {idea.tags.map((tag, idx) => (
+  1053→                  <Badge
+  1054→                    key={`${tag}-${idx}`}
+  1055→                    variant="outline"
+  1056→                    className="border-slate-700/40 bg-slate-800/40 text-slate-300"
+  1057→                  >
+  1058→                    <Hash className="size-2.5" />
+  1059→                    {tag}
+  1060→                  </Badge>
+  1061→                ))}
+  1062→              </div>
+  1063→            </section>
+  1064→          </>
+  1065→        )}
+  1066→
+  1067→        {/* Description */}
+  1068→        {idea.pillar?.description && (
+  1069→          <>
+  1070→            <Separator className="bg-slate-800/60" />
+  1071→            <section>
+  1072→              <h5 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+  1073→                <Layers className="size-3" />
+  1074→                Pillar Description
+  1075→              </h5>
+  1076→              <p className="text-xs leading-relaxed text-slate-300">
+  1077→                {idea.pillar.description}
+  1078→              </p>
+  1079→            </section>
+  1080→          </>
+  1081→        )}
+  1082→      </div>
+  1083→
+  1084→      <SheetFooter className="flex-row gap-2 border-t border-slate-800/60 bg-slate-900/40 p-4">
+  1085→        <Button
+  1086→          variant="outline"
+  1087→          onClick={onClose}
+  1088→          className="flex-1 gap-1.5 border-slate-700/60 bg-slate-900/40 text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
+  1089→        >
+  1090→          <X className="size-3.5" />
+  1091→          Close
+  1092→        </Button>
+  1093→        {hasSelectHandler && (
+  1094→          <Button
+  1095→            onClick={onSelect}
+  1096→            className="flex-1 gap-1.5 bg-gradient-to-r from-violet-500 to-cyan-500 text-white hover:from-violet-600 hover:to-cyan-600"
+  1097→          >
+  1098→            <CheckCircle2 className="size-3.5" />
+  1099→            Select
+  1100→          </Button>
+  1101→        )}
+  1102→      </SheetFooter>
+  1103→    </ScrollArea>
+  1104→  )
+  1105→}
+  1106→
+  1107→function MetaItem({ label, value }: { label: string; value: string }) {
+  1108→  return (
+  1109→    <div className="rounded-md border border-slate-800/60 bg-slate-900/40 px-2.5 py-1.5">
+  1110→      <div className="text-[10px] uppercase tracking-wider text-slate-500">
+  1111→        {label}
+  1112→      </div>
+  1113→      <div className="truncate text-xs font-medium text-slate-200" title={value}>
+  1114→        {value}
+  1115→      </div>
+  1116→    </div>
+  1117→  )
+  1118→}
+  1119→
+  1120→// ─── Empty State ─────────────────────────────────────────────────────
+  1121→
+  1122→function EmptyState({
+  1123→  onClear,
+  1124→  hasFilters,
+  1125→}: {
+  1126→  onClear: () => void
+  1127→  hasFilters: boolean
+  1128→}) {
+  1129→  return (
+  1130→    <motion.div
+  1131→      initial={{ opacity: 0, scale: 0.97 }}
+  1132→      animate={{ opacity: 1, scale: 1 }}
+  1133→      transition={{ duration: 0.3 }}
+  1134→      className="flex flex-col items-center justify-center px-6 py-12 text-center"
+  1135→    >
+  1136→      <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-slate-900/60 border border-slate-800/60">
+  1137→        {hasFilters ? (
+  1138→          <Inbox className="size-7 text-slate-500" />
+  1139→        ) : (
+  1140→          <Lightbulb className="size-7 text-slate-500" />
+  1141→        )}
+  1142→      </div>
+  1143→      <h4 className="mb-1 text-sm font-semibold text-slate-200">
+  1144→        {hasFilters ? 'No ideas match your filters' : 'No ideas yet'}
+  1145→      </h4>
+  1146→      <p className="mb-4 max-w-xs text-xs text-slate-400">
+  1147→        {hasFilters
+  1148→          ? 'Try adjusting your search or clearing active filters to see more ideas.'
+  1149→          : 'Once the agent generates ideas, they will appear here.'}
+  1150→      </p>
+  1151→      {hasFilters && (
+  1152→        <Button
+  1153→          variant="outline"
+  1154→          size="sm"
+  1155→          onClick={onClear}
+  1156→          className="gap-1.5 border-slate-700/60 bg-slate-900/40 text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
+  1157→        >
+  1158→          <X className="size-3.5" />
+  1159→          Clear filters
+  1160→        </Button>
+  1161→      )}
+  1162→    </motion.div>
+  1163→  )
+  1164→}
+  1165→
+  1166→// ─── Loading Skeleton ────────────────────────────────────────────────
+  1167→
+  1168→function LoadingSkeleton() {
+  1169→  return (
+  1170→    <div className="flex flex-col gap-2 pr-2">
+  1171→      {Array.from({ length: 5 }).map((_, i) => (
+  1172→        <div
+  1173→          key={i}
+  1174→          className="rounded-lg border border-slate-800/50 bg-slate-900/40 p-3 sm:p-4"
+  1175→        >
+  1176→          <div className="flex items-start gap-3">
+  1177→            <div className="flex flex-1 flex-col gap-2">
+  1178→              <div className="flex items-center gap-1.5">
+  1179→                <Skeleton className="h-4 w-12 rounded" />
+  1180→                <Skeleton className="h-4 w-16 rounded" />
+  1181→                <Skeleton className="h-4 w-20 rounded" />
+  1182→              </div>
+  1183→              <Skeleton className="h-4 w-3/4 rounded" />
+  1184→              <div className="flex items-center gap-3">
+  1185→                <Skeleton className="h-3 w-20 rounded" />
+  1186→                <Skeleton className="h-3 w-16 rounded" />
+  1187→                <Skeleton className="h-3 w-12 rounded" />
+  1188→              </div>
+  1189→            </div>
+  1190→            <Skeleton className="size-4 rounded" />
+  1191→          </div>
+  1192→        </div>
+  1193→      ))}
+  1194→    </div>
+  1195→  )
+  1196→}
+  1197→
+  1198→export default IdeaExplorer
+  1199→
