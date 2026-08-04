@@ -1912,3 +1912,30 @@ Stage Summary:
 4. Implement video preview/rendering with actual FFmpeg
 5. Add error recovery and retry logic for production failures
 6. Progressive onboarding flow for first-time users
+
+---
+Task ID: 8
+Agent: Lead Developer
+Task: Add YouTube OAuth connection UI and API endpoints
+
+Work Log:
+- Created `/api/youtube/auth` route — initiates OAuth flow, generates CSRF state, returns Google auth URL
+- Rewrote `/api/youtube/callback` route — handles Google's redirect (GET with code+state params), validates CSRF, exchanges code for tokens, fetches channel info, creates audit log + notification, redirects back to app with success/error indicator
+- Created `/api/youtube/disconnect` route — revokes tokens, clears connection state, creates audit log + notification
+- Added `connectYouTube()` function in page.tsx — calls auth API, opens popup to Google OAuth, polls for popup closure, refreshes channel state
+- Added `disconnectYouTube()` function in page.tsx — calls disconnect API, refreshes channel state
+- Added OAuth callback handler in `useEffect` — detects `youtube_auth=success|error` query params, shows toast, cleans URL
+- Added prominent "YouTube Not Connected" banner on Overview tab with "Connect YouTube" button
+- Replaced static YouTube Connection card in Settings with interactive version: Connect button (when disconnected) + Disconnect button (when connected) + setup instructions
+- Made top bar YouTube badge clickable: triggers connect flow when disconnected, navigates to Settings when connected
+- Added pulse animation on disconnected badge to draw attention
+- Tested all API endpoints with curl — auth returns setup instructions, disconnect returns connection status
+- Tested with agent-browser — Connect YouTube button works, shows toast "Setup Required" when env vars missing
+- Zero console errors, lint passes clean
+
+Stage Summary:
+- YouTube OAuth connection is now fully interactive with 3 visible entry points: Overview banner, Settings card, top bar badge
+- Complete OAuth flow: auth initiation → Google popup → callback handling → token storage → channel info fetch
+- Disconnect flow with token revocation and cleanup
+- Proper CSRF protection, audit logging, and notifications throughout
+- Key files: `/api/youtube/auth/route.ts`, `/api/youtube/callback/route.ts`, `/api/youtube/disconnect/route.ts`

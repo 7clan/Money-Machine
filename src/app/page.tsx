@@ -526,7 +526,34 @@ export default function Dashboard() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [schedulerIdeas, setSchedulerIdeas] = useState<any[]>([])
   const [estopDialogOpen, setEstopDialogOpen] = useState(false)
+  const [ytConnecting, setYtConnecting] = useState(false)
+  const [ytDisconnecting, setYtDisconnecting] = useState(false)
+  const [ytSetupInfo, setYtSetupInfo] = useState<any>(null)
   const { toast } = useToast()
+
+  // ── YouTube OAuth Callback Handler ────────────────────────────────
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const ytAuth = params.get('youtube_auth')
+    if (ytAuth) {
+      // Clean URL
+      const url = new URL(window.location.href)
+      url.searchParams.delete('youtube_auth')
+      url.searchParams.delete('message')
+      url.searchParams.delete('channel')
+      window.history.replaceState({}, '', url.toString())
+
+      if (ytAuth === 'success') {
+        const chName = params.get('channel') || 'YouTube'
+        toast({ type: 'success', title: 'YouTube Connected!', description: `Successfully connected to ${chName}`, duration: 5000 })
+        fetchChannel()
+      } else if (ytAuth === 'error') {
+        const errMsg = params.get('message') || 'Unknown error'
+        toast({ type: 'error', title: 'Connection Failed', description: decodeURIComponent(errMsg), duration: 7000 })
+      }
+    }
+  }, [])
   // ── Polling ─────────────────────────────────────────────────────
   const fetchStatus = useCallback(async () => {
     try {
@@ -581,6 +608,81 @@ export default function Dashboard() {
     const interval = setInterval(pollAll, 5000)
     return () => clearInterval(interval)
   }, [pollAll])
+
+  // ── YouTube Connect/Disconnect ────────────────────────────────────
+  const connectYouTube = async () => {
+    setYtConnecting(true)
+    try {
+      const res = await fetch('/api/youtube/auth')
+      const data = await res.json()
+
+      if (!res.ok) {
+        if (data.setupRequired) {
+          setYtSetupInfo(data)
+          toast({ type: 'error', title: 'Setup Required', description: data.message, duration: 7000 })
+        } else {
+          toast({ type: 'error', title: 'Connection Failed', description: data.error || data.message || 'Unknown error', duration: 5000 })
+        }
+        return
+      }
+
+      if (data.connected) {
+        toast({ type: 'info', title: 'Already Connected', description: data.message, duration: 3000 })
+        await fetchChannel()
+        return
+      }
+
+      if (data.authUrl) {
+        // Open Google OAuth in a new window
+        const width = 600, height = 700
+        const left = window.screenX + (window.outerWidth - width) / 2
+        const top = window.screenY + (window.outerHeight - height) / 2
+        const popup = window.open(
+          data.authUrl,
+          'youtube-auth',
+          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
+        )
+
+        // Poll for popup closure (user completed or cancelled)
+        const pollPopup = setInterval(() => {
+          if (!popup || popup.closed) {
+            clearInterval(pollPopup)
+            setYtConnecting(false)
+            // Re-fetch channel to check if connected
+            setTimeout(() => fetchChannel(), 1000)
+          }
+        }, 500)
+
+        // Auto-timeout after 5 minutes
+        setTimeout(() => {
+          clearInterval(pollPopup)
+          setYtConnecting(false)
+        }, 300000)
+      }
+    } catch (e: any) {
+      toast({ type: 'error', title: 'Connection Error', description: e.message, duration: 5000 })
+    } finally {
+      setYtConnecting(false)
+    }
+  }
+
+  const disconnectYouTube = async () => {
+    setYtDisconnecting(true)
+    try {
+      const res = await fetch('/api/youtube/disconnect', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ type: 'error', title: 'Disconnect Failed', description: data.error || data.message, duration: 5000 })
+        return
+      }
+      toast({ type: 'success', title: 'YouTube Disconnected', description: 'Your YouTube account has been disconnected.', duration: 4000 })
+      await fetchChannel()
+    } catch (e: any) {
+      toast({ type: 'error', title: 'Disconnect Error', description: e.message, duration: 5000 })
+    } finally {
+      setYtDisconnecting(false)
+    }
+  }
 
   // ── Commands ────────────────────────────────────────────────────
   const COMMAND_LABELS: Record<string, { label: string; success: string; loading: string }> = {
@@ -777,10 +879,26 @@ export default function Dashboard() {
             {/* Notification center */}
             <NotificationCenter onNavigate={(t) => setActiveTab(t)} />
 
-            <Badge variant={channel?.youtubeConnected ? 'default' : 'outline'} className={`text-[10px] ${channel?.youtubeConnected ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'border-slate-600 text-slate-300'}`}>
-              <Youtube className="w-3 h-3 mr-1" />
-              {channel?.youtubeConnected ? 'Connected' : 'Offline'}
-            </Badge>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                if (!channel?.youtubeConnected) {
+                  connectYouTube()
+                } else {
+                  setActiveTab('settings')
+                }
+              }}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium border transition-all cursor-pointer ${
+                channel?.youtubeConnected
+                  ? 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'
+                  : 'bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30 animate-pulse'
+              }`}
+              title={channel?.youtubeConnected ? 'YouTube connected – click to view settings' : 'Click to connect YouTube'}
+            >
+              <Youtube className="w-3 h-3" />
+              {channel?.youtubeConnected ? 'Connected' : 'Connect'}
+            </motion.button>
 
             {/* EMERGENCY STOP - ALWAYS VISIBLE (with confirmation when activating) */}
             <AlertDialog open={estopDialogOpen} onOpenChange={setEstopDialogOpen}>
@@ -884,6 +1002,38 @@ export default function Dashboard() {
           <TabsContent value="overview" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="overview-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                {/* YouTube Not Connected Banner */}
+                {!channel?.youtubeConnected && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative overflow-hidden rounded-xl border border-red-500/30 bg-gradient-to-r from-red-500/10 via-slate-900/80 to-amber-500/10 p-4"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-amber-500/5 animate-pulse" />
+                    <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
+                          <Youtube className="w-6 h-6 text-red-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-100">YouTube Not Connected</p>
+                          <p className="text-xs text-slate-400">Connect your YouTube channel to enable video uploads, analytics collection, and autonomous publishing.</p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={connectYouTube}
+                        disabled={ytConnecting}
+                        className="shrink-0 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-2"
+                      >
+                        {ytConnecting ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Connecting...</>
+                        ) : (
+                          <><Youtube className="w-4 h-4" /> Connect YouTube</>
+                        )}
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
                 {/* Top Stats Row */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <StatusCard
@@ -2358,15 +2508,16 @@ export default function Dashboard() {
                     <CardDescription className="text-[10px]">Google OAuth 2.0 is required for video uploads and analytics</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    {/* Connection Status */}
                     <div className="flex items-center justify-between p-3 rounded-lg bg-slate-800/40 border border-slate-700/30">
                       <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${channel?.youtubeConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        <div className={`w-3 h-3 rounded-full ${channel?.youtubeConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
                         <div>
                           <p className="text-xs font-medium text-slate-200">
                             {channel?.youtubeConnected ? 'Connected' : 'Not Connected'}
                           </p>
                           <p className="text-[11px] text-slate-400">
-                            {channel?.youtubeConnected ? `Channel: ${channel.channel?.name || 'Unknown'}` : 'Complete OAuth setup to enable uploads'}
+                            {channel?.youtubeConnected ? `Channel: ${channel.channel?.name || 'Unknown'}` : 'Click below to connect your YouTube account'}
                           </p>
                         </div>
                       </div>
@@ -2374,15 +2525,64 @@ export default function Dashboard() {
                         {channel?.youtubeConnected ? 'Active' : 'Required'}
                       </Badge>
                     </div>
-                    {!channel?.youtubeConnected && (
-                      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
-                        <p className="font-medium mb-1">Setup Required:</p>
-                        <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-amber-300/80">
-                          <li>Create a Google Cloud project with YouTube Data API v3</li>
-                          <li>Configure OAuth 2.0 consent screen</li>
-                          <li>Add redirect URI to your credentials</li>
-                          <li>Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env</li>
-                        </ol>
+
+                    {/* Connect / Disconnect Button */}
+                    {channel?.youtubeConnected ? (
+                      <div className="space-y-3">
+                        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span className="font-medium">YouTube Connected Successfully</span>
+                          </div>
+                          <p className="text-[10px] text-emerald-300/80">Videos can be uploaded, analytics will be collected, and autonomous publishing is available.</p>
+                        </div>
+                        <Button
+                          onClick={disconnectYouTube}
+                          disabled={ytDisconnecting}
+                          variant="outline"
+                          className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 gap-2"
+                        >
+                          {ytDisconnecting ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> Disconnecting...</>
+                          ) : (
+                            <><AlertOctagon className="w-4 h-4" /> Disconnect YouTube</>
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {/* Setup info (from API if available) */}
+                        {ytSetupInfo ? (
+                          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+                            <p className="font-medium mb-1.5">Setup Required:</p>
+                            <ol className="list-decimal list-inside space-y-1 text-[10px] text-amber-300/80">
+                              {ytSetupInfo.steps?.map((step: string, i: number) => (
+                                <li key={i}>{step}</li>
+                              ))}
+                            </ol>
+                          </div>
+                        ) : (
+                          <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/20 text-xs text-slate-300">
+                            <p className="font-medium mb-1">To connect YouTube, you need:</p>
+                            <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-slate-400">
+                              <li>A Google Cloud project with YouTube Data API v3</li>
+                              <li>OAuth 2.0 credentials configured</li>
+                              <li>Redirect URI added to your credentials</li>
+                              <li>YOUTUBE_CLIENT_ID & YOUTUBE_CLIENT_SECRET in .env</li>
+                            </ol>
+                          </div>
+                        )}
+                        <Button
+                          onClick={connectYouTube}
+                          disabled={ytConnecting}
+                          className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-2"
+                        >
+                          {ytConnecting ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> Connecting...</>
+                          ) : (
+                            <><Youtube className="w-4 h-4" /> Connect YouTube</>
+                          )}
+                        </Button>
                       </div>
                     )}
                   </CardContent>
