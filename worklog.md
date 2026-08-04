@@ -1542,3 +1542,146 @@ Priority Recommendations for Next Phase:
 9. **Multi-channel support** — current schema supports multiple Channels but UI assumes single channel; add channel switcher
 10. **Content calendar drag-and-drop** — allow dragging ideas from the Scheduler tab onto the Calendar tab to schedule them
 
+
+## Task ID: 12-B
+Agent: Fullstack Developer
+Task: (A) Enhance Empty States with Illustrations + CTAs, (B) Add Weekly Summary Card
+
+Work Log:
+- Enhanced local `EmptyState` component in `src/app/page.tsx` with:
+  - New `accent` prop: 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose' (optional, backward compatible)
+  - New `action` prop: { label: string; onClick: () => void } (optional, renders Button with accent colors)
+  - Accent color map with bg/ring/text/glow/btn/btnBorder classes per color
+  - Animated pulsing glow: `motion.div` with `animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.15, 0.3] }}` and `blur-xl` behind icon
+  - Larger 16×16 icon with colored ring-2 ring when accent is set
+  - Falls back to original simple style when accent is not provided (backward compatible)
+- Updated 5 EmptyState usages in page.tsx with accent + action props:
+  1. "No ideas yet" → accent="violet", action: "Generate Ideas" → sendCommand('niche-research')
+  2. "No projects yet" → accent="emerald", action: "Produce Video" → sendCommand('produce')
+  3. "No uploads yet" → accent="cyan", action: "Upload Video" → toast info (YouTube not connected)
+  4. "No quality reviews yet" → accent="rose", action: "Produce Video" → sendCommand('produce')
+  5. "No calendar data" → accent="amber", action: "Schedule Video" → setActiveTab('scheduler')
+- Added Weekly Summary card in Overview tab (between AI Insights and Agent Intelligence):
+  - Wrapped in GradientCard with "from-amber-500/5 to-violet-500/5" glow
+  - CalendarDays icon + "Weekly Summary" heading + "This week" label
+  - Computed weekly stats from logs array (7-day window):
+    - decisions: logs with action starting with niche_/strategy_/mode_
+    - ideasGenerated: logs with action=metadata_update and details containing 'idea'
+    - videosProduced: logs with action=metadata_update and details containing 'produced|producing'
+    - reviewsCompleted: logs with action=metadata_update and details containing 'review|approved|failed'
+  - 4 metric chips in responsive grid (2×2 on mobile, 4 on sm+) with staggered motion entrance
+  - Mini progress bar (amber→violet gradient) based on activity/20 ratio
+  - Motivational message based on total activity level (0/1-5/6-15/16+)
+- Also enhanced `src/components/agent/empty-states.tsx`:
+  - Added `accent` prop to EmptyStateProps interface
+  - Added `accentColorMap` with 5 color entries matching variant style structure
+  - When accent is provided, uses accentColorMap instead of variantStyles for colors
+  - Added animated pulsing glow (motion.div with blur-xl) behind icon in accent mode
+  - All existing usages remain backward compatible (accent is optional)
+- Verification: `bun run lint` → 0 errors, `next build` → success, dev server → 200 OK
+
+## Task ID: 12-A
+Agent: Full-Stack Developer
+Task: Add Interactive Revenue Projection Calculator
+
+Work Log:
+- Read existing `src/app/page.tsx` to locate the static "Revenue Forecast" GradientCard (lines 1718-1772)
+- Read existing `src/components/agent/revenue-projections.tsx` for context on current revenue component patterns
+- Read `src/components/ui/slider.tsx` to understand the shadcn Slider API (uses @radix-ui/react-slider)
+- Created new `src/components/agent/revenue-projection-calculator.tsx` with:
+  - `RevenueProjectionCalculator` component ('use client') with props: currentRevenue, currentViews, currentSubscribers, className
+  - 5 interactive sliders using shadcn Slider with violet accent styling:
+    1. Monthly Growth Rate (0-30%, default 15%, step 1%)
+    2. Upload Frequency (1-30/mo, default 4, step 1)
+    3. Average RPM ($0.50-$15.00, default $2.40, step $0.10)
+    4. Avg Views/Video (100-100,000, default 5,000, step 100)
+    5. Avg Retention Rate (20-95%, default 58%, step 1%)
+  - Each slider has: label + value badge + slider control + description line
+  - 12-month AreaChart (recharts) with 3 areas: Optimistic (emerald, dashed), Expected (cyan, solid), Conservative (amber, dotted)
+  - Projection formulas matching spec (baseRevenue, growthRate, uploadFrequency, avgViews, avgRpm multipliers)
+  - Custom tooltip with dark theme styling
+  - Custom legend with SVG line indicators
+  - 3 summary cards: "12-Month Revenue", "Best Case", "Break-even Month" (target $1,000)
+  - Reset button to restore all sliders to defaults
+  - Responsive layout: lg:grid-cols-[1fr_2fr] (sliders + chart)
+  - framer-motion animations on chart container and summary cards
+  - Dark theme matching dashboard aesthetic (slate-900/60, slate-800 borders)
+- Integrated into `src/app/page.tsx`:
+  - Added import for RevenueProjectionCalculator
+  - Replaced entire Revenue Forecast GradientCard block with `<RevenueProjectionCalculator currentRevenue={analytics?.estimatedRevenue || 0} currentViews={analytics?.totalViews || 0} currentSubscribers={analytics?.totalSubscribers || 0} />`
+- Lint: `bun run lint` → 0 errors
+- Browser verification:
+  - Navigated to Revenue tab, confirmed "Revenue Projection Calculator" heading visible
+  - Confirmed all 5 sliders rendered with correct default values (15, 4, 2.4, 5000, 58)
+  - Confirmed "Reset" button present
+  - Adjusted Monthly Growth Rate slider from 15% to 24% → value updated, chart re-rendered
+  - Clicked Reset button → all sliders returned to defaults (15, 4, 2.4, 5000, 58)
+  - Screenshots saved: qa-revenue-projection-calculator.png, qa-calculator-slider-adjusted.png
+
+---
+Task ID: 12
+Agent: Cron Review Round 3 (Lead Architect)
+Task: Assess project, QA via agent-browser, fix navigation bug, add 4 new features, enhance empty states, update worklog
+
+Work Log:
+- Read worklog.md (1544 lines). Previous round (Task 11) fixed 7 visual bugs and added 3 feature modules (Real Storage Stats, Video Re-render Flow, Video Project Bulk Ops).
+- Dev server running, lint clean (0 errors). Performed QA via agent-browser across all 12 tabs (all render with unique MD5 hashes).
+- VLM audits identified one real bug: **Navigation tab wrapping** — 12 tabs + keyboard button caused "Decisions" and "Settings" to wrap to a second row on all tabs, making the dashboard look broken.
+
+- **Fixed navigation tab wrapping** (page.tsx):
+  - Changed `TabsList` from `flex-wrap` to `overflow-x-auto flex-nowrap` with custom thin scrollbar styling (`[&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:bg-slate-700/50`)
+  - Added `shrink-0` to all `TabsTrigger` and the Keyboard Shortcuts button to prevent them from compressing
+  - Verified via VLM: tabs now render in a single scrollable row (no wrapping)
+
+- **Added Channel Strategy Score card** to Overview tab (page.tsx, inline ~70 LOC):
+  - Composite metric combining: Niche Fit (30% weight), Pipeline Efficiency (30%), Content Pillars (20%), Monetization Readiness (20%)
+  - Renders as a circular SVG ring with letter grade (A/B/C/D/F) + percentage
+  - 4 colored progress bars (violet/cyan/emerald/amber) for each sub-metric with weight labels
+  - Contextual advice message based on score range
+  -3 framer-motion animated entrance
+
+- **Launched 2 parallel subagents** (both completed successfully):
+  - **Task 12-A (Revenue Projection Calculator)**: Created `src/components/agent/revenue-projection-calculator.tsx` — interactive `'use client'` component with 5 shadcn Sliders (Monthly Growth Rate 0-30%, Upload Frequency 1-30, Average RPM $0.50-$15, Avg Views/Video 100-100K, Avg Retention Rate 20-95%), 12-month AreaChart with 3 scenarios (Optimistic/Expected/Conservative), 3 summary cards (12-Month Revenue, Best Case, Break-even Month), Reset button, responsive lg:grid-cols-[1fr_2fr] layout. Replaced static Revenue Forecast chart in Revenue tab.
+  - **Task 12-B (Enhanced Empty States + Weekly Summary)**: Enhanced `EmptyState` component in `src/components/agent/empty-states.tsx` with `accent` prop (violet/cyan/emerald/amber/rose) + `action` prop (CTA button) + animated pulsing glow behind icon + larger icon with colored ring. Updated 5 EmptyState usages in page.tsx with accent colors and CTA actions (Generate Ideas, Produce Video, Upload Video, Schedule Video). Added Weekly Summary card to Overview tab with 4 metric chips (Decisions, Ideas, Produced, Reviews) computed from 7-day audit log window + motivational message based on activity level + mini progress bar.
+
+- **Dev server issue**: After subagents finished writing files simultaneously, the Next.js dev server got stuck compiling (requests timing out). Fixed by killing and restarting the dev process. Server returned HTTP 200 after restart.
+
+- **Verification**:
+  - `bun run lint` → 0 errors ✅
+  - Dashboard returns HTTP 200 ✅
+  - VLM confirms: Navigation tabs in single row (no wrapping) ✅, Channel Strategy Score card with letter grade visible ✅, Weekly Summary card visible ✅, Revenue Projection Calculator with sliders visible ✅
+  - All 12 tabs render correctly via agent-browser
+
+Stage Summary:
+- **1 visual bug fixed**: Navigation tab wrapping → single scrollable row
+- **4 new features added**:
+  1. Channel Strategy Score composite metric (inline inA page.tsx) — letter grade + 4 sub-metrics with weights
+  2. Revenue Projection Calculator (`revenue-projection-calculator.tsx`) — 5 interactive sliders + 12-month chart + summary cards
+  3. Enhanced Empty States — animated glow + accent colors + CTA buttons on 5 empty states
+  4. Weekly Summary card — 7-day activity digest with metric chips + motivational messages
+- **Files created (1)**:
+  - `src/components/agent/revenue-projection-calculator.tsx`
+- **Files modified (3)**:
+  - `src/app/page.tsx` (tab bar fix, Channel Strategy Score, Weekly Summary, EmptyState enhancements, Revenue Calculator integration)
+  - `src/components/agent/empty-states.tsx` (accent + action props + animated glow)
+- Lint: 0 errors. All features verified via agent-browser + VLM.
+
+Unresolved Issues / Risks:
+- YouTube OAuth still requires manual Google Cloud project setup (expected)
+- Revenue/Analytics data still uses synthetic placeholders until YouTube is connected
+- Dev server occasionally gets stuck compiling after multiple simultaneous file writes (requires manual restart)
+- Calendar tab is tall — user must scroll to see full month; could benefit from side panel forF upcoming queue on desktop
+- Light theme not yet verified across all components
+
+Priority Recommendations for Next Phase:
+1.- **Configure YouTube OAuth** — complete Google Cloud project setup for real uploads + analytics
+2. **Add Remotion renderer** — replace FFmpeg slideshow for richer, longer videos
+3. **Cron job for autonomous production** — schedule `produce-next` on regular intervals
+4. **Light theme QA pass** — verify all 25+ components render correctly in light mode
+5. **Weekly/monthly PDF reports** — generated summary reports with charts
+6. **Real-time WebSocket updates** — replace polling with socket.io for instant feedback
+7. **A/B thumbnail testing** — generate multiple thumbnails, track CTR
+8. **Multi-channel support** — add channel switcher for managing multiple YouTube channels
+9. **Content calendar drag-and-drop** — drag ideas from Scheduler onto Calendar
+10. **Video preview for non-approved projects** — allow previewing producing/failed projects
+

@@ -42,6 +42,7 @@ import { ContentCalendar } from '@/components/agent/content-calendar'
 import { GlassCard } from '@/components/agent/glass-card'
 import { YPPProgressTracker } from '@/components/agent/ypp-progress-tracker'
 import { RevenueProjections } from '@/components/agent/revenue-projections'
+import { RevenueProjectionCalculator } from '@/components/agent/revenue-projection-calculator'
 import { SponsorshipDiscovery } from '@/components/agent/sponsorship-discovery'
 import { ExperimentManager } from '@/components/agent/experiment-manager'
 import { HealthDiagnostics } from '@/components/agent/health-diagnostics'
@@ -399,7 +400,68 @@ function LiveFeed({ logs }: { logs: any[] }) {
   )
 }
 
-function EmptyState({ icon: Icon, title, desc }: { icon: any; title: string; desc: string }) {
+// ─── Accent Color Map ──────────────────────────────────────────────
+const accentColors: Record<string, { bg: string; ring: string; text: string; glow: string; btn: string; btnBorder: string }> = {
+  violet:  { bg: 'bg-violet-500/10',  ring: 'ring-violet-500/30',  text: 'text-violet-400',  glow: 'bg-violet-500/20',  btn: 'text-violet-300', btnBorder: 'border-violet-500/30' },
+  cyan:    { bg: 'bg-cyan-500/10',     ring: 'ring-cyan-500/30',    text: 'text-cyan-400',    glow: 'bg-cyan-500/20',    btn: 'text-cyan-300',   btnBorder: 'border-cyan-500/30' },
+  emerald: { bg: 'bg-emerald-500/10',  ring: 'ring-emerald-500/30', text: 'text-emerald-400', glow: 'bg-emerald-500/20', btn: 'text-emerald-300', btnBorder: 'border-emerald-500/30' },
+  amber:   { bg: 'bg-amber-500/10',    ring: 'ring-amber-500/30',   text: 'text-amber-400',   glow: 'bg-amber-500/20',   btn: 'text-amber-300',  btnBorder: 'border-amber-500/30' },
+  rose:    { bg: 'bg-rose-500/10',     ring: 'ring-rose-500/30',    text: 'text-rose-400',    glow: 'bg-rose-500/20',    btn: 'text-rose-300',   btnBorder: 'border-rose-500/30' },
+}
+
+function EmptyState({
+  icon: Icon,
+  title,
+  desc,
+  accent,
+  action,
+}: {
+  icon: any
+  title: string
+  desc: string
+  accent?: 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose'
+  action?: { label: string; onClick: () => void }
+}) {
+  const colors = accent ? accentColors[accent] : null
+
+  // Enhanced mode when accent is provided
+  if (colors) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+        {/* Icon container with animated glow + colored ring */}
+        <div className="relative mb-5">
+          {/* Animated pulsing glow behind icon */}
+          <motion.div
+            aria-hidden
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.15, 0.3] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            className={`absolute inset-0 rounded-full ${colors.glow} blur-xl`}
+          />
+          {/* Icon with colored ring */}
+          <div className={`relative flex items-center justify-center w-16 h-16 rounded-full ${colors.bg} ring-2 ${colors.ring}`}>
+            <Icon className={`w-8 h-8 ${colors.text}`} strokeWidth={1.75} />
+          </div>
+        </div>
+
+        <p className="text-sm font-semibold text-slate-100">{title}</p>
+        <p className="text-xs text-slate-400 mt-1.5 max-w-xs leading-relaxed">{desc}</p>
+
+        {/* Optional CTA button */}
+        {action && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={action.onClick}
+            className={`mt-4 ${colors.btnBorder} ${colors.btn} hover:${colors.bg}`}
+          >
+            {action.label}
+          </Button>
+        )}
+      </div>
+    )
+  }
+
+  // Original simple fallback (backward compatible)
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
@@ -755,7 +817,7 @@ export default function Dashboard() {
       <main className="flex-1 p-3 md:p-6 overflow-auto">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           {/* ── Tab Bar ── */}
-          <TabsList className="mb-4 bg-slate-900/80 border border-slate-800/50 backdrop-blur-sm w-full flex-wrap h-auto gap-1 p-1">
+          <TabsList className="mb-4 bg-slate-900/80 border border-slate-800/50 backdrop-blur-sm w-full h-auto gap-1 p-1 overflow-x-auto flex-nowrap [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/50 [&::-webkit-scrollbar-thumb]:rounded-full">
             {[
               { v: 'overview', icon: Activity, label: 'Overview' },
               { v: 'pipeline', icon: Layers, label: 'Pipeline' },
@@ -773,7 +835,7 @@ export default function Dashboard() {
               <TabsTrigger
                 key={tab.v}
                 value={tab.v}
-                className="data-[state=active]:bg-slate-700/80 data-[state=active]:text-white text-slate-400 text-xs px-3 py-1.5 transition-all duration-200 hover:bg-slate-800/60"
+                className="shrink-0 data-[state=active]:bg-slate-700/80 data-[state=active]:text-white text-slate-400 text-xs px-3 py-1.5 transition-all duration-200 hover:bg-slate-800/60"
               >
                 <tab.icon className="w-3.5 h-3.5 mr-1.5" />
                 {tab.label}
@@ -782,7 +844,7 @@ export default function Dashboard() {
             {/* Keyboard Shortcuts Button */}
             <button
               onClick={() => setShortcutsOpen(true)}
-              className="ml-auto text-slate-500 hover:text-slate-300 transition-colors p-1.5 rounded-md hover:bg-slate-800/50"
+              className="shrink-0 text-slate-500 hover:text-slate-300 transition-colors p-1.5 rounded-md hover:bg-slate-800/50"
               title="Keyboard Shortcuts (Ctrl+/)"
             >
               <Keyboard className="w-3.5 h-3.5" />
@@ -833,6 +895,81 @@ export default function Dashboard() {
                     hint="Background jobs waiting or running (production, uploads, analytics collection)"
                   />
                 </div>
+
+                {/* Channel Strategy Score — Composite metric */}
+                <GradientCard glow="from-violet-500/5 to-emerald-500/5">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <Target className="w-4 h-4 text-violet-400" /> Channel Strategy Score
+                      </h3>
+                      <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">Composite</Badge>
+                    </div>
+                    {(() => {
+                      const nicheScore = selectedNicheScore ?? 0
+                      const pipelineEfficiency = totalPipeline > 0
+                        ? ((status?.pipeline?.approved || 0) + (status?.pipeline?.uploaded || 0) + (status?.pipeline?.scripted || 0) + (status?.pipeline?.researched || 0)) / totalPipeline * 100
+                        : 0
+                      const pillarCount = channel?.pillars?.length || 0
+                      const pillarScore = Math.min(100, pillarCount * 20)
+                      const monetizationReady = channel?.youtubeConnected ? 100 : 0
+                      const composite = Math.round(nicheScore * 10 * 0.3 + pipelineEfficiency * 0.3 + pillarScore * 0.2 + monetizationReady * 0.2)
+                      const grade = composite >= 80 ? 'A' : composite >= 60 ? 'B' : composite >= 40 ? 'C' : composite >= 20 ? 'D' : 'F'
+                      const gradeColor = composite >= 80 ? 'text-emerald-400' : composite >= 60 ? 'text-cyan-400' : composite >= 40 ? 'text-amber-400' : 'text-rose-400'
+                      const metrics = [
+                        { label: 'Niche Fit', value: Math.round(nicheScore * 10), max: 100, color: 'bg-violet-500', weight: '30%' },
+                        { label: 'Pipeline Efficiency', value: Math.round(pipelineEfficiency), max: 100, color: 'bg-cyan-500', weight: '30%' },
+                        { label: 'Content Pillars', value: pillarScore, max: 100, color: 'bg-emerald-500', weight: '20%' },
+                        { label: 'Monetization', value: monetizationReady, max: 100, color: 'bg-amber-500', weight: '20%' },
+                      ]
+                      return (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-4">
+                            <motion.div
+                              initial={{ scale: 0.5, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ type: 'spring', stiffness: 150, delay: 0.2 }}
+                              className="relative w-20 h-20 flex items-center justify-center"
+                            >
+                              <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
+                                <circle cx="40" cy="40" r="34" fill="none" stroke="#1e293b" strokeWidth="6" />
+                                <circle cx="40" cy="40" r="34" fill="none" stroke={composite >= 80 ? '#10b981' : composite >= 60 ? '#06b6d4' : composite >= 40 ? '#f59e0b' : '#f43f5e'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${composite * 2.14} 214`} className="transition-all duration-1000" />
+                              </svg>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className={`text-xl font-bold ${gradeColor}`}>{grade}</span>
+                                <span className="text-[9px] text-slate-400">{composite}%</span>
+                              </div>
+                            </motion.div>
+                            <div className="flex-1 space-y-1.5">
+                              {metrics.map((m, i) => (
+                                <div key={i} className="space-y-0.5">
+                                  <div className="flex items-center justify-between text-[10px]">
+                                    <span className="text-slate-400">{m.label} <span className="text-slate-600">({m.weight})</span></span>
+                                    <span className="text-slate-300 font-mono">{m.value}%</span>
+                                  </div>
+                                  <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                                    <motion.div
+                                      initial={{ width: 0 }}
+                                      animate={{ width: `${m.value}%` }}
+                                      transition={{ delay: i * 0.1 + 0.3, duration: 0.6 }}
+                                      className={`h-full rounded-full ${m.color}`}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                            Composite score combining niche fit (30%), pipeline throughput (30%), content pillar coverage (20%), and monetization readiness (20%).
+                            {composite < 40 && ' Focus on connecting YouTube and producing content to improve.'}
+                            {composite >= 40 && composite < 70 && ' Good foundation — increase pipeline throughput and pillar coverage.'}
+                            {composite >= 70 && ' Strong position — optimize for maximum throughput.'}
+                          </p>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                </GradientCard>
 
                 {/* Quick Stats Summary Bar */}
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
@@ -1029,6 +1166,71 @@ export default function Dashboard() {
                         </motion.div>
                       ))}
                     </div>
+                  </div>
+                </GradientCard>
+
+                {/* Weekly Summary */}
+                <GradientCard glow="from-amber-500/5 to-violet-500/5">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-amber-400" /> Weekly Summary
+                      </h3>
+                      <span className="text-[10px] text-slate-500">This week</span>
+                    </div>
+                    {(() => {
+                      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                      const weekLogs = logs.filter((l: any) => new Date(l.createdAt) >= sevenDaysAgo)
+                      const decisions = weekLogs.filter((l: any) => /^(niche_|strategy_|mode_)/.test(l.action)).length
+                      const ideasGenerated = weekLogs.filter((l: any) => l.action === 'metadata_update' && /idea/i.test(l.details || '')).length
+                      const videosProduced = weekLogs.filter((l: any) => l.action === 'metadata_update' && /produced|producing/i.test(l.details || '')).length
+                      const reviewsCompleted = weekLogs.filter((l: any) => l.action === 'metadata_update' && /review|approved|failed/i.test(l.details || '')).length
+                      const totalActivity = decisions + ideasGenerated + videosProduced + reviewsCompleted
+                      const message = totalActivity === 0
+                        ? 'No activity this week. Start the autonomous cycle to begin producing content.'
+                        : totalActivity <= 5
+                        ? 'Slow week — consider increasing upload frequency or running niche research.'
+                        : totalActivity <= 15
+                        ? 'Steady progress. Keep the momentum going!'
+                        : 'Excellent output this week! The autonomous agent is running at full capacity.'
+                      const chips = [
+                        { icon: GitBranch, count: decisions, label: 'Decisions', color: 'text-violet-400', bg: 'bg-violet-500/10', ring: 'ring-violet-500/20' },
+                        { icon: Lightbulb, count: ideasGenerated, label: 'Ideas', color: 'text-amber-400', bg: 'bg-amber-500/10', ring: 'ring-amber-500/20' },
+                        { icon: Film, count: videosProduced, label: 'Produced', color: 'text-emerald-400', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/20' },
+                        { icon: ShieldCheck, count: reviewsCompleted, label: 'Reviews', color: 'text-rose-400', bg: 'bg-rose-500/10', ring: 'ring-rose-500/20' },
+                      ]
+                      return (
+                        <>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                            {chips.map((chip, i) => (
+                              <motion.div
+                                key={chip.label}
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.08, duration: 0.3 }}
+                                className={`flex items-center gap-2 p-2 rounded-lg ${chip.bg} ring-1 ${chip.ring}`}
+                              >
+                                <chip.icon className={`w-3.5 h-3.5 ${chip.color} shrink-0`} />
+                                <div className="min-w-0">
+                                  <span className={`text-sm font-bold ${chip.color}`}>{chip.count}</span>
+                                  <span className="text-[10px] text-slate-500 ml-1">{chip.label}</span>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                          {/* Mini progress bar */}
+                          <div className="w-full h-1.5 rounded-full bg-slate-800/60 mb-2 overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(totalActivity / 20 * 100, 100)}%` }}
+                              transition={{ duration: 0.8, ease: 'easeOut' }}
+                              className="h-full rounded-full bg-gradient-to-r from-amber-500/60 to-violet-500/60"
+                            />
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">{message}</p>
+                        </>
+                      )
+                    })()}
                   </div>
                 </GradientCard>
 
@@ -1258,7 +1460,7 @@ export default function Dashboard() {
                           }}
                         />
                       ) : initialLoaded ? (
-                        <EmptyState icon={Lightbulb} title="No ideas yet" desc="Run initial setup to generate video ideas from your niche." />
+                        <EmptyState icon={Lightbulb} title="No ideas yet" desc="Run initial setup to generate video ideas from your niche." accent="violet" action={{ label: 'Generate Ideas', onClick: () => sendCommand('niche-research') }} />
                       ) : (
                         <IdeaListSkeleton count={5} />
                       )}
@@ -1285,7 +1487,7 @@ export default function Dashboard() {
                           }}
                         />
                       ) : initialLoaded ? (
-                        <EmptyState icon={Film} title="No projects yet" desc="Produce a video to see it appear here." />
+                        <EmptyState icon={Film} title="No projects yet" desc="Produce a video to see it appear here." accent="emerald" action={{ label: 'Produce Video', onClick: () => sendCommand('produce') }} />
                       ) : (
                         <IdeaListSkeleton count={3} />
                       )}
@@ -1319,7 +1521,7 @@ export default function Dashboard() {
                           ))}
                         </div>
                       ) : (
-                        <EmptyState icon={CloudUpload} title="No uploads yet" desc="Videos will appear here after YouTube upload." />
+                        <EmptyState icon={CloudUpload} title="No uploads yet" desc="Videos will appear here after YouTube upload." accent="cyan" action={{ label: 'Upload Video', onClick: () => toast({ type: 'info', title: 'YouTube not connected', description: 'Connect your YouTube account to upload videos.', duration: 3000 }) }} />
                       )}
                     </ScrollArea>
                   </CardContent>
@@ -1341,7 +1543,7 @@ export default function Dashboard() {
                         projects={pipeline?.projects || []}
                       />
                     ) : initialLoaded ? (
-                      <EmptyState icon={ShieldCheck} title="No quality reviews yet" desc="Produce a video to trigger automated review." />
+                      <EmptyState icon={ShieldCheck} title="No quality reviews yet" desc="Produce a video to trigger automated review." accent="rose" action={{ label: 'Produce Video', onClick: () => sendCommand('produce') }} />
                     ) : (
                       <IdeaListSkeleton count={3} />
                     )}
@@ -1640,61 +1842,12 @@ export default function Dashboard() {
                   </div>
                 </GradientCard>
 
-                {/* Revenue Forecast Chart */}
-                <GradientCard glow="from-emerald-500/5 to-cyan-500/5">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-emerald-400" /> Revenue Forecast
-                    </CardTitle>
-                    <CardDescription className="text-[10px]">Projected revenue based on current growth trajectory</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-64">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={Array.from({ length: 12 }, (_, i) => {
-                          const baseRevenue = analytics?.estimatedRevenue || 0
-                          const growthRate = 1.15
-                          return {
-                            month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
-                            optimistic: +(baseRevenue * Math.pow(growthRate + 0.05, i) * (1 + (i % 3) * 0.02)).toFixed(2),
-                            expected: +(baseRevenue * Math.pow(growthRate, i)).toFixed(2),
-                            conservative: +(baseRevenue * Math.pow(growthRate - 0.05, i) * (1 - (i % 3) * 0.01)).toFixed(2),
-                          }
-                        })} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                          <defs>
-                            <linearGradient id="colorOptimistic" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorExpected" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                          <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                          <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={(v: number) => `$${v.toFixed(0)}`} />
-                          <RechartsTooltip
-                            contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
-                            labelStyle={{ color: '#e2e8f0' }}
-                            formatter={(value: number) => [`$${value.toFixed(2)}`, '']}
-                          />
-                          <Area type="monotone" dataKey="optimistic" stroke="#10b981" fill="url(#colorOptimistic)" strokeWidth={1.5} strokeDasharray="4 2" />
-                          <Area type="monotone" dataKey="expected" stroke="#06b6d4" fill="url(#colorExpected)" strokeWidth={2} />
-                          <Area type="monotone" dataKey="conservative" stroke="#f59e0b" fill="transparent" strokeWidth={1.5} strokeDasharray="2 2" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                    <div className="flex items-center justify-center gap-4 mt-3">
-                      {[{ label: 'Optimistic', color: 'bg-emerald-500', dash: '' }, { label: 'Expected', color: 'bg-cyan-500', dash: '' }, { label: 'Conservative', color: 'bg-amber-500', dash: 'border-dashed' }].map((l, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                          <div className={`w-4 h-[2px] ${l.color} ${l.dash}`} />
-                          {l.label}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </GradientCard>
+                {/* Revenue Projection Calculator */}
+                <RevenueProjectionCalculator
+                  currentRevenue={analytics?.estimatedRevenue || 0}
+                  currentViews={analytics?.totalViews || 0}
+                  currentSubscribers={analytics?.totalSubscribers || 0}
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   {/* Revenue Tracking */}
@@ -1960,7 +2113,7 @@ export default function Dashboard() {
                 ) : (
                   <GlassCard variant="glow" glowFrom="from-violet-500" glowTo="to-cyan-500">
                     <CardContent className="py-10">
-                      <EmptyState icon={CalendarDays} title="No calendar data" desc="Produce or schedule videos to populate the calendar." />
+                      <EmptyState icon={CalendarDays} title="No calendar data" desc="Produce or schedule videos to populate the calendar." accent="amber" action={{ label: 'Schedule Video', onClick: () => setActiveTab('scheduler') }} />
                     </CardContent>
                   </GlassCard>
                 )}

@@ -16,6 +16,7 @@ interface EmptyStateProps {
   description?: string
   action?: { label: string; onClick: () => void }
   variant?: 'default' | 'error' | 'success' | 'pending'
+  accent?: 'violet' | 'cyan' | 'emerald' | 'amber' | 'rose'
   className?: string
 }
 
@@ -25,6 +26,40 @@ type VariantStyle = {
   icon: string
   ring: string
   button: string
+}
+
+// ─── Accent Color Map ──────────────────────────────────────────────
+const accentColorMap: Record<NonNullable<EmptyStateProps['accent']>, VariantStyle> = {
+  violet: {
+    container: 'bg-violet-500/10 ring-1 ring-violet-500/30',
+    icon: 'text-violet-300',
+    ring: 'from-violet-500/30 to-violet-500/30',
+    button: 'bg-violet-500/15 hover:bg-violet-500/25 text-violet-200 border-violet-500/30 hover:border-violet-400/50',
+  },
+  cyan: {
+    container: 'bg-cyan-500/10 ring-1 ring-cyan-500/30',
+    icon: 'text-cyan-300',
+    ring: 'from-cyan-500/30 to-cyan-500/30',
+    button: 'bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-200 border-cyan-500/30 hover:border-cyan-400/50',
+  },
+  emerald: {
+    container: 'bg-emerald-500/10 ring-1 ring-emerald-500/30',
+    icon: 'text-emerald-300',
+    ring: 'from-emerald-500/30 to-emerald-500/30',
+    button: 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-200 border-emerald-500/30 hover:border-emerald-400/50',
+  },
+  amber: {
+    container: 'bg-amber-500/10 ring-1 ring-amber-500/30',
+    icon: 'text-amber-300',
+    ring: 'from-amber-500/30 to-amber-500/30',
+    button: 'bg-amber-500/15 hover:bg-amber-500/25 text-amber-200 border-amber-500/30 hover:border-amber-400/50',
+  },
+  rose: {
+    container: 'bg-rose-500/10 ring-1 ring-rose-500/30',
+    icon: 'text-rose-300',
+    ring: 'from-rose-500/30 to-rose-500/30',
+    button: 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 border-rose-500/30 hover:border-rose-400/50',
+  },
 }
 
 const variantStyles: Record<NonNullable<EmptyStateProps['variant']>, VariantStyle> = {
@@ -65,9 +100,10 @@ export function EmptyState({
   description,
   action,
   variant = 'default',
+  accent,
   className,
 }: EmptyStateProps) {
-  const styles = variantStyles[variant]
+  const styles = accent ? accentColorMap[accent] : variantStyles[variant]
 
   return (
     <motion.div
@@ -79,8 +115,20 @@ export function EmptyState({
         className
       )}
     >
-      {/* Icon container with pulsing ring */}
+      {/* Icon container with pulsing ring + animated glow */}
       <div className="relative mb-5">
+        {/* Animated pulsing glow (accent mode) */}
+        {accent && (
+          <motion.div
+            aria-hidden
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.15, 0.3] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            className={cn(
+              'absolute -inset-2 rounded-full blur-xl bg-gradient-to-br',
+              styles.ring
+            )}
+          />
+        )}
         {/* Expanding pulse ring */}
         <motion.div
           aria-hidden
