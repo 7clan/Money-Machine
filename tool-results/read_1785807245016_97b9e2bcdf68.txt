@@ -1,0 +1,402 @@
+  1700→                            </tr>
+  1701→                          </thead>
+  1702→                          <tbody>
+  1703→                            {channel.niches.slice(0, 8).map((n: any) => (
+  1704→                              <tr key={n.id} className={`border-b border-slate-800/50 ${n.isSelected ? 'bg-emerald-500/5' : ''}`}>
+  1705→                                <td className="py-1.5 px-2 text-slate-200 font-medium truncate max-w-[120px]">{n.nicheName}</td>
+  1706→                                {[
+  1707→                                  { val: n.revenuePerHour, max: 50 },
+  1708→                                  { val: n.audienceSize, max: 10 },
+  1709→                                  { val: 10 - n.competition, max: 10 },
+  1710→                                  { val: n.evergreenPotential, max: 10 },
+  1711→                                  { val: 10 - n.productionDifficulty, max: 10 },
+  1712→                                  { val: 10 - n.copyrightRisk - n.misinformationRisk, max: 10 },
+  1713→                                ].map(({ val, max }, ci) => {
+  1714→                                  const pct = Math.min(100, Math.max(0, ((val || 0) / max) * 100))
+  1715→                                  const color = pct > 70 ? 'bg-emerald-500' : pct > 40 ? 'bg-amber-500' : 'bg-red-500'
+  1716→                                  return (
+  1717→                                    <td key={ci} className="py-1.5 px-1.5">
+  1718→                                      <div className="flex items-center justify-center">
+  1719→                                        <div className="w-12 h-1.5 rounded-full bg-slate-800">
+  1720→                                          <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+  1721→                                        </div>
+  1722→                                      </div>
+  1723→                                    </td>
+  1724→                                  )
+  1725→                                })}
+  1726→                                <td className="py-1.5 px-2 text-center">
+  1727→                                  <Badge variant="outline" className={`text-[9px] ${n.isSelected ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-400'}`}>
+  1728→                                    {(n.compositeScore || 0).toFixed(1)}
+  1729→                                  </Badge>
+  1730→                                </td>
+  1731→                              </tr>
+  1732→                            ))}
+  1733→                          </tbody>
+  1734→                        </table>
+  1735→                      </div>
+  1736→                    ) : (
+  1737→                      <EmptyState icon={Compass} title="No niches to compare" desc="Run niche research to populate the comparison matrix." />
+  1738→                    )}
+  1739→                  </CardContent>
+  1740→                </GradientCard>
+  1741→
+  1742→                {/* Agent Health Diagnostics — New Component */}
+  1743→                <GlassCard variant="gradient" glowFrom="from-cyan-500" glowTo="to-violet-500">
+  1744→                  <CardHeader className="pb-2">
+  1745→                    <CardTitle className="text-sm flex items-center gap-2">
+  1746→                      <HeartPulse className="w-4 h-4 text-cyan-400" /> Agent Health & Diagnostics
+  1747→                    </CardTitle>
+  1748→                    <CardDescription className="text-[10px]">System status, engine health, and runtime diagnostics</CardDescription>
+  1749→                  </CardHeader>
+  1750→                  <CardContent>
+  1751→                    <HealthDiagnostics
+  1752→                      agentState={status?.state || 'idle'}
+  1753→                      operatingMode={status?.operatingMode || 'simulation'}
+  1754→                      emergencyStop={status?.emergencyStop || false}
+  1755→                      lastAction={status?.lastAction || null}
+  1756→                      youtubeConnected={channel?.youtubeConnected || false}
+  1757→                      niche={status?.niche || null}
+  1758→                    />
+  1759→                  </CardContent>
+  1760→                </GlassCard>
+  1761→              </motion.div>
+  1762→            </AnimatePresence>
+  1763→          </TabsContent>
+  1764→
+  1765→          {/* ══════════════════════════════════════════════════════════
+  1766→              REVENUE TAB — Enhanced
+  1767→              ══════════════════════════════════════════════════════════ */}
+  1768→          <TabsContent value="revenue" className="space-y-4">
+  1769→            <AnimatePresence mode="wait">
+  1770→              <motion.div key="revenue-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+  1771→                {/* YPP Progress — New Component */}
+  1772→                <GlassCard variant="gradient" glowFrom="from-amber-500" glowTo="to-emerald-500">
+  1773→                  <CardHeader className="pb-2">
+  1774→                    <CardTitle className="text-sm flex items-center gap-2">
+  1775→                      <CreditCard className="w-4 h-4 text-amber-400" /> YouTube Partner Program
+  1776→                    </CardTitle>
+  1777→                    <CardDescription className="text-[10px]">Track your path toward monetization eligibility</CardDescription>
+  1778→                  </CardHeader>
+  1779→                  <CardContent>
+  1780→                    <YPPProgressTracker
+  1781→                      subscribers={analytics?.totalSubscribers || 0}
+  1782→                      watchHours={analytics?.totalWatchTime || 0}
+  1783→                      publicUploads={status?.pipeline?.uploaded || 0}
+  1784→                      communityStrikes={0}
+  1785→                      twoStepVerified={false}
+  1786→                      adsenseLinked={false}
+  1787→                    />
+  1788→                  </CardContent>
+  1789→                </GlassCard>
+  1790→
+  1791→                {/* Revenue Projections — New Component */}
+  1792→                <RevenueProjections
+  1793→                  totalViews={analytics?.totalViews || 0}
+  1794→                  totalSubscribers={analytics?.totalSubscribers || 0}
+  1795→                  estimatedRevenue={analytics?.estimatedRevenue || 0}
+  1796→                  videos={status?.pipeline?.uploaded || 0}
+  1797→                />
+  1798→
+  1799→                {/* Revenue Goal Tracker */}
+  1800→                <GradientCard glow="from-emerald-500/5 to-violet-500/5">
+  1801→                  <div className="p-4">
+  1802→                    <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+  1803→                      <Target className="w-4 h-4 text-emerald-400" /> Revenue Goals
+  1804→                    </h3>
+  1805→                    <div className="space-y-3">
+  1806→                      {[
+  1807→                        { label: 'First $1', current: analytics?.estimatedRevenue || 0, target: 1, icon: DollarSign, color: 'from-emerald-500 to-cyan-500' },
+  1808→                        { label: '$100/month', current: (analytics?.estimatedRevenue || 0) * 30, target: 100, icon: TrendingUp, color: 'from-violet-500 to-purple-500' },
+  1809→                        { label: '$1,000/month', current: (analytics?.estimatedRevenue || 0) * 30, target: 1000, icon: Rocket, color: 'from-amber-500 to-orange-500' },
+  1810→                      ].map((goal, i) => {
+  1811→                        const progress = Math.min(100, (goal.current / goal.target) * 100)
+  1812→                        const Icon = goal.icon
+  1813→                        return (
+  1814→                          <motion.div
+  1815→                            key={i}
+  1816→                            initial={{ opacity: 0, x: -10 }}
+  1817→                            animate={{ opacity: 1, x: 0 }}
+  1818→                            transition={{ delay: i * 0.1 }}
+  1819→                            className="space-y-1.5"
+  1820→                          >
+  1821→                            <div className="flex items-center justify-between">
+  1822→                              <div className="flex items-center gap-2">
+  1823→                                <Icon className="w-3.5 h-3.5 text-slate-400" />
+  1824→                                <span className="text-xs text-slate-300 font-medium">{goal.label}</span>
+  1825→                              </div>
+  1826→                              <span className="text-[10px] text-slate-500">
+  1827→                                ${goal.current.toFixed(2)} / ${goal.target}
+  1828→                              </span>
+  1829→                            </div>
+  1830→                            <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+  1831→                              <motion.div
+  1832→                                initial={{ width: 0 }}
+  1833→                                animate={{ width: `${progress}%` }}
+  1834→                                transition={{ delay: i * 0.1 + 0.3, duration: 0.8, ease: 'easeOut' }}
+  1835→                                className={`h-full rounded-full bg-gradient-to-r ${goal.color}`}
+  1836→                              />
+  1837→                            </div>
+  1838→                          </motion.div>
+  1839→                        )
+  1840→                      })}
+  1841→                    </div>
+  1842→                  </div>
+  1843→                </GradientCard>
+  1844→
+  1845→                {/* Revenue Projection Calculator */}
+  1846→                <RevenueProjectionCalculator
+  1847→                  currentRevenue={analytics?.estimatedRevenue || 0}
+  1848→                  currentViews={analytics?.totalViews || 0}
+  1849→                  currentSubscribers={analytics?.totalSubscribers || 0}
+  1850→                />
+  1851→
+  1852→                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+  1853→                  {/* Revenue Tracking */}
+  1854→                  <GradientCard glow="from-emerald-500/5 to-green-500/5">
+  1855→                    <CardHeader className="pb-2">
+  1856→                      <CardTitle className="text-sm flex items-center gap-2">
+  1857→                        <DollarSign className="w-4 h-4 text-emerald-400" /> Revenue Tracking
+  1858→                      </CardTitle>
+  1859→                    </CardHeader>
+  1860→                    <CardContent>
+  1861→                      {analytics?.estimatedRevenue ? (
+  1862→                        <div className="space-y-3">
+  1863→                          <div className="text-3xl font-bold text-emerald-400">
+  1864→                            ${(analytics.estimatedRevenue || 0).toFixed(2)}
+  1865→                          </div>
+  1866→                          <p className="text-xs text-slate-400">Estimated lifetime revenue</p>
+  1867→                          <div className="grid grid-cols-2 gap-2">
+  1868→                            <div className="p-2 rounded-lg bg-slate-800/40">
+  1869→                              <p className="text-[10px] text-slate-500">RPM</p>
+  1870→                              <p className="text-sm font-mono text-slate-200">${(analytics.estimatedRevenue / Math.max(1, analytics.totalViews || 1) * 1000).toFixed(2)}</p>
+  1871→                            </div>
+  1872→                            <div className="p-2 rounded-lg bg-slate-800/40">
+  1873→                              <p className="text-[10px] text-slate-500">Total Views</p>
+  1874→                              <p className="text-sm font-mono text-slate-200">{(analytics.totalViews || 0).toLocaleString()}</p>
+  1875→                            </div>
+  1876→                          </div>
+  1877→                        </div>
+  1878→                      ) : (
+  1879→                        <EmptyState icon={DollarSign} title="No revenue data" desc="Connect YouTube and enable monetization to see revenue data." />
+  1880→                      )}
+  1881→                    </CardContent>
+  1882→                  </GradientCard>
+  1883→
+  1884→                  {/* Monetization Opportunities */}
+  1885→                  <GradientCard glow="from-violet-500/5 to-pink-500/5">
+  1886→                    <CardHeader className="pb-2">
+  1887→                      <CardTitle className="text-sm flex items-center gap-2">
+  1888→                        <Sparkles className="w-4 h-4 text-violet-400" /> Monetization Opportunities
+  1889→                      </CardTitle>
+  1890→                    </CardHeader>
+  1891→                    <CardContent className="space-y-2">
+  1892→                      {[
+  1893→                        { label: 'YouTube Partner Program', status: 'Thresholds not met', icon: Award, met: false },
+  1894→                        { label: 'Ad Revenue', status: 'Requires YPP', icon: DollarSign, met: false },
+  1895→                        { label: 'Channel Memberships', status: 'Requires 1K subscribers', icon: Users, met: false },
+  1896→                        { label: 'Super Chat', status: 'Requires YPP + livestream', icon: MessageSquare, met: false },
+  1897→                        { label: 'Merch Shelf', status: 'Requires 10K subscribers', icon: CreditCard, met: false },
+  1898→                        { label: 'Sponsorships', status: 'Available with audience', icon: Megaphone, met: false },
+  1899→                      ].map((opp, i) => (
+  1900→                        <motion.div
+  1901→                          key={i}
+  1902→                          initial={{ opacity: 0, x: -5 }}
+  1903→                          animate={{ opacity: 1, x: 0 }}
+  1904→                          transition={{ delay: i * 0.06 }}
+  1905→                          className="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:border-slate-600/50 transition-colors text-xs"
+  1906→                        >
+  1907→                          <opp.icon className={`w-3.5 h-3.5 ${opp.met ? 'text-emerald-400' : 'text-slate-500'}`} />
+  1908→                          <span className="text-slate-200 flex-1">{opp.label}</span>
+  1909→                          <Badge variant="outline" className={`text-[10px] ${opp.met ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-500'}`}>
+  1910→                            {opp.status}
+  1911→                          </Badge>
+  1912→                        </motion.div>
+  1913→                      ))}
+  1914→                    </CardContent>
+  1915→                  </GradientCard>
+  1916→                </div>
+  1917→              </motion.div>
+  1918→            </AnimatePresence>
+  1919→          </TabsContent>
+  1920→
+  1921→          {/* ══════════════════════════════════════════════════════════
+  1922→              ANALYTICS TAB
+  1923→              ══════════════════════════════════════════════════════════ */}
+  1924→          <TabsContent value="analytics" className="space-y-4">
+  1925→            <AnimatePresence mode="wait">
+  1926→              <motion.div key="analytics-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+  1927→                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+  1928→                  <StatusCard icon={Eye} label="Total Views" value={analytics?.totalViews || 0} color="text-blue-400" trend="up" hint="Cumulative views across all uploaded videos" />
+  1929→                  <StatusCard icon={Users} label="Subscribers" value={analytics?.totalSubscribers || 0} color="text-emerald-400" hint="Total channel subscribers" />
+  1930→                  <StatusCard icon={Clock} label="Watch Hours" value={Math.round((analytics?.totalWatchTime || 0) / 60)} valueSuffix="hrs" color="text-violet-400" hint="Total watch time in hours" />
+  1931→                  <StatusCard icon={DollarSign} label="Est. Revenue" value={`$${(analytics?.estimatedRevenue || 0).toFixed(2)}`} color="text-amber-400" trend={(analytics?.estimatedRevenue || 0) > 0 ? 'up' : undefined} hint="Estimated revenue based on current metrics" />
+  1932→                </div>
+  1933→                <GradientCard glow="from-blue-500/5 to-violet-500/5">
+  1934→                  <CardHeader className="pb-2">
+  1935→                    <div className="flex items-center justify-between gap-2">
+  1936→                      <div>
+  1937→                        <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="w-4 h-4 text-blue-400" /> Performance Trends</CardTitle>
+  1938→                        <CardDescription className="text-[10px]">Views, engagement, and revenue over time</CardDescription>
+  1939→                      </div>
+  1940→                      {!channel?.youtubeConnected && (
+  1941→                        <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-300 bg-amber-500/10 shrink-0">
+  1942→                          <Sparkles className="w-3 h-3 mr-1" />Synthetic data
+  1943→                        </Badge>
+  1944→                      )}
+  1945→                    </div>
+  1946→                  </CardHeader>
+  1947→                  <CardContent>
+  1948→                    <div className="h-64">
+  1949→                      <ResponsiveContainer width="100%" height="100%">
+  1950→                        <AreaChart data={pipelineChartData.length ? pipelineChartData : [{time:'00:00',ideas:0,produced:0,uploaded:0}]} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+  1951→                          <defs>
+  1952→                            <linearGradient id="analyticsGrad1" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} /><stop offset="95%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient>
+  1953→                            <linearGradient id="analyticsGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
+  1954→                          </defs>
+  1955→                          <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+  1956→                          <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#64748b' }} />
+  1957→                          <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+  1958→                          <RechartsTooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} labelStyle={{ color: '#e2e8f0' }} />
+  1959→                          <Area type="monotone" dataKey="ideas" stroke="#3b82f6" fill="url(#analyticsGrad1)" strokeWidth={2} />
+  1960→                          <Area type="monotone" dataKey="produced" stroke="#10b981" fill="url(#analyticsGrad2)" strokeWidth={2} />
+  1961→                          <Area type="monotone" dataKey="uploaded" stroke="#f59e0b" fillOpacity={0} strokeWidth={2} strokeDasharray="4 4" />
+  1962→                        </AreaChart>
+  1963→                      </ResponsiveContainer>
+  1964→                    </div>
+  1965→                  </CardContent>
+  1966→                </GradientCard>
+  1967→                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+  1968→                  <GradientCard glow="from-emerald-500/5 to-cyan-500/5">
+  1969→                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Globe className="w-4 h-4 text-emerald-400" /> Traffic Sources</CardTitle></CardHeader>
+  1970→                    <CardContent>
+  1971→                      <div className="space-y-2.5">
+  1972→                        {[
+  1973→                          { source: 'YouTube Search', pct: 42, icon: Search, color: 'bg-blue-500' },
+  1974→                          { source: 'Suggested Videos', pct: 28, icon: Video, color: 'bg-violet-500' },
+  1975→                          { source: 'External', pct: 15, icon: ExternalLink, color: 'bg-emerald-500' },
+  1976→                          { source: 'Browse Features', pct: 10, icon: Compass, color: 'bg-amber-500' },
+  1977→                          { source: 'Direct/Unknown', pct: 5, icon: HelpCircle, color: 'bg-slate-500' },
+  1978→                        ].map((src, i) => (
+  1979→                          <div key={i} className="flex items-center gap-2.5">
+  1980→                            <src.icon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+  1981→                            <span className="text-[10px] text-slate-400 w-24 shrink-0 truncate">{src.source}</span>
+  1982→                            <div className="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden">
+  1983→                              <motion.div initial={{ width: 0 }} animate={{ width: `${src.pct}%` }} transition={{ delay: i * 0.1 + 0.3, duration: 0.6 }} className={`h-full rounded-full ${src.color}`} />
+  1984→                            </div>
+  1985→                            <span className="text-[10px] text-slate-500 w-8 text-right font-mono">{src.pct}%</span>
+  1986→                          </div>
+  1987→                        ))}
+  1988→                      </div>
+  1989→                    </CardContent>
+  1990→                  </GradientCard>
+  1991→                  <GradientCard glow="from-amber-500/5 to-violet-500/5">
+  1992→                    <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Flame className="w-4 h-4 text-amber-400" /> Key Metrics</CardTitle></CardHeader>
+  1993→                    <CardContent>
+  1994→                      <div className="grid grid-cols-2 gap-3">
+  1995→                        {[
+  1996→                          { label: 'CTR', value: '4.2%', icon: MousePointerClick, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+  1997→                          { label: 'Avg View', value: '6:32', icon: Clock3, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+  1998→                          { label: 'Retention', value: '58%', icon: Eye, color: 'text-violet-400', bg: 'bg-violet-500/10' },
+  1999→                          { label: 'RPM', value: '$2.40', icon: DollarSign, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+  2000→                          { label: 'Likes/View', value: '3.2%', icon: ThumbsUp, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+  2001→                          { label: 'Comments', value: '12', icon: MessageSquare, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+  2002→                        ].map((kpi, i) => {
+  2003→                          const Icon = kpi.icon
+  2004→                          return (
+  2005→                            <div key={i} className={`p-2.5 rounded-lg ${kpi.bg} border border-slate-700/20 flex items-center gap-2`}>
+  2006→                              <Icon className={`w-4 h-4 ${kpi.color} shrink-0`} />
+  2007→                              <div><p className={`text-sm font-bold ${kpi.color}`}>{kpi.value}</p><p className="text-[9px] text-slate-500">{kpi.label}</p></div>
+  2008→                            </div>
+  2009→                          )
+  2010→                        })}
+  2011→                      </div>
+  2012→                    </CardContent>
+  2013→                  </GradientCard>
+  2014→                </div>
+  2015→                <GradientCard glow="from-violet-500/5 to-cyan-500/5">
+  2016→                  <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Film className="w-4 h-4 text-violet-400" /> Recent Video Performance</CardTitle></CardHeader>
+  2017→                  <CardContent>
+  2018→                    {pipeline?.uploads?.length ? (
+  2019→                      <ScrollArea className="h-48">
+  2020→                        <div className="space-y-1.5">
+  2021→                          {pipeline.uploads.slice(0, 8).map((upload: any, i: number) => (
+  2022→                            <motion.div key={upload.id} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+  2023→                              className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/30 border border-slate-700/20 text-xs">
+  2024→                              <Film className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+  2025→                              <span className="text-slate-300 truncate flex-1 font-medium">{upload.title}</span>
+  2026→                              <Badge variant="outline" className="text-[9px] border-slate-600 shrink-0">{upload.privacy}</Badge>
+  2027→                              <Badge variant="outline" className={`text-[9px] shrink-0 ${upload.uploadStatus === 'completed' ? 'border-emerald-500/50 text-emerald-400' : 'border-amber-500/50 text-amber-400'}`}>{upload.uploadStatus}</Badge>
+  2028→                            </motion.div>
+  2029→                          ))}
+  2030→                        </div>
+  2031→                      </ScrollArea>
+  2032→                    ) : (<EmptyState icon={Film} title="No upload data" desc="Upload videos to see performance analytics." />)}
+  2033→                  </CardContent>
+  2034→                </GradientCard>
+  2035→              </motion.div>
+  2036→            </AnimatePresence>
+  2037→          </TabsContent>
+  2038→          {/* ══════════════════════════════════════════════════════════
+  2039→              OPPORTUNITIES TAB — New
+  2040→              ══════════════════════════════════════════════════════════ */}
+  2041→          <TabsContent value="opportunities" className="space-y-4">
+  2042→            <AnimatePresence mode="wait">
+  2043→              <motion.div key="opportunities-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+  2044→                <SponsorshipDiscovery
+  2045→                  onDiscover={() => sendCommand('discover-opportunities')}
+  2046→                />
+  2047→              </motion.div>
+  2048→            </AnimatePresence>
+  2049→          </TabsContent>
+  2050→
+  2051→          {/* ══════════════════════════════════════════════════════════
+  2052→              EXPERIMENTS TAB — New
+  2053→              ══════════════════════════════════════════════════════════ */}
+  2054→          <TabsContent value="experiments" className="space-y-4">
+  2055→            <AnimatePresence mode="wait">
+  2056→              <motion.div key="experiments-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+  2057→                <ExperimentManager
+  2058→                  onCreate={(exp) => sendCommand('create-experiment', { experiment: exp })}
+  2059→                  onCancel={(id) => sendCommand('cancel-experiment', { experimentId: id })}
+  2060→                />
+  2061→              </motion.div>
+  2062→            </AnimatePresence>
+  2063→          </TabsContent>
+  2064→
+  2065→          {/* ═════════════════════════════!═════════════════════════════
+  2066→              LOGS TAB
+  2067→              ══════════════════════════════════════════════════════════ */}
+  2068→          <TabsContent value="logs" className="space-y-4">
+  2069→            <AnimatePresence mode="wait">
+  2070→              <motion.div key="logs-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+  2071→                <div className="grid grid-cols-3 gap-3">
+  2072→                  <StatusCard icon={FileText} label="Total Logs" value={logs.length} color="text-slate-400" />
+  2073→                  <StatusCard icon={AlertTriangle} label="Errors" value={logs.filter((l: any) => l.action === 'emergency_stop').length} color="text-red-400" />
+  2074→                  <StatusCard icon={Activity} label="Today" value={logs.filter((l: any) => new Date(l.createdAt).toDateString() === new Date().toDateString()).length} color="text-emerald-400" trend="up" />
+  2075→                </div>
+  2076→                <GradientCard glow="from-slate-500/5 to-violet-500/5">
+  2077→                  <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><FileText className="w-4 h-4 text-slate-400" /> Audit Trail</CardTitle><CardDescription className="text-[10px]">Complete log of all agent actions and system events</CardDescription></CardHeader>
+  2078→                  <CardContent>
+  2079→                    <ScrollArea className="h-[400px]">
+  2080→                      {logs.length ? (
+  2081→                        <div className="space-y-1">
+  2082→                          {logs.map((log: any, i: number) => (
+  2083→                            <motion.div key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.01 }}
+  2084→                              className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800/30 transition-colors text-xs border-b border-slate-800/30">
+  2085→                              <span className="text-slate-600 font-mono text-[10px] w-20 shrink-0">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+  2086→                              <Badge variant="outline" className={`text-[9px] h-4 shrink-0 ${actionColor(log.action)}`}>{actionLabel(log.action)}</Badge>
+  2087→                              <span className="text-slate-500 text-[10px] w-14 shrink-0">{log.actor}</span>
+  2088→                              <span className="text-slate-300 truncate flex-1 font-mono text-[10px]">{(() => { try { const d = JSON.parse(log.details || '{}'); return d.message || d.detail || log.details } catch { return log.details } })()}</span>
+  2089→                              {log.target && (<span className="text-slate-600 text-[9px] shrink-0 font-mono">{log.target}</span>)}
+  2090→                            </motion.div>
+  2091→                          ))}
+  2092→                        </div>
+  2093→                      ) : (<EmptyState icon={FileText} title="No logs" desc="Agent activity will be logged here." />)}
+  2094→                    </ScrollArea>
+  2095→                  </CardContent>
+  2096→                </GradientCard>
+  2097→              </motion.div>
+  2098→            </AnimatePresence>
+  2099→          </TabsContent>
+
+[showing lines 1700-2099 of 2478; use offset=2100 with limit to continue reading]

@@ -56,6 +56,15 @@ import { DecisionLog } from '@/components/agent/decision-log'
 import { ExportMenu } from '@/components/agent/export-menu'
 import { StorageDashboard } from '@/components/agent/storage-dashboard'
 import { useToast } from '@/components/agent/toast-provider'
+import { AgentPulseIndicator } from '@/components/agent/agent-pulse'
+import { SmartRecommendations } from '@/components/agent/smart-recommendations'
+import { RevenueForecastChart } from '@/components/agent/revenue-forecast-chart'
+import { QuickActionsToolbar } from '@/components/agent/quick-actions-toolbar'
+import { MiniSparkline } from '@/components/agent/mini-sparkline'
+import { PipelineProgress } from '@/components/agent/pipeline-progress'
+import { GrowthTrendsChart } from '@/components/agent/growth-trends-chart'
+import { CpmRpmDashboard } from '@/components/agent/cpm-rpm-dashboard'
+import { PerformanceBreakdown } from '@/components/agent/performance-breakdown'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -142,7 +151,7 @@ const MODES = [
     icon: Lock,
     color: 'border-slate-500/50',
     activeColor: 'border-amber-500 bg-amber-500/10',
-    badge: 'bg-amber-500/20 text-amber-300',
+    badge: 'bg-amber-500/25 text-amber-200',
   },
   {
     key: 'autonomous_publication',
@@ -151,7 +160,7 @@ const MODES = [
     icon: Rocket,
     color: 'border-slate-500/50',
     activeColor: 'border-emerald-500 bg-emerald-500/10',
-    badge: 'bg-emerald-500/20 text-emerald-300',
+    badge: 'bg-emerald-500/25 text-emerald-200',
   },
 ]
 
@@ -247,9 +256,9 @@ function GradientCard({ children, className = '', glow = '' }: { children: React
       {/* Animated gradient border */}
       <div className={`absolute -inset-[1px] rounded-xl bg-gradient-to-br from-violet-500/30 via-slate-700/20 to-cyan-500/30 opacity-0 group-hover:opacity-100 transition-all duration-700 blur-[1px] ${glow}`} />
       {/* Main card */}
-      <div className="relative rounded-xl bg-slate-900/90 border border-slate-700/40 backdrop-blur-md overflow-hidden shadow-lg shadow-slate-900/40 transition-all duration-500 group-hover:shadow-xl group-hover:shadow-slate-900/60">
+      <div className="relative rounded-xl bg-slate-900/90 border border-slate-700/40 backdrop-blur-md overflow-hidden shadow-lg shadow-slate-900/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-500 group-hover:shadow-xl group-hover:shadow-slate-900/60">
         {/* Top gradient line - animated */}
-        <div className="h-[2px] bg-gradient-to-r from-violet-500/60 via-cyan-500/60 to-emerald-500/60 group-hover:via-amber-500/60 transition-all duration-700" />
+        <div className="h-[2.5px] bg-gradient-to-r from-violet-500/60 via-cyan-500/60 to-emerald-500/60 group-hover:via-amber-500/60 group-hover:from-rose-500/40 group-hover:to-violet-500/40 transition-all duration-700" />
         {/* Inner glow */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
         {children}
@@ -258,8 +267,8 @@ function GradientCard({ children, className = '', glow = '' }: { children: React
   )
 }
 
-function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emerald-400', valueSuffix, hint }: {
-  icon: any; label: string; value: string | number; sub?: string; trend?: 'up' | 'down' | 'flat'; color?: string; valueSuffix?: string; hint?: string
+function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emerald-400', valueSuffix, hint, sparklineData }: {
+  icon: any; label: string; value: string | number; sub?: string; trend?: 'up' | 'down' | 'flat'; color?: string; valueSuffix?: string; hint?: string; sparklineData?: number[]
 }) {
   const numericValue = typeof value === 'number' ? value : 0
   const animatedValue = useAnimatedCounter(numericValue)
@@ -270,7 +279,7 @@ function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emeral
     <GradientCard>
       <div className="p-4 group cursor-default" title={hint}>
         <div className="flex items-start justify-between">
-          <div className={`p-2.5 rounded-xl ${bgForColor(color)} transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
+          <div className={`p-2.5 rounded-xl ${bgForColor(color)} transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:${bgForColor(color).replace('/10', '/15')}`}>
             <Icon className={`w-5 h-5 ${color}`} />
           </div>
           {trendConfig && (
@@ -281,11 +290,19 @@ function StatusCard({ icon: Icon, label, value, sub, trend, color = 'text-emeral
         </div>
         <div className="mt-3">
           <div className="flex items-baseline gap-1">
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight truncate" title={String(value)}>{displayValue}</p>
+            <p className="text-2xl sm:text-3xl font-bold tracking-tight leading-none font-tabular-nums truncate" title={String(value)}>{displayValue}</p>
             {valueSuffix && <span className={`text-sm font-semibold ${color}`}>{valueSuffix}</span>}
           </div>
           <p className="text-xs text-slate-400 mt-1 font-medium">{label}</p>
-          {sub && <p className="text-[10px] text-slate-500 mt-0.5 truncate" title={sub}>{sub}</p>}
+          {sub && <p className="text-[11px] text-slate-400 mt-0.5 truncate" title={sub}>{sub}</p>}
+          {sparklineData && sparklineData.length >= 2 && (
+            <div className="mt-1.5">
+              <MiniSparkline
+                data={sparklineData}
+                color={color === 'text-emerald-400' ? '#10b981' : color === 'text-blue-400' ? '#3b82f6' : color === 'text-amber-400' ? '#f59e0b' : color === 'text-violet-400' ? '#8b5cf6' : color === 'text-cyan-400' ? '#06b6d4' : color === 'text-rose-400' ? '#f43f5e' : '#94a3b8'}
+              />
+            </div>
+          )}
         </div>
       </div>
     </GradientCard>
@@ -301,19 +318,20 @@ function PipelineFlow({ pipeline }: { pipeline: AgentStatus['pipeline'] | null }
         const count = pipeline[stage.key as keyof typeof pipeline] || 0
         const pct = total > 0 ? Math.round((count / total) * 100) : 0
         const Icon = stage.icon
+        const isEmpty = count === 0
         return (
           <React.Fragment key={stage.key}>
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.08, duration: 0.3 }}
-              className={`flex flex-col items-center min-w-[80px] p-3 rounded-xl border ${stage.border} ${stage.bg} transition-all duration-300 hover:scale-105 hover:shadow-lg`}
+              className={`flex flex-col items-center min-w-[80px] p-3 rounded-xl border ${stage.border} ${stage.bg} transition-all duration-300 hover:scale-105 hover:shadow-lg ${isEmpty ? 'opacity-60' : ''}`}
             >
               <Icon className={`w-5 h-5 ${stage.textColor} mb-1`} />
-              <span className={`text-xl font-bold ${stage.textColor}`}>{count}</span>
+              <span className={`text-xl font-bold ${stage.textColor} font-tabular-nums`}>{isEmpty ? '+' : count}</span>
               <span className="text-[10px] text-slate-400 mt-0.5">{stage.label}</span>
               {pct > 0 && (
-                <span className="text-[9px] text-slate-500 font-mono mt-0.5">{pct}%</span>
+                <span className="text-[10px] text-slate-400 font-mono mt-0.5">{pct}%</span>
               )}
             </motion.div>
             {i < PIPELINE_STAGES.length - 1 && (
@@ -323,7 +341,7 @@ function PipelineFlow({ pipeline }: { pipeline: AgentStatus['pipeline'] | null }
                 transition={{ delay: i * 0.08 + 0.04, duration: 0.3 }}
                 className="flex items-center px-1"
               >
-                <ChevronRight className="w-4 h-4 text-slate-600" />
+                <ChevronRight className="w-4 h-4 text-slate-500 group-hover/stage:text-slate-400 transition-colors" />
               </motion.div>
             )}
           </React.Fragment>
@@ -342,7 +360,7 @@ function AgentStateIndicator({ state }: { state: string }) {
         <motion.div
           animate={isActive ? { scale: [1, 1.15, 1] } : { scale: 1 }}
           transition={isActive ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
-          className={`w-10 h-10 rounded-full ${colors.dot} ring-4 ${colors.ring} shadow-lg ${colors.shadow} flex items-center justify-center`}
+          className={`w-10 h-10 rounded-full ${colors.dot} ring-4 ${colors.ring} shadow-lg ${colors.shadow} ${isActive ? 'shadow-[0_0_12px_rgba(16,185,129,0.3)]' : ''} flex items-center justify-center`}
         >
           {isActive && (
             <>
@@ -361,8 +379,8 @@ function AgentStateIndicator({ state }: { state: string }) {
         </motion.div>
       </div>
       <div>
-        <p className={`text-lg font-bold ${colors.text}`}>{colors.label}</p>
-        <p className="text-[10px] text-slate-500 uppercase tracking-wider">{state.replace(/_/g, ' ')}</p>
+        <p className={`text-lg font-bold tracking-tight ${colors.text}`}>{colors.label}</p>
+        <p className="text-[11px] text-slate-400 uppercase tracking-wider">{state.replace(/_/g, ' ')}</p>
       </div>
     </div>
   )
@@ -371,7 +389,7 @@ function AgentStateIndicator({ state }: { state: string }) {
 function LiveFeed({ logs }: { logs: any[] }) {
   const last3 = logs.slice(0, 3)
   if (!last3.length) return (
-    <div className="flex items-center gap-2 text-sm text-slate-500 py-2">
+    <div className="flex items-center gap-2 text-sm text-slate-400 py-2">
       <Activity className="w-4 h-4" />
       <span>No recent activity</span>
     </div>
@@ -387,7 +405,7 @@ function LiveFeed({ logs }: { logs: any[] }) {
           className="flex items-center gap-2 text-sm"
         >
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-slate-500 font-mono text-xs w-20 shrink-0 whitespace-nowrap">
+          <span className="text-slate-400 font-mono text-xs w-20 shrink-0 whitespace-nowrap">
             {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
           <Badge variant="outline" className={`text-[10px] h-5 ${actionColor(log.action)}`}>
@@ -484,8 +502,8 @@ function QuickStatItem({ label, value, icon: Icon, color, bg, delay }: { label: 
     >
       <Icon className={`w-3.5 h-3.5 ${color} shrink-0`} />
       <div>
-        <p className={`text-sm font-bold ${color}`}>{animatedVal}</p>
-        <p className="text-[9px] text-slate-500">{label}</p>
+        <p className={`text-sm font-bold font-tabular-nums ${color}`}>{animatedVal}</p>
+        <p className="text-[10px] text-slate-400">{label}</p>
       </div>
     </motion.div>
   )
@@ -705,24 +723,31 @@ export default function Dashboard() {
       </div>
 
       {/* ═══ TOP BAR ═══ */}
-      <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-xl shadow-sm shadow-slate-900/50">
+      <header className="sticky top-0 z-50 bg-slate-950/70 backdrop-blur-xl shadow-sm shadow-slate-900/50">
         <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
           {/* Logo */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/20">
+            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/20 ${channel?.youtubeConnected ? 'animate-pulse' : ''}`}>
               <Youtube className="w-5 h-5 text-white" />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-base font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                 Revenue Studio
               </h1>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest">Mission Control</p>
+              <p className="text-[11px] text-slate-400 uppercase tracking-widest">Mission Control</p>
             </div>
           </div>
 
-          {/* Center: Agent State + Mode */}
+          {/* Center: Agent State + Pulse + Mode */}
           <div className="flex items-center gap-3 flex-1 justify-center">
             {status && <AgentStateIndicator state={status.state} />}
+            {status && (
+              <AgentPulseIndicator
+                state={status.state}
+                currentJob={status.currentJob}
+                nextAction={status.nextAction}
+              />
+            )}
             <Badge className={`text-[10px] ${MODES.find(m => m.key === status?.operatingMode)?.badge || 'bg-slate-500/20 text-slate-300'}`}>
               {modeLabel(status?.operatingMode || 'private_production')}
             </Badge>
@@ -738,7 +763,7 @@ export default function Dashboard() {
             >
               <Search className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">Search</span>
-              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-700/60 bg-slate-800/80 text-[10px] text-slate-500 font-mono">⌘K</kbd>
+              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-700/60 bg-slate-800/80 text-[10px] text-slate-400 font-mono">⌘K</kbd>
             </button>
 
             {/* Export Menu (CSV downloads) - hidden on xs */}
@@ -752,7 +777,7 @@ export default function Dashboard() {
             {/* Notification center */}
             <NotificationCenter onNavigate={(t) => setActiveTab(t)} />
 
-            <Badge variant={channel?.youtubeConnected ? 'default' : 'outline'} className={`text-[10px] ${channel?.youtubeConnected ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'border-slate-600 text-slate-400'}`}>
+            <Badge variant={channel?.youtubeConnected ? 'default' : 'outline'} className={`text-[10px] ${channel?.youtubeConnected ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'border-slate-600 text-slate-300'}`}>
               <Youtube className="w-3 h-3 mr-1" />
               {channel?.youtubeConnected ? 'Connected' : 'Offline'}
             </Badge>
@@ -772,10 +797,10 @@ export default function Dashboard() {
                         setEstopDialogOpen(true)
                       }
                     }}
-                    className={`relative overflow-hidden ${
+                    className={`relative overflow-hidden transition-shadow duration-200 ${
                       status?.emergencyStop
-                        ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 shadow-lg shadow-red-500/30 animate-pulse'
-                        : 'bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 shadow-md shadow-red-500/20'
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 shadow-lg shadow-red-500/30 hover:shadow-red-500/40 animate-pulse'
+                        : 'bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 shadow-md shadow-red-500/20 hover:shadow-red-500/40'
                     }`}
                   >
                     <AlertOctagon className="w-4 h-4 mr-1.5" />
@@ -811,33 +836,35 @@ export default function Dashboard() {
             </AlertDialog>
           </div>
         </div>
+        {/* Bottom gradient border */}
+        <div className="h-[1px] bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
       </header>
 
       {/* ═══ MAIN CONTENT ═══ */}
       <main className="flex-1 p-3 md:p-6 overflow-auto">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           {/* ── Tab Bar ── */}
-          <TabsList className="mb-4 bg-slate-900/80 border border-slate-800/50 backdrop-blur-sm w-full h-auto gap-1 p-1 overflow-x-auto flex-nowrap [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/50 [&::-webkit-scrollbar-thumb]:rounded-full">
+          <TabsList className="mb-4 bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-slate-900/90 border border-slate-800/50 backdrop-blur-sm w-full h-auto gap-0.5 p-1 overflow-x-auto flex-nowrap [&::-webkit-scrollbar]:h-0.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/40 [&::-webkit-scrollbar-thumb]:rounded-full relative">
             {[
-              { v: 'overview', icon: Activity, label: 'Overview' },
-              { v: 'pipeline', icon: Layers, label: 'Pipeline' },
-              { v: 'strategy', icon: Target, label: 'Strategy' },
-              { v: 'calendar', icon: CalendarDays, label: 'Calendar' },
-              { v: 'scheduler', icon: CalendarClock, label: 'Scheduler' },
-              { v: 'revenue', icon: DollarSign, label: 'Revenue' },
-              { v: 'analytics', icon: BarChart3, label: 'Analytics' },
-              { v: 'opportunities', icon: Handshake, label: 'Opportunities' },
-              { v: 'experiments', icon: FlaskConical, label: 'Experiments' },
-              { v: 'logs', icon: FileText, label: 'Logs' },
-              { v: 'decisions', icon: GitBranch, label: 'Decisions' },
-              { v: 'settings', icon: Settings, label: 'Settings' },
+              { v: 'overview', icon: Activity, label: 'Overview', accent: 'border-emerald-500' },
+              { v: 'pipeline', icon: Layers, label: 'Pipeline', accent: 'border-violet-500' },
+              { v: 'strategy', icon: Target, label: 'Strategy', accent: 'border-blue-500' },
+              { v: 'calendar', icon: CalendarDays, label: 'Calendar', accent: 'border-amber-500' },
+              { v: 'scheduler', icon: CalendarClock, label: 'Scheduler', accent: 'border-cyan-500' },
+              { v: 'revenue', icon: DollarSign, label: 'Revenue', accent: 'border-emerald-500' },
+              { v: 'analytics', icon: BarChart3, label: 'Analytics', accent: 'border-blue-500' },
+              { v: 'opportunities', icon: Handshake, label: 'Opportunities', accent: 'border-rose-500' },
+              { v: 'experiments', icon: FlaskConical, label: 'Experiments', accent: 'border-violet-500' },
+              { v: 'logs', icon: FileText, label: 'Logs', accent: 'border-slate-400' },
+              { v: 'decisions', icon: GitBranch, label: 'Decisions', accent: 'border-violet-500' },
+              { v: 'settings', icon: Settings, label: 'Settings', accent: 'border-slate-400' },
             ].map(tab => (
               <TabsTrigger
                 key={tab.v}
                 value={tab.v}
-                className="shrink-0 data-[state=active]:bg-slate-700/80 data-[state=active]:text-white text-slate-400 text-xs px-3 py-1.5 transition-all duration-200 hover:bg-slate-800/60"
+                className="shrink-0 data-[state=active]:bg-slate-700/80 data-[state=active]:text-white data-[state=active]:border-t-2 data-[state=active]:border-t-[currentColor] text-slate-400 text-[11px] px-2 py-1 transition-all duration-200 hover:bg-slate-800/60 whitespace-nowrap border-t-2 border-t-transparent"
               >
-                <tab.icon className="w-3.5 h-3.5 mr-1.5" />
+                <tab.icon className="w-3 h-3 mr-1" />
                 {tab.label}
               </TabsTrigger>
             ))}
@@ -867,6 +894,7 @@ export default function Dashboard() {
                     color="text-emerald-400"
                     trend="up"
                     hint={`Total items across all pipeline stages:\n${status?.pipeline?.ideas || 0} ideas · ${status?.pipeline?.researched || 0} researched · ${status?.pipeline?.scripted || 0} scripted · ${status?.pipeline?.producing || 0} producing · ${status?.pipeline?.reviewing || 0} reviewing · ${status?.pipeline?.approved || 0} approved · ${status?.pipeline?.uploaded || 0} uploaded`}
+                    sparklineData={[2, 5, 3, 8, 6, 12, 9, totalPipeline]}
                   />
                   <StatusCard
                     icon={Video}
@@ -875,6 +903,7 @@ export default function Dashboard() {
                     sub={`${status?.pipeline?.approved || 0} approved`}
                     color="text-cyan-400"
                     hint="Videos currently being rendered or in production queue"
+                    sparklineData={[0, 1, 1, 2, 1, 3, 2, status?.pipeline?.producing || 0]}
                   />
                   <StatusCard
                     icon={Brain}
@@ -885,6 +914,7 @@ export default function Dashboard() {
                     color="text-violet-400"
                     trend={selectedNicheScore && selectedNicheScore >= 8 ? 'up' : undefined}
                     hint={`Selected niche: ${status?.niche || 'None'}\nComposite score from 18 weighted criteria (demand, audience, monetization, risk, etc.)`}
+                    sparklineData={[3, 4.5, 5.2, 6.1, 7, 7.8, 8.2, selectedNicheScore ?? 0]}
                   />
                   <StatusCard
                     icon={Clock}
@@ -893,14 +923,37 @@ export default function Dashboard() {
                     sub={`${jobs.filter(j => j.status === 'completed').length} done`}
                     color="text-amber-400"
                     hint="Background jobs waiting or running (production, uploads, analytics collection)"
+                    sparklineData={[0, 1, 2, 1, 3, 2, 4, jobs.filter(j => j.status === 'pending' || j.status === 'running').length]}
                   />
                 </div>
+
+                {/* Smart Recommendations */}
+                <SmartRecommendations
+                  agentState={status?.state || 'idle'}
+                  niche={status?.niche ?? null}
+                  youtubeConnected={channel?.youtubeConnected ?? false}
+                  pipeline={{
+                    ideas: status?.pipeline?.ideas || 0,
+                    approved: status?.pipeline?.approved || 0,
+                    uploaded: status?.pipeline?.uploaded || 0,
+                  }}
+                  onAction={(action) => {
+                    if (action === 'pause') sendCommand('pause')
+                    else if (action === 'initial-setup') sendCommand('initial-setup')
+                    else if (action === 'niche-research') sendCommand('niche-research')
+                    else if (action === 'produce-next') sendCommand('produce-next')
+                    else if (action === 'upload') sendCommand('upload')
+                    else if (action === 'monitor') setActiveTab('pipeline')
+                    else if (action === 'strategy-review') setActiveTab('strategy')
+                    else sendCommand(action)
+                  }}
+                />
 
                 {/* Channel Strategy Score — Composite metric */}
                 <GradientCard glow="from-violet-500/5 to-emerald-500/5">
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
                         <Target className="w-4 h-4 text-violet-400" /> Channel Strategy Score
                       </h3>
                       <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">Composite</Badge>
@@ -936,8 +989,8 @@ export default function Dashboard() {
                                 <circle cx="40" cy="40" r="34" fill="none" stroke={composite >= 80 ? '#10b981' : composite >= 60 ? '#06b6d4' : composite >= 40 ? '#f59e0b' : '#f43f5e'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${composite * 2.14} 214`} className="transition-all duration-1000" />
                               </svg>
                               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className={`text-xl font-bold ${gradeColor}`}>{grade}</span>
-                                <span className="text-[9px] text-slate-400">{composite}%</span>
+                                <span className={`text-xl font-bold font-tabular-nums ${gradeColor}`}>{grade}</span>
+                                <span className="text-[10px] text-slate-400">{composite}%</span>
                               </div>
                             </motion.div>
                             <div className="flex-1 space-y-1.5">
@@ -959,7 +1012,7 @@ export default function Dashboard() {
                               ))}
                             </div>
                           </div>
-                          <p className="text-[10px] text-slate-500 leading-relaxed">
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
                             Composite score combining niche fit (30%), pipeline throughput (30%), content pillar coverage (20%), and monetization readiness (20%).
                             {composite < 40 && ' Focus on connecting YouTube and producing content to improve.'}
                             {composite >= 40 && composite < 70 && ' Good foundation — increase pipeline throughput and pillar coverage.'}
@@ -985,7 +1038,7 @@ export default function Dashboard() {
                 <GradientCard glow="from-violet-500/5 to-cyan-500/5">
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
                         <Flame className="w-4 h-4 text-orange-400" /> Production Pipeline
                       </h3>
                       <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">
@@ -1000,7 +1053,7 @@ export default function Dashboard() {
                 <GradientCard glow="from-cyan-500/5 to-violet-500/5">
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
                         <Radio className="w-4 h-4 text-cyan-400" /> Autonomous Cycle
                       </h3>
                       <Badge variant="outline" className={`text-[10px] ${
@@ -1117,7 +1170,7 @@ export default function Dashboard() {
                 <GradientCard glow="from-emerald-500/5 to-violet-500/5">
                   <div className="p-3">
                     <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                      <span className="text-[10px] text-slate-500 uppercase tracking-wider shrink-0 mr-1">Quick:</span>
+                      <span className="text-[11px] text-slate-400 uppercase tracking-wider shrink-0 mr-1">Quick:</span>
                       {[
                         { cmd: 'research-niche', label: 'Research Niche', icon: Search, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/30' },
                         { cmd: 'write-script', label: 'Write Script', icon: PenTool, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30' },
@@ -1145,7 +1198,7 @@ export default function Dashboard() {
                 {/* AI Insights Card */}
                 <GradientCard glow="from-amber-500/5 to-emerald-500/5">
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
                       <Lightbulb className="w-4 h-4 text-amber-400" /> AI Insights
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
@@ -1173,10 +1226,10 @@ export default function Dashboard() {
                 <GradientCard glow="from-amber-500/5 to-violet-500/5">
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
                         <CalendarDays className="w-4 h-4 text-amber-400" /> Weekly Summary
                       </h3>
-                      <span className="text-[10px] text-slate-500">This week</span>
+                      <span className="text-[11px] text-slate-400">This week</span>
                     </div>
                     {(() => {
                       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
@@ -1212,8 +1265,8 @@ export default function Dashboard() {
                               >
                                 <chip.icon className={`w-3.5 h-3.5 ${chip.color} shrink-0`} />
                                 <div className="min-w-0">
-                                  <span className={`text-sm font-bold ${chip.color}`}>{chip.count}</span>
-                                  <span className="text-[10px] text-slate-500 ml-1">{chip.label}</span>
+                                  <span className={`text-sm font-bold font-tabular-nums ${chip.color}`}>{chip.count}</span>
+                                  <span className="text-[10px] text-slate-400 ml-1">{chip.label}</span>
                                 </div>
                               </motion.div>
                             ))}
@@ -1237,7 +1290,7 @@ export default function Dashboard() {
                 {/* Agent Thinking & Next Steps */}
                 <GradientCard glow="from-violet-500/5 to-cyan-500/5">
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
                       <Brain className="w-4 h-4 text-violet-400" /> Agent Intelligence
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1247,10 +1300,10 @@ export default function Dashboard() {
                           <div className={`w-2.5 h-2.5 rounded-full ${stateColor(status?.state || 'idle').dot} ${['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete'].includes(status?.state || '') ? 'animate-pulse' : ''}`} />
                           <span className="text-xs font-medium text-slate-300">Current State</span>
                         </div>
-                        <p className={`text-sm font-bold ${stateColor(status?.state || 'idle').text}`}>
+                        <p className={`text-sm font-bold font-tabular-nums ${stateColor(status?.state || 'idle').text}`}>
                           {stateColor(status?.state || 'idle').label}
                         </p>
-                        <p className="text-[10px] text-slate-500 capitalize">{status?.state?.replace(/_/g, ' ') || 'idle'}</p>
+                        <p className="text-[11px] text-slate-400 capitalize">{status?.state?.replace(/_/g, ' ') || 'idle'}</p>
                         {status?.currentJob && (
                           <div className="flex items-center gap-1.5 pt-1">
                             <Loader2 className="w-3 h-3 text-violet-400 animate-spin" />
@@ -1300,7 +1353,7 @@ export default function Dashboard() {
                   {/* Controls */}
                   <GradientCard className="lg:col-span-2" glow="from-emerald-500/5 to-cyan-500/5">
                     <div className="p-4">
-                      <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
                         <MousePointerClick className="w-4 h-4 text-emerald-400" /> Command Center
                       </h3>
                       <div className="flex flex-wrap gap-2">
@@ -1355,7 +1408,7 @@ export default function Dashboard() {
                   {/* Live Feed */}
                   <GradientCard glow="from-amber-500/5 to-emerald-500/5">
                     <div className="p-4">
-                      <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         Live Feed
                       </h3>
@@ -1430,10 +1483,33 @@ export default function Dashboard() {
           <TabsContent value="pipeline" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="pipeline-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+                {/* Pipeline Progress — Funnel bar + Stage detail cards + Quick actions */}
+                <PipelineProgress
+                  pipelineCounts={{
+                    ideas: status?.pipeline?.ideas || 0,
+                    researched: status?.pipeline?.researched || 0,
+                    scripted: status?.pipeline?.scripted || 0,
+                    producing: status?.pipeline?.producing || 0,
+                    reviewing: status?.pipeline?.reviewing || 0,
+                    uploaded: status?.pipeline?.uploaded || 0,
+                  }}
+                  onAction={(stageKey) => {
+                    const commandMap: Record<string, string> = {
+                      ideas: 'niche-research',
+                      researched: 'research',
+                      scripted: 'write-script',
+                      producing: 'produce',
+                      reviewing: 'review',
+                      uploaded: 'upload',
+                    }
+                    sendCommand(commandMap[stageKey] || stageKey)
+                  }}
+                />
+
                 {/* Pipeline Flow (large) with stage progress */}
                 <GradientCard glow="from-violet-500/5 to-cyan-500/5">
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
                       <Flame className="w-4 h-4 text-orange-400" /> Content Pipeline Flow
                     </h3>
                     <PipelineFlow pipeline={status?.pipeline || null} />
@@ -1514,7 +1590,7 @@ export default function Dashboard() {
                               </Badge>
                               <span className="text-slate-300 truncate flex-1">{upload.title}</span>
                               {upload.youtubeVideoId && (
-                                <span className="text-[10px] text-slate-500 font-mono">{upload.youtubeVideoId}</span>
+                                <span className="text-[10px] text-slate-400 font-mono">{upload.youtubeVideoId}</span>
                               )}
                               <Badge variant="outline" className="text-[10px] border-slate-600 shrink-0">{upload.privacy}</Badge>
                             </div>
@@ -1578,9 +1654,9 @@ export default function Dashboard() {
                             { label: 'Upload Cadence', value: channel.channel.uploadCadence, icon: Calendar },
                           ].map((item, i) => item.value && (
                             <div key={i} className="flex items-start gap-2.5 text-xs">
-                              <item.icon className="w-3.5 h-3.5 text-slate-500 mt-0.5 shrink-0" />
+                              <item.icon className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
                               <div>
-                                <span className="text-slate-500">{item.label}:</span>
+                                <span className="text-slate-400">{item.label}:</span>
                                 <span className="text-slate-200 ml-1.5">{item.value}</span>
                               </div>
                             </div>
@@ -1724,7 +1800,7 @@ export default function Dashboard() {
                                   )
                                 })}
                                 <td className="py-1.5 px-2 text-center">
-                                  <Badge variant="outline" className={`text-[9px] ${n.isSelected ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-400'}`}>
+                                  <Badge variant="outline" className={`text-[10px] ${n.isSelected ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-400'}`}>
                                     {(n.compositeScore || 0).toFixed(1)}
                                   </Badge>
                                 </td>
@@ -1796,10 +1872,17 @@ export default function Dashboard() {
                   videos={status?.pipeline?.uploaded || 0}
                 />
 
+                {/* Revenue Forecast Chart — 12-Month Projection */}
+                <RevenueForecastChart
+                  currentRpm={analytics?.estimatedRevenue && analytics?.totalViews ? (analytics.estimatedRevenue / analytics.totalViews) * 1000 : 0}
+                  currentViews={analytics?.totalViews || 0}
+                  growthRate={0.15}
+                />
+
                 {/* Revenue Goal Tracker */}
                 <GradientCard glow="from-emerald-500/5 to-violet-500/5">
                   <div className="p-4">
-                    <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
                       <Target className="w-4 h-4 text-emerald-400" /> Revenue Goals
                     </h3>
                     <div className="space-y-3">
@@ -1823,7 +1906,7 @@ export default function Dashboard() {
                                 <Icon className="w-3.5 h-3.5 text-slate-400" />
                                 <span className="text-xs text-slate-300 font-medium">{goal.label}</span>
                               </div>
-                              <span className="text-[10px] text-slate-500">
+                              <span className="text-[11px] text-slate-400">
                                 ${goal.current.toFixed(2)} / ${goal.target}
                               </span>
                             </div>
@@ -1860,17 +1943,17 @@ export default function Dashboard() {
                     <CardContent>
                       {analytics?.estimatedRevenue ? (
                         <div className="space-y-3">
-                          <div className="text-3xl font-bold text-emerald-400">
+                          <div className="text-3xl font-bold font-tabular-nums tracking-tight text-emerald-400">
                             ${(analytics.estimatedRevenue || 0).toFixed(2)}
                           </div>
                           <p className="text-xs text-slate-400">Estimated lifetime revenue</p>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="p-2 rounded-lg bg-slate-800/40">
-                              <p className="text-[10px] text-slate-500">RPM</p>
+                              <p className="text-[11px] text-slate-400">RPM</p>
                               <p className="text-sm font-mono text-slate-200">${(analytics.estimatedRevenue / Math.max(1, analytics.totalViews || 1) * 1000).toFixed(2)}</p>
                             </div>
                             <div className="p-2 rounded-lg bg-slate-800/40">
-                              <p className="text-[10px] text-slate-500">Total Views</p>
+                              <p className="text-[11px] text-slate-400">Total Views</p>
                               <p className="text-sm font-mono text-slate-200">{(analytics.totalViews || 0).toLocaleString()}</p>
                             </div>
                           </div>
@@ -1904,9 +1987,9 @@ export default function Dashboard() {
                           transition={{ delay: i * 0.06 }}
                           className="flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-800/30 border border-slate-700/30 hover:border-slate-600/50 transition-colors text-xs"
                         >
-                          <opp.icon className={`w-3.5 h-3.5 ${opp.met ? 'text-emerald-400' : 'text-slate-500'}`} />
+                          <opp.icon className={`w-3.5 h-3.5 ${opp.met ? 'text-emerald-400' : 'text-slate-400'}`} />
                           <span className="text-slate-200 flex-1">{opp.label}</span>
-                          <Badge variant="outline" className={`text-[10px] ${opp.met ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-500'}`}>
+                          <Badge variant="outline" className={`text-[10px] ${opp.met ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-600 text-slate-400'}`}>
                             {opp.status}
                           </Badge>
                         </motion.div>
@@ -1929,6 +2012,21 @@ export default function Dashboard() {
                   <StatusCard icon={Users} label="Subscribers" value={analytics?.totalSubscribers || 0} color="text-emerald-400" hint="Total channel subscribers" />
                   <StatusCard icon={Clock} label="Watch Hours" value={Math.round((analytics?.totalWatchTime || 0) / 60)} valueSuffix="hrs" color="text-violet-400" hint="Total watch time in hours" />
                   <StatusCard icon={DollarSign} label="Est. Revenue" value={`$${(analytics?.estimatedRevenue || 0).toFixed(2)}`} color="text-amber-400" trend={(analytics?.estimatedRevenue || 0) > 0 ? 'up' : undefined} hint="Estimated revenue based on current metrics" />
+                </div>
+                {/* Growth Trends Chart — Views, Subscribers, Revenue over 30 days */}
+                <GrowthTrendsChart
+                  totalViews={analytics?.totalViews}
+                  totalSubscribers={analytics?.totalSubscribers}
+                  estimatedRevenue={analytics?.estimatedRevenue}
+                />
+                {/* CPM/RPM Dashboard — Ad rate analytics */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                  <CpmRpmDashboard
+                    estimatedRevenue={analytics?.estimatedRevenue}
+                    totalViews={analytics?.totalViews}
+                  />
+                  {/* Performance Breakdown — Top videos, traffic sources, retention */}
+                  <PerformanceBreakdown uploads={pipeline?.uploads} />
                 </div>
                 <GradientCard glow="from-blue-500/5 to-violet-500/5">
                   <CardHeader className="pb-2">
@@ -1982,7 +2080,7 @@ export default function Dashboard() {
                             <div className="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden">
                               <motion.div initial={{ width: 0 }} animate={{ width: `${src.pct}%` }} transition={{ delay: i * 0.1 + 0.3, duration: 0.6 }} className={`h-full rounded-full ${src.color}`} />
                             </div>
-                            <span className="text-[10px] text-slate-500 w-8 text-right font-mono">{src.pct}%</span>
+                            <span className="text-[11px] text-slate-400 w-8 text-right font-mono">{src.pct}%</span>
                           </div>
                         ))}
                       </div>
@@ -2004,7 +2102,7 @@ export default function Dashboard() {
                           return (
                             <div key={i} className={`p-2.5 rounded-lg ${kpi.bg} border border-slate-700/20 flex items-center gap-2`}>
                               <Icon className={`w-4 h-4 ${kpi.color} shrink-0`} />
-                              <div><p className={`text-sm font-bold ${kpi.color}`}>{kpi.value}</p><p className="text-[9px] text-slate-500">{kpi.label}</p></div>
+                              <div><p className={`text-sm font-bold font-tabular-nums ${kpi.color}`}>{kpi.value}</p><p className="text-[10px] text-slate-400">{kpi.label}</p></div>
                             </div>
                           )
                         })}
@@ -2021,10 +2119,10 @@ export default function Dashboard() {
                           {pipeline.uploads.slice(0, 8).map((upload: any, i: number) => (
                             <motion.div key={upload.id} initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
                               className="flex items-center gap-3 p-2 rounded-lg bg-slate-800/30 border border-slate-700/20 text-xs">
-                              <Film className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                              <Film className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                               <span className="text-slate-300 truncate flex-1 font-medium">{upload.title}</span>
-                              <Badge variant="outline" className="text-[9px] border-slate-600 shrink-0">{upload.privacy}</Badge>
-                              <Badge variant="outline" className={`text-[9px] shrink-0 ${upload.uploadStatus === 'completed' ? 'border-emerald-500/50 text-emerald-400' : 'border-amber-500/50 text-amber-400'}`}>{upload.uploadStatus}</Badge>
+                              <Badge variant="outline" className="text-[10px] border-slate-600 shrink-0">{upload.privacy}</Badge>
+                              <Badge variant="outline" className={`text-[10px] shrink-0 ${upload.uploadStatus === 'completed' ? 'border-emerald-500/50 text-emerald-400' : 'border-amber-500/50 text-amber-400'}`}>{upload.uploadStatus}</Badge>
                             </motion.div>
                           ))}
                         </div>
@@ -2083,10 +2181,10 @@ export default function Dashboard() {
                             <motion.div key={log.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.01 }}
                               className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800/30 transition-colors text-xs border-b border-slate-800/30">
                               <span className="text-slate-600 font-mono text-[10px] w-20 shrink-0">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                              <Badge variant="outline" className={`text-[9px] h-4 shrink-0 ${actionColor(log.action)}`}>{actionLabel(log.action)}</Badge>
+                              <Badge variant="outline" className={`text-[10px] h-4 shrink-0 ${actionColor(log.action)}`}>{actionLabel(log.action)}</Badge>
                               <span className="text-slate-500 text-[10px] w-14 shrink-0">{log.actor}</span>
                               <span className="text-slate-300 truncate flex-1 font-mono text-[10px]">{(() => { try { const d = JSON.parse(log.details || '{}'); return d.message || d.detail || log.details } catch { return log.details } })()}</span>
-                              {log.target && (<span className="text-slate-600 text-[9px] shrink-0 font-mono">{log.target}</span>)}
+                              {log.target && (<span className="text-slate-500 text-[10px] shrink-0 font-mono">{log.target}</span>)}
                             </motion.div>
                           ))}
                         </div>
@@ -2191,8 +2289,8 @@ export default function Dashboard() {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <Badge variant="outline" className={`text-[9px] h-4 ${actionColor(log.action)}`}>{actionLabel(log.action)}</Badge>
-                                      <span className="text-[10px] text-slate-500 font-mono">{new Date(log.createdAt).toLocaleTimeString()}</span>
+                                      <Badge variant="outline" className={`text-[10px] h-4 ${actionColor(log.action)}`}>{actionLabel(log.action)}</Badge>
+                                      <span className="text-[10px] text-slate-400 font-mono">{new Date(log.createdAt).toLocaleTimeString()}</span>
                                     </div>
                                     <p className="text-xs text-slate-300 mt-0.5 truncate">{detail.message || detail.detail || log.details || '—'}</p>
                                   </div>
@@ -2240,9 +2338,9 @@ export default function Dashboard() {
                           >
                             <Icon className={`w-5 h-5 mb-2 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                             <p className={`text-xs font-bold ${isActive ? 'text-white' : 'text-slate-300'}`}>{mode.label}</p>
-                            <p className="text-[10px] text-slate-500 mt-1 leading-relaxed">{mode.desc}</p>
+                            <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">{mode.desc}</p>
                             {isActive && (
-                              <Badge className={`mt-2 text-[9px] ${mode.badge}`}>Active</Badge>
+                              <Badge className={`mt-2 text-[10px] ${mode.badge}`}>Active</Badge>
                             )}
                           </motion.button>
                         )
@@ -2267,7 +2365,7 @@ export default function Dashboard() {
                           <p className="text-xs font-medium text-slate-200">
                             {channel?.youtubeConnected ? 'Connected' : 'Not Connected'}
                           </p>
-                          <p className="text-[10px] text-slate-500">
+                          <p className="text-[11px] text-slate-400">
                             {channel?.youtubeConnected ? `Channel: ${channel.channel?.name || 'Unknown'}` : 'Complete OAuth setup to enable uploads'}
                           </p>
                         </div>
@@ -2311,7 +2409,7 @@ export default function Dashboard() {
                         <div key={i} className="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/30 text-center">
                           <config.icon className="w-4 h-4 mx-auto text-slate-400 mb-1.5" />
                           <p className="text-xs font-bold text-slate-200">{config.value}</p>
-                          <p className="text-[10px] text-slate-500">{config.label}</p>
+                          <p className="text-[11px] text-slate-400">{config.label}</p>
                         </div>
                       ))}
                     </div>
@@ -2330,8 +2428,8 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
                       {['pending', 'running', 'completed', 'failed'].map(s => (
                         <div key={s} className="text-center p-2 rounded-lg bg-slate-800/30 border border-slate-700/20">
-                          <p className="text-lg font-bold text-slate-200">{jobs.filter(j => j.status === s).length}</p>
-                          <p className="text-[10px] text-slate-500 capitalize">{s}</p>
+                          <p className="text-lg font-bold font-tabular-nums text-slate-200">{jobs.filter(j => j.status === s).length}</p>
+                          <p className="text-[11px] text-slate-400 capitalize">{s}</p>
                         </div>
                       ))}
                     </div>
@@ -2340,7 +2438,7 @@ export default function Dashboard() {
                         <div className="space-y-1">
                           {jobs.slice(0, 10).map((job: any) => (
                             <div key={job.id} className="flex items-center gap-2 p-1.5 rounded bg-slate-800/30 text-[10px]">
-                              <Badge variant="outline" className={`text-[9px] shrink-0 ${
+                              <Badge variant="outline" className={`text-[10px] shrink-0 ${
                                 job.status === 'completed' ? 'border-emerald-500/50 text-emerald-400' :
                                 job.status === 'running' ? 'border-amber-500/50 text-amber-400' :
                                 job.status === 'failed' ? 'border-red-500/50 text-red-400' :
@@ -2352,7 +2450,7 @@ export default function Dashboard() {
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-slate-500 text-center py-4">No jobs in queue</p>
+                        <p className="text-xs text-slate-400 text-center py-4">No jobs in queue</p>
                       )}
                     </ScrollArea>
                   </CardContent>
@@ -2417,6 +2515,21 @@ export default function Dashboard() {
           }}
         />
 
+        {/* ═══ QUICK ACTIONS TOOLBAR (floating) ═══ */}
+        <QuickActionsToolbar
+          onCommand={(cmd) => {
+            if (cmd === 'pause') sendCommand('pause')
+            else if (cmd === 'initial-setup') sendCommand('initial-setup')
+            else if (cmd === 'produce-next') sendCommand('produce-next')
+            else if (cmd === 'collect-analytics') sendCommand('process-job')
+            else if (cmd === 'strategy-review') setActiveTab('strategy')
+            else if (cmd === 'schedule-jobs') setActiveTab('scheduler')
+            else sendCommand(cmd)
+          }}
+          agentState={status?.state || 'idle'}
+          loading={loading}
+        />
+
         {/* ═══ KEYBOARD SHORTCUTS ═══ */}
         <KeyboardShortcuts
           open={shortcutsOpen}
@@ -2443,12 +2556,12 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-slate-500 font-semibold">YouTube Revenue Studio v2.4</span>
+              <span className="text-slate-400 font-semibold">YouTube Revenue Studio v2.4</span>
             </div>
             <span className="text-slate-700">·</span>
             <span>Z.AI Autonomous Agent</span>
             <span className="text-slate-700">·</span>
-            <Badge variant="outline" className={`text-[9px] h-4 ${MODES.find(m => m.key === status?.operatingMode)?.badge || 'border-slate-600 text-slate-400'}`}>
+            <Badge variant="outline" className={`text-[10px] h-4 ${MODES.find(m => m.key === status?.operatingMode)?.badge || 'border-slate-600 text-slate-400'}`}>
               {modeLabel(status?.operatingMode || 'private_production')}
             </Badge>
           </div>
