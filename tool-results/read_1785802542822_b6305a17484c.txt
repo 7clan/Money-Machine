@@ -1,0 +1,1153 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useMemo, useEffect, useCallback } from 'react'
+     4→import { motion, AnimatePresence } from 'framer-motion'
+     5→import { Input } from '@/components/ui/input'
+     6→import {
+     7→  Select,
+     8→  SelectContent,
+     9→  SelectItem,
+    10→  SelectTrigger,
+    11→  SelectValue,
+    12→} from '@/components/ui/select'
+    13→import { Badge } from '@/components/ui/badge'
+    14→import { Button } from '@/components/ui/button'
+    15→import { ScrollArea } from '@/components/ui/scroll-area'
+    16→import { Separator } from '@/components/ui/separator'
+    17→import { Skeleton } from '@/components/ui/skeleton'
+    18→import { Checkbox } from '@/components/ui/checkbox'
+    19→import {
+    20→  Tooltip,
+    21→  TooltipContent,
+    22→  TooltipTrigger,
+    23→} from '@/components/ui/tooltip'
+    24→import {
+    25→  AlertDialog,
+    26→  AlertDialogAction,
+    27→  AlertDialogCancel,
+    28→  AlertDialogContent,
+    29→  AlertDialogDescription,
+    30→  AlertDialogFooter,
+    31→  AlertDialogHeader,
+    32→  AlertDialogTitle,
+    33→} from '@/components/ui/alert-dialog'
+    34→import {
+    35→  DropdownMenu,
+    36→  DropdownMenuContent,
+    37→  DropdownMenuItem,
+    38→  DropdownMenuLabel,
+    39→  DropdownMenuSeparator,
+    40→  DropdownMenuTrigger,
+    41→} from '@/components/ui/dropdown-menu'
+    42→import {
+    43→  Search,
+    44→  X,
+    45→  CheckSquare,
+    46→  Square,
+    47→  Trash2,
+    48→  RefreshCcw,
+    49→  CheckCircle,
+    50→  Loader2,
+    51→  Film,
+    52→  Play,
+    53→  XCircle,
+    54→  ListChecks,
+    55→  Tag,
+    56→  Settings2,
+    57→} from 'lucide-react'
+    58→import { cn } from '@/lib/utils'
+    59→import { useToast } from '@/components/agent/toast-provider'
+    60→
+    61→// ─── Types ───────────────────────────────────────────────────────────
+    62→
+    63→export type VideoProjectStatus =
+    64→  | 'producing'
+    65→  | 'approved'
+    66→  | 'failed'
+    67→  | 'uploaded'
+    68→  | 'rejected'
+    69→
+    70→// The pipeline endpoint serialises Prisma `VideoProject` rows with `any`
+    71→// typing on the dashboard side — accept a permissive shape so the
+    72→// component can consume `pipeline.projects` directly without bespoke
+    73→// mapping at every call site.
+    74→export interface VideoProject {
+    75→  id: string
+    76→  videoIdeaId?: string
+    77→  title?: string
+    78→  status?: string
+    79→  videoFilePath?: string | null
+    80→  thumbnailPath?: string | null
+    81→  resolution?: string | null
+    82→  duration?: number | null
+    83→  fileSize?: number | null
+    84→  renderProgress?: number | null
+    85→  isApproved?: boolean | null
+    86→  reviewResult?: string | null
+    87→  editorNotes?: string | null
+    88→  createdAt?: string | Date | null
+    89→  updatedAt?: string | Date | null
+    90→}
+    91→
+    92→interface VideoProjectExplorerProps {
+    93→  projects: VideoProject[]
+    94→  onPreview?: (id: string) => void
+    95→  /** Notified after a bulk action completes so the parent can refresh. */
+    96→  onBulkAction?: () => void
+    97→  className?: string
+    98→}
+    99→
+   100→type SortKey = 'updated_desc' | 'updated_asc' | 'duration_desc' | 'duration_asc' | 'status'
+   101→
+   102→// ─── Status Config ───────────────────────────────────────────────────
+   103→
+   104→const STATUS_CONFIG: Record<
+   105→  VideoProjectStatus,
+   106→  { label: string; badgeClass: string; dotClass: string }
+   107→> = {
+   108→  producing: {
+   109→    label: 'Producing',
+   110→    badgeClass: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+   111→    dotClass: 'bg-cyan-400',
+   112→  },
+   113→  approved: {
+   114→    label: 'Approved',
+   115→    badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+   116→    dotClass: 'bg-emerald-400',
+   117→  },
+   118→  failed: {
+   119→    label: 'Failed',
+   120→    badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+   121→    dotClass: 'bg-rose-400',
+   122→  },
+   123→  uploaded: {
+   124→    label: 'Uploaded',
+   125→    badgeClass: 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+   126→    dotClass: 'bg-violet-400',
+   127→  },
+   128→  rejected: {
+   129→    label: 'Rejected',
+   130→    badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+   131→    dotClass: 'bg-amber-400',
+   132→  },
+   133→}
+   134→
+   135→// Map any unknown string status into one of our 5 known buckets so the
+   136→// UI never throws on legacy rows (e.g. status='planning' or 'reviewing').
+   137→function coerceStatus(raw?: string | null): VideoProjectStatus {
+   138→  if (!raw) return 'producing'
+   139→  if (raw in STATUS_CONFIG) return raw as VideoProjectStatus
+   140→  // Reasonable fallbacks for legacy / pipeline-internal statuses.
+   141→  if (raw === 'planning' || raw === 'storyboarding' || raw === 'rendering' || raw === 'review' || raw === 'reviewing' || raw === 'editing' || raw === 'recording' || raw === 'collecting_assets') {
+   142→    return 'producing'
+   143→  }
+   144→  if (raw === 'uploading') return 'uploaded'
+   145→  return 'producing'
+   146→}
+   147→
+   148→const STATUS_FILTER_PILLS: { value: 'all' | VideoProjectStatus; label: string }[] = [
+   149→  { value: 'all', label: 'All' },
+   150→  { value: 'producing', label: 'Producing' },
+   151→  { value: 'approved', label: 'Approved' },
+   152→  { value: 'failed', label: 'Failed' },
+   153→  { value: 'uploaded', label: 'Uploaded' },
+   154→]
+   155→
+   156→const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+   157→  { value: 'updated_desc', label: 'Updated (newest)' },
+   158→  { value: 'updated_asc', label: 'Updated (oldest)' },
+   159→  { value: 'duration_desc', label: 'Duration (long→short)' },
+   160→  { value: 'duration_asc', label: 'Duration (short→long)' },
+   161→  { value: 'status', label: 'Status' },
+   162→]
+   163→
+   164→const BULK_STATUS_OPTIONS: {
+   165→  value: VideoProjectStatus
+   166→  label: string
+   167→  dotClass: string
+   168→}[] = [
+   169→  { value: 'producing', label: 'Producing', dotClass: 'bg-cyan-400' },
+   170→  { value: 'approved', label: 'Approved', dotClass: 'bg-emerald-400' },
+   171→  { value: 'failed', label: 'Failed', dotClass: 'bg-rose-400' },
+   172→  { value: 'uploaded', label: 'Uploaded', dotClass: 'bg-violet-400' },
+   173→  { value: 'rejected', label: 'Rejected', dotClass: 'bg-amber-400' },
+   174→]
+   175→
+   176→type BulkActionType =
+   177→  | 'approve'
+   178→  | 'delete'
+   179→  | 'set-status'
+   180→  | 're-render'
+   181→  | 'unschedule'
+   182→
+   183→// ─── Helpers ─────────────────────────────────────────────────────────
+   184→
+   185→function toTimestamp(value?: string | Date | null): number {
+   186→  if (!value) return 0
+   187→  const d = value instanceof Date ? value : new Date(value)
+   188→  const t = d.getTime()
+   189→  return Number.isNaN(t) ? 0 : t
+   190→}
+   191→
+   192→function relativeTime(value?: string | Date | null): string {
+   193→  const t = toTimestamp(value)
+   194→  if (!t) return '—'
+   195→  const diff = Date.now() - t
+   196→  if (diff < 0) return 'just now'
+   197→  const sec = Math.floor(diff / 1000)
+   198→  if (sec < 60) return `${sec}s ago`
+   199→  const min = Math.floor(sec / 60)
+   200→  if (min < 60) return `${min}m ago`
+   201→  const hr = Math.floor(min / 60)
+   202→  if (hr < 24) return `${hr}h ago`
+   203→  const day = Math.floor(hr / 24)
+   204→  if (day < 7) return `${day}d ago`
+   205→  const week = Math.floor(day / 7)
+   206→  if (week < 4) return `${week}w ago`
+   207→  const month = Math.floor(day / 30)
+   208→  if (month < 12) return `${month}mo ago`
+   209→  const year = Math.floor(day / 365)
+   210→  return `${year}y ago`
+   211→}
+   212→
+   213→function formatDuration(seconds?: number | null): string {
+   214→  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) {
+   215→    return '—'
+   216→  }
+   217→  if (seconds < 60) return `${seconds.toFixed(0)}s`
+   218→  const m = Math.floor(seconds / 60)
+   219→  const s = Math.floor(seconds % 60)
+   220→  return `${m}:${s.toString().padStart(2, '0')}`
+   221→}
+   222→
+   223→function formatFileSize(bytes?: number | null): string {
+   224→  if (!bytes || bytes <= 0) return '—'
+   225→  if (bytes < 1024) return `${bytes} B`
+   226→  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+   227→  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+   228→  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
+   229→}
+   230→
+   231→function truncate(text: string, max: number): string {
+   232→  if (text.length <= max) return text
+   233→  return text.slice(0, max - 1).trimEnd() + '…'
+   234→}
+   235→
+   236→// ─── Component ───────────────────────────────────────────────────────
+   237→
+   238→export function VideoProjectExplorer({
+   239→  projects,
+   240→  onPreview,
+   241→  onBulkAction,
+   242→  className,
+   243→}: VideoProjectExplorerProps) {
+   244→  const { toast } = useToast()
+   245→  const [searchInput, setSearchInput] = useState('')
+   246→  const [debouncedSearch, setDebouncedSearch] = useState('')
+   247→  const [statusFilter, setStatusFilter] = useState<'all' | VideoProjectStatus>(
+   248→    'all',
+   249→  )
+   250→  const [sortKey, setSortKey] = useState<SortKey>('updated_desc')
+   251→
+   252→  // ─── Bulk selection state ──────────────────────────────────────────
+   253→  const [selectMode, setSelectMode] = useState(false)
+   254→  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+   255→  const [bulkLoading, setBulkLoading] = useState<BulkActionType | null>(null)
+   256→  const [confirmDialog, setConfirmDialog] = useState<
+   257→    null | 'delete' | 're-render'
+   258→  >(null)
+   259→
+   260→  // Debounced search (200ms)
+   261→  useEffect(() => {
+   262→    const handle = setTimeout(() => {
+   263→      setDebouncedSearch(searchInput.trim().toLowerCase())
+   264→    }, 200)
+   265→    return () => clearTimeout(handle)
+   266→  }, [searchInput])
+   267→
+   268→  const filteredProjects = useMemo(() => {
+   269→    const out: VideoProject[] = []
+   270→    for (const project of projects) {
+   271→      const title = (project.title ?? '').toLowerCase()
+   272→      if (debouncedSearch && !title.includes(debouncedSearch)) continue
+   273→      if (statusFilter !== 'all') {
+   274→        const s = coerceStatus(project.status)
+   275→        if (s !== statusFilter) continue
+   276→      }
+   277→      out.push(project)
+   278→    }
+   279→
+   280→    out.sort((a, b) => {
+   281→      switch (sortKey) {
+   282→        case 'updated_asc':
+   283→          return toTimestamp(a.updatedAt) - toTimestamp(b.updatedAt)
+   284→        case 'updated_desc':
+   285→          return toTimestamp(b.updatedAt) - toTimestamp(a.updatedAt)
+   286→        case 'duration_asc': {
+   287→          const da = a.duration ?? 0
+   288→          const db = b.duration ?? 0
+   289→          return da - db
+   290→        }
+   291→        case 'duration_desc': {
+   292→          const da = a.duration ?? 0
+   293→          const db = b.duration ?? 0
+   294→          return db - da
+   295→        }
+   296→        case 'status': {
+   297→          const sa = coerceStatus(a.status)
+   298→          const sb = coerceStatus(b.status)
+   299→          return sa.localeCompare(sb)
+   300→        }
+   301→        default:
+   302→          return 0
+   303→      }
+   304→    })
+   305→    return out
+   306→  }, [projects, debouncedSearch, statusFilter, sortKey])
+   307→
+   308→  const activeFilterCount = useMemo(() => {
+   309→    let n = 0
+   310→    if (debouncedSearch) n++
+   311→    if (statusFilter !== 'all') n++
+   312→    return n
+   313→  }, [debouncedSearch, statusFilter])
+   314→
+   315→  // Prune stale IDs from selection when the projects list changes
+   316→  // (e.g. after a bulk delete or after the parent refetches).
+   317→  useEffect(() => {
+   318→    if (selectedIds.size === 0) return
+   319→    const validIds = new Set(projects.map((p) => p.id))
+   320→    let changed = false
+   321→    const next = new Set<string>()
+   322→    for (const id of selectedIds) {
+   323→      if (validIds.has(id)) {
+   324→        next.add(id)
+   325→      } else {
+   326→        changed = true
+   327→      }
+   328→    }
+   329→    if (changed) {
+   330→      setSelectedIds(next)
+   331→      if (next.size === 0) setSelectMode(false)
+   332→    }
+   333→  }, [projects, selectedIds])
+   334→
+   335→  const clearFilters = useCallback(() => {
+   336→    setSearchInput('')
+   337→    setDebouncedSearch('')
+   338→    setStatusFilter('all')
+   339→    setSortKey('updated_desc')
+   340→  }, [])
+   341→
+   342→  // ─── Bulk action handlers ──────────────────────────────────────────
+   343→  const toggleSelectMode = useCallback(() => {
+   344→    setSelectMode((prev) => {
+   345→      const next = !prev
+   346→      if (!next) setSelectedIds(new Set())
+   347→      return next
+   348→    })
+   349→  }, [])
+   350→
+   351→  const toggleSelect = useCallback((id: string) => {
+   352→    setSelectedIds((prev) => {
+   353→      const next = new Set(prev)
+   354→      if (next.has(id)) next.delete(id)
+   355→      else next.add(id)
+   356→      return next
+   357→    })
+   358→  }, [])
+   359→
+   360→  const selectAllFiltered = useCallback(() => {
+   361→    setSelectedIds(new Set(filteredProjects.map((p) => p.id)))
+   362→  }, [filteredProjects])
+   363→
+   364→  const clearSelection = useCallback(() => {
+   365→    setSelectedIds(new Set())
+   366→  }, [])
+   367→
+   368→  const executeBulkAction = useCallback(
+   369→    async (
+   370→      action: BulkActionType,
+   371→      payload?: Record<string, unknown>,
+   372→    ) => {
+   373→      if (selectedIds.size === 0) return
+   374→      setBulkLoading(action)
+   375→      const ids = Array.from(selectedIds)
+   376→      try {
+   377→        const res = await fetch('/api/data/projects/bulk', {
+   378→          method: 'POST',
+   379→          headers: { 'Content-Type': 'application/json' },
+   380→          body: JSON.stringify({ action, projectIds: ids, payload }),
+   381→        })
+   382→        const data = (await res.json().catch(() => ({}))) as {
+   383→          ok?: boolean
+   384→          affected?: number
+   385→          error?: string
+   386→        }
+   387→        if (!res.ok || !data.ok) {
+   388→          throw new Error(
+   389→            data.error || `Bulk ${action} failed (HTTP ${res.status})`,
+   390→          )
+   391→        }
+   392→        const affected = data.affected ?? 0
+   393→        toast({
+   394→          type: 'success',
+   395→          title: `Bulk ${action} complete`,
+   396→          description: `${affected} project${affected === 1 ? '' : 's'} affected.`,
+   397→        })
+   398→        // Clear local selection first, then notify parent so it can refresh.
+   399→        setSelectedIds(new Set())
+   400→        setSelectMode(false)
+   401→        setConfirmDialog(null)
+   402→        onBulkAction?.()
+   403→      } catch (err) {
+   404→        toast({
+   405→          type: 'error',
+   406→          title: `Bulk ${action} failed`,
+   407→          description: err instanceof Error ? err.message : 'Unknown error',
+   408→          duration: 5000,
+   409→        })
+   410→      } finally {
+   411→        setBulkLoading(null)
+   412→      }
+   413→    },
+   414→    [selectedIds, toast, onBulkAction],
+   415→  )
+   416→
+   417→  const handleCardClick = useCallback(
+   418→    (id: string) => {
+   419→      if (selectMode) {
+   420→        toggleSelect(id)
+   421→        return
+   422→      }
+   423→      onPreview?.(id)
+   424→    },
+   425→    [selectMode, toggleSelect, onPreview],
+   426→  )
+   427→
+   428→  const isLoading = projects.length === 0
+   429→
+   430→  // ─── Render ────────────────────────────────────────────────────────
+   431→
+   432→  return (
+   433→    <div
+   434→      className={cn(
+   435→        'w-full rounded-xl bg-slate-950 p-3 sm:p-4',
+   436→        'border border-slate-800/50',
+   437→        className,
+   438→      )}
+   439→    >
+   440→      {/* ─── Header / Search ─── */}
+   441→      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+   442→        <div className="flex items-center gap-2">
+   443→          <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30">
+   444→            <Film className="size-4 text-emerald-300" />
+   445→          </div>
+   446→          <div>
+   447→            <h3 className="text-sm font-semibold text-slate-100">
+   448→              Video Project Explorer
+   449→            </h3>
+   450→            <p className="text-[11px] text-slate-400">
+   451→              Produce, approve &amp; manage rendered videos
+   452→            </p>
+   453→          </div>
+   454→        </div>
+   455→
+   456→        <div className="flex items-center gap-2">
+   457→          <div className="relative w-full sm:w-72">
+   458→            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+   459→            <Input
+   460→              value={searchInput}
+   461→              onChange={(e) => setSearchInput(e.target.value)}
+   462→              placeholder="Search projects by title…"
+   463→              className="h-9 border-slate-700/60 bg-slate-900/60 pl-9 pr-8 text-sm text-slate-100 placeholder:text-slate-500 focus-visible:border-emerald-500/50 focus-visible:ring-emerald-500/20"
+   464→            />
+   465→            {searchInput && (
+   466→              <button
+   467→                type="button"
+   468→                onClick={() => setSearchInput('')}
+   469→                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+   470→                aria-label="Clear search"
+   471→              >
+   472→                <X className="size-3.5" />
+   473→              </button>
+   474→            )}
+   475→          </div>
+   476→
+   477→          {/* Select toggle */}
+   478→          <Tooltip>
+   479→            <TooltipTrigger asChild>
+   480→              <Button
+   481→                type="button"
+   482→                variant={selectMode ? 'default' : 'outline'}
+   483→                size="sm"
+   484→                onClick={toggleSelectMode}
+   485→                className={cn(
+   486→                  'h-9 shrink-0 gap-1.5 px-3 text-xs',
+   487→                  selectMode
+   488→                    ? 'border-transparent bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-600 hover:to-cyan-600'
+   489→                    : 'border-slate-700/60 bg-slate-900/60 text-slate-300 hover:bg-slate-800/60 hover:text-slate-100',
+   490→                )}
+   491→              >
+   492→                {selectMode ? (
+   493→                  <CheckSquare className="size-3.5" />
+   494→                ) : (
+   495→                  <Square className="size-3.5" />
+   496→                )}
+   497→                <span className="hidden sm:inline">Select</span>
+   498→              </Button>
+   499→            </TooltipTrigger>
+   500→            <TooltipContent className="bg-slate-800 text-slate-100">
+   501→              {selectMode ? 'Exit selection mode' : 'Enter selection mode'}
+   502→            </TooltipContent>
+   503→          </Tooltip>
+   504→        </div>
+   505→      </div>
+   506→
+   507→      {/* ─── Filter Row: status pills + sort ─── */}
+   508→      <div className="mb-3 flex flex-wrap items-center gap-2">
+   509→        {/* Status pills */}
+   510→        <div className="flex items-center rounded-lg border border-slate-700/60 bg-slate-900/40 p-0.5">
+   511→          {STATUS_FILTER_PILLS.map((p) => {
+   512→            const isActive = statusFilter === p.value
+   513→            return (
+   514→              <button
+   515→                key={p.value}
+   516→                type="button"
+   517→                onClick={() => setStatusFilter(p.value)}
+   518→                className={cn(
+   519→                  'relative rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
+   520→                  isActive
+   521→                    ? 'text-white'
+   522→                    : 'text-slate-400 hover:text-slate-200',
+   523→                )}
+   524→              >
+   525→                {isActive && (
+   526→                  <motion.span
+   527→                    layoutId="vpx-status-pill-bg"
+   528→                    className="absolute inset-0 rounded-md bg-gradient-to-r from-emerald-500/80 to-cyan-500/80"
+   529→                    transition={{ type: 'spring', duration: 0.3, bounce: 0.2 }}
+   530→                  />
+   531→                )}
+   532→                <span className="relative z-10">{p.label}</span>
+   533→              </button>
+   534→            )
+   535→          })}
+   536→        </div>
+   537→
+   538→        {/* Sort */}
+   539→        <Select
+   540→          value={sortKey}
+   541→          onValueChange={(v) => setSortKey(v as SortKey)}
+   542→        >
+   543→          <SelectTrigger
+   544→            size="sm"
+   545→            className="h-8 w-[180px] border-slate-700/60 bg-slate-900/60 text-xs text-slate-200 hover:bg-slate-800/60"
+   546→          >
+   547→            <Settings2 className="size-3.5 text-slate-500" />
+   548→            <SelectValue placeholder="Sort" />
+   549→          </SelectTrigger>
+   550→          <SelectContent className="border-slate-700/60 bg-slate-900 text-slate-200">
+   551→            {SORT_OPTIONS.map((opt) => (
+   552→              <SelectItem key={opt.value} value={opt.value}>
+   553→                {opt.label}
+   554→              </SelectItem>
+   555→            ))}
+   556→          </SelectContent>
+   557→        </Select>
+   558→
+   559→        {/* Active filter count */}
+   560→        {activeFilterCount > 0 && (
+   561→          <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-300">
+   562→            <Tag className="size-3" />
+   563→            {activeFilterCount} active
+   564→          </Badge>
+   565→        )}
+   566→
+   567→        <div className="ml-auto">
+   568→          {activeFilterCount > 0 && (
+   569→            <Button
+   570→              variant="ghost"
+   571→              size="sm"
+   572→              onClick={clearFilters}
+   573→              className="h-7 gap-1.5 px-2 text-xs text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+   574→            >
+   575→              <X className="size-3" />
+   576→              Clear filters
+   577→            </Button>
+   578→          )}
+   579→        </div>
+   580→      </div>
+   581→
+   582→      {/* ─── Result Count ─── */}
+   583→      <div className="mb-3 flex items-center justify-between gap-2">
+   584→        <p className="text-xs text-slate-400">
+   585→          <span className="font-semibold text-slate-200">
+   586→            {filteredProjects.length}
+   587→          </span>{' '}
+   588→          of {projects.length} projects
+   589→        </p>
+   590→      </div>
+   591→
+   592→      <Separator className="mb-3 bg-slate-800/60" />
+   593→
+   594→      {/* ─── Selection Toolbar (only in select mode) ─── */}
+   595→      <AnimatePresence>
+   596→        {selectMode && (
+   597→          <motion.div
+   598→            initial={{ opacity: 0, height: 0 }}
+   599→            animate={{ opacity: 1, height: 'auto' }}
+   600→            exit={{ opacity: 0, height: 0 }}
+   601→            transition={{ duration: 0.2 }}
+   602→            className="mb-3 overflow-hidden"
+   603→          >
+   604→            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2">
+   605→              <span className="text-xs text-slate-400">
+   606→                {selectedIds.size > 0 ? (
+   607→                  <>
+   608→                    <span className="font-semibold text-emerald-300">
+   609→                      {selectedIds.size}
+   610→                    </span>{' '}
+   611→                    selected
+   612→                  </>
+   613→                ) : (
+   614→                  'Selection mode — click cards to select'
+   615→                )}
+   616→              </span>
+   617→              <div className="ml-auto flex items-center gap-1.5">
+   618→                <Button
+   619→                  type="button"
+   620→                  variant="ghost"
+   621→                  size="sm"
+   622→                  onClick={selectAllFiltered}
+   623→                  className="h-7 gap-1.5 px-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
+   624→                >
+   625→                  <ListChecks className="size-3" />
+   626→                  Select all ({filteredProjects.length})
+   627→                </Button>
+   628→                {selectedIds.size > 0 && (
+   629→                  <Button
+   630→                    type="button"
+   631→                    variant="ghost"
+   632→                    size="sm"
+   633→                    onClick={clearSelection}
+   634→                    className="h-7 gap-1.5 px-2 text-xs text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+   635→                  >
+   636→                    <X className="size-3" />
+   637→                    Clear
+   638→                  </Button>
+   639→                )}
+   640→              </div>
+   641→            </div>
+   642→          </motion.div>
+   643→        )}
+   644→      </AnimatePresence>
+   645→
+   646→      {/* ─── Bulk Action Bar ─── */}
+   647→      <AnimatePresence>
+   648→        {selectMode && selectedIds.size > 0 && (
+   649→          <BulkActionBar
+   650→            selectedCount={selectedIds.size}
+   651→            loadingAction={bulkLoading}
+   652→            confirmDialog={confirmDialog}
+   653→            onConfirmDialogChange={setConfirmDialog}
+   654→            onExecute={executeBulkAction}
+   655→          />
+   656→        )}
+   657→      </AnimatePresence>
+   658→
+   659→      {/* ─── Grid ─── */}
+   660→      <ScrollArea className="max-h-[60vh]">
+   661→        {isLoading ? (
+   662→          <LoadingSkeleton />
+   663→        ) : filteredProjects.length === 0 ? (
+   664→          <EmptyState hasFilters={activeFilterCount > 0} onClear={clearFilters} />
+   665→        ) : (
+   666→          <div className="grid grid-cols-1 gap-2 pr-2 lg:grid-cols-2">
+   667→            <AnimatePresence mode="popLayout" initial={false}>
+   668→              {filteredProjects.map((project, i) => (
+   669→                <motion.div
+   670→                  key={project.id}
+   671→                  layout
+   672→                  initial={{ opacity: 0, y: 6 }}
+   673→                  animate={{ opacity: 1, y: 0 }}
+   674→                  exit={{ opacity: 0, y: -6 }}
+   675→                  transition={{
+   676→                    duration: 0.25,
+   677→                    delay: Math.min(i * 0.03, 0.3),
+   678→                    ease: 'easeOut',
+   679→                  }}
+   680→                >
+   681→                  <ProjectCard
+   682→                    project={project}
+   683→                    onClick={() => handleCardClick(project.id)}
+   684→                    selectMode={selectMode}
+   685→                    isSelected={selectedIds.has(project.id)}
+   686→                    onToggleSelect={toggleSelect}
+   687→                  />
+   688→                </motion.div>
+   689→              ))}
+   690→            </AnimatePresence>
+   691→          </div>
+   692→        )}
+   693→      </ScrollArea>
+   694→    </div>
+   695→  )
+   696→}
+   697→
+   698→// ─── Project Card ────────────────────────────────────────────────────
+   699→
+   700→interface ProjectCardProps {
+   701→  project: VideoProject
+   702→  onClick: () => void
+   703→  selectMode: boolean
+   704→  isSelected: boolean
+   705→  onToggleSelect: (id: string) => void
+   706→}
+   707→
+   708→function ProjectCard({
+   709→  project,
+   710→  onClick,
+   711→  selectMode,
+   712→  isSelected,
+   713→  onToggleSelect,
+   714→}: ProjectCardProps) {
+   715→  const status = coerceStatus(project.status)
+   716→  const statusCfg = STATUS_CONFIG[status]
+   717→  const duration = project.duration
+   718→  const renderPct =
+   719→    typeof project.renderProgress === 'number'
+   720→      ? Math.max(0, Math.min(100, project.renderProgress))
+   721→      : null
+   722→  const isProducing = status === 'producing'
+   723→  const canPreview =
+   724→    status === 'approved' || status === 'uploaded' || status === 'rejected'
+   725→  const title = project.title || 'Untitled project'
+   726→
+   727→  return (
+   728→    <motion.button
+   729→      type="button"
+   730→      onClick={onClick}
+   731→      whileHover={{ scale: 1.01 }}
+   732→      whileTap={{ scale: 0.99 }}
+   733→      className={cn(
+   734→        'group relative w-full overflow-hidden rounded-lg',
+   735→        'bg-slate-900/60 border border-slate-800/50 backdrop-blur-sm',
+   736→        'p-3 sm:p-4 text-left transition-all duration-200',
+   737→        'hover:border-emerald-500/40 hover:bg-slate-900/80',
+   738→        'hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.35)]',
+   739→        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40',
+   740→        // Selected state — violet ring + slight elevation
+   741→        isSelected &&
+   742→          'border-violet-500/60 ring-2 ring-violet-500/50 shadow-[0_0_24px_-4px_rgba(139,92,246,0.55)] scale-[1.005]',
+   743→      )}
+   744→    >
+   745→      {/* Glow accent line */}
+   746→      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+   747→
+   748→      {/* Selection checkbox — top right corner */}
+   749→      {selectMode && (
+   750→        <div
+   751→          className="absolute right-2 top-2 z-10"
+   752→          onClick={(e) => e.stopPropagation()}
+   753→        >
+   754→          <Checkbox
+   755→            checked={isSelected}
+   756→            onCheckedChange={() => onToggleSelect(project.id)}
+   757→            className="size-4 border-violet-500/60 bg-slate-900/80 data-[state=checked]:bg-violet-500 data-[state=checked]:border-violet-500 data-[state=checked]:text-white"
+   758→            aria-label={`${isSelected ? 'Deselect' : 'Select'} ${title}`}
+   759→          />
+   760→        </div>
+   761→      )}
+   762→
+   763→      <div className="flex items-start gap-3">
+   764→        {/* Thumbnail / icon block */}
+   765→        <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-700/50 bg-slate-800/60">
+   766→          {project.thumbnailPath ? (
+   767→            // We can't reliably resolve arbitrary disk paths here, so we
+   768→            // surface a film icon — the preview modal handles real thumbs.
+   769→            <Film className="size-5 text-slate-400" />
+   770→          ) : (
+   771→            <Film className="size-5 text-slate-500" />
+   772→          )}
+   773→        </div>
+   774→
+   775→        <div className="flex flex-1 flex-col gap-1.5">
+   776→          {/* Top row: title */}
+   777→          <Tooltip>
+   778→            <TooltipTrigger asChild>
+   779→              <h4
+   780→                className={cn(
+   781→                  'cursor-help text-sm font-medium leading-snug text-slate-100',
+   782→                  selectMode && 'pr-6',
+   783→                )}
+   784→              >
+   785→                {truncate(title, 60)}
+   786→              </h4>
+   787→            </TooltipTrigger>
+   788→            {title.length > 60 && (
+   789→              <TooltipContent className="max-w-xs bg-slate-800 text-slate-100">
+   790→                {title}
+   791→              </TooltipContent>
+   792→            )}
+   793→          </Tooltip>
+   794→
+   795→          {/* Status badge row */}
+   796→          <div className="flex flex-wrap items-center gap-1.5">
+   797→            <Badge
+   798→              variant="outline"
+   799→              className={cn('gap-1 px-1.5 py-0 text-[10px]', statusCfg.badgeClass)}
+   800→            >
+   801→              <span className={cn('size-1.5 rounded-full', statusCfg.dotClass)} />
+   802→              {statusCfg.label}
+   803→            </Badge>
+   804→
+   805→            {project.resolution && (
+   806→              <Badge
+   807→                variant="outline"
+   808→                className="gap-1 border-slate-700/40 bg-slate-800/40 px-1.5 py-0 text-[10px] text-slate-300"
+   809→              >
+   810→                {project.resolution}
+   811→              </Badge>
+   812→            )}
+   813→
+   814→            {duration !== null && duration !== undefined && (
+   815→              <Badge
+   816→                variant="outline"
+   817→                className="gap-1 border-slate-700/40 bg-slate-800/40 px-1.5 py-0 text-[10px] font-mono text-slate-300"
+   818→              >
+   819→                {formatDuration(duration)}
+   820→              </Badge>
+   821→            )}
+   822→
+   823→            {project.fileSize ? (
+   824→              <Badge
+   825→                variant="outline"
+   826→                className="gap-1 border-slate-700/40 bg-slate-800/40 px-1.5 py-0 text-[10px] font-mono text-slate-400"
+   827→              >
+   828→                {formatFileSize(project.fileSize)}
+   829→              </Badge>
+   830→            ) : null}
+   831→          </div>
+   832→
+   833→          {/* Render progress bar (when producing) */}
+   834→          {isProducing && renderPct !== null && (
+   835→            <div className="flex items-center gap-2">
+   836→              <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800/80">
+   837→                <div
+   838→                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-300"
+   839→                  style={{ width: `${renderPct}%` }}
+   840→                />
+   841→              </div>
+   842→              <span className="font-mono text-[10px] text-cyan-300">
+   843→                {renderPct.toFixed(0)}%
+   844→              </span>
+   845→            </div>
+   846→          )}
+   847→
+   848→          {/* Footer row: timestamps + preview hint */}
+   849→          <div className="flex items-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
+   850→            {project.updatedAt && (
+   851→              <span className="flex items-center gap-1">
+   852→                <RefreshCcw className="size-3 text-slate-500" />
+   853→                {relativeTime(project.updatedAt)}
+   854→              </span>
+   855→            )}
+   856→
+   857→            {canPreview && !selectMode && (
+   858→              <span className="ml-auto flex items-center gap-1 text-violet-300">
+   859→                <Play className="size-3" />
+   860→                Preview
+   861→              </span>
+   862→            )}
+   863→          </div>
+   864→        </div>
+   865→
+   866→        {/* Play icon — hidden in select mode (replaced by checkbox) */}
+   867→        {!selectMode && canPreview && (
+   868→          <Play className="size-4 -rotate-0 shrink-0 self-center text-slate-600 transition-all group-hover:translate-x-0.5 group-hover:text-emerald-400" />
+   869→        )}
+   870→      </div>
+   871→    </motion.button>
+   872→  )
+   873→}
+   874→
+   875→// ─── Empty State ─────────────────────────────────────────────────────
+   876→
+   877→function EmptyState({
+   878→  hasFilters,
+   879→  onClear,
+   880→}: {
+   881→  hasFilters: boolean
+   882→  onClear: () => void
+   883→}) {
+   884→  return (
+   885→    <motion.div
+   886→      initial={{ opacity: 0, scale: 0.97 }}
+   887→      animate={{ opacity: 1, scale: 1 }}
+   888→      transition={{ duration: 0.3 }}
+   889→      className="flex flex-col items-center justify-center px-6 py-12 text-center"
+   890→    >
+   891→      <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-slate-900/60 border border-slate-800/60">
+   892→        <Film className="size-7 text-slate-500" />
+   893→      </div>
+   894→      <h4 className="mb-1 text-sm font-semibold text-slate-200">
+   895→        {hasFilters ? 'No projects match your filters' : 'No projects yet'}
+   896→      </h4>
+   897→      <p className="mb-4 max-w-xs text-xs text-slate-400">
+   898→        {hasFilters
+   899→          ? 'Try adjusting your search or clearing active filters to see more projects.'
+   900→          : 'Produce a video to see it appear here.'}
+   901→      </p>
+   902→      {hasFilters && (
+   903→        <Button
+   904→          variant="outline"
+   905→          size="sm"
+   906→          onClick={onClear}
+   907→          className="gap-1.5 border-slate-700/60 bg-slate-900/40 text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
+   908→        >
+   909→          <X className="size-3.5" />
+   910→          Clear filters
+   911→        </Button>
+   912→      )}
+   913→    </motion.div>
+   914→  )
+   915→}
+   916→
+   917→// ─── Loading Skeleton ────────────────────────────────────────────────
+   918→
+   919→function LoadingSkeleton() {
+   920→  return (
+   921→    <div className="grid grid-cols-1 gap-2 pr-2 lg:grid-cols-2">
+   922→      {Array.from({ length: 4 }).map((_, i) => (
+   923→        <div
+   924→          key={i}
+   925→          className="rounded-lg border border-slate-800/50 bg-slate-900/40 p-3 sm:p-4"
+   926→        >
+   927→          <div className="flex items-start gap-3">
+   928→            <Skeleton className="size-12 rounded-md" />
+   929→            <div className="flex flex-1 flex-col gap-2">
+   930→              <Skeleton className="h-4 w-3/4 rounded" />
+   931→              <div className="flex items-center gap-1.5">
+   932→                <Skeleton className="h-4 w-16 rounded" />
+   933→                <Skeleton className="h-4 w-12 rounded" />
+   934→                <Skeleton className="h-4 w-14 rounded" />
+   935→              </div>
+   936→              <Skeleton className="h-3 w-2/3 rounded" />
+   937→            </div>
+   938→          </div>
+   939→        </div>
+   940→      ))}
+   941→    </div>
+   942→  )
+   943→}
+   944→
+   945→// ─── Bulk Action Bar ────────────────────────────────────────────────
+   946→
+   947→interface BulkActionBarProps {
+   948→  selectedCount: number
+   949→  loadingAction: BulkActionType | null
+   950→  confirmDialog: null | 'delete' | 're-render'
+   951→  onConfirmDialogChange: (open: null | 'delete' | 're-render') => void
+   952→  onExecute: (
+   953→    action: BulkActionType,
+   954→    payload?: Record<string, unknown>,
+   955→  ) => Promise<void>
+   956→}
+   957→
+   958→function BulkActionBar({
+   959→  selectedCount,
+   960→  loadingAction,
+   961→  confirmDialog,
+   962→  onConfirmDialogChange,
+   963→  onExecute,
+   964→}: BulkActionBarProps) {
+   965→  const isLoading = (a: BulkActionType) => loadingAction === a
+   966→  const anyLoading = loadingAction !== null
+   967→
+   968→  return (
+   969→    <motion.div
+   970→      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+   971→      animate={{ opacity: 1, y: 0, scale: 1 }}
+   972→      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+   973→      transition={{ type: 'spring', stiffness: 320, damping: 28, mass: 0.7 }}
+   974→      className="sticky top-0 z-30 mb-3"
+   975→    >
+   976→      <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-violet-500/40 bg-slate-900/95 px-3 py-2 shadow-[0_8px_30px_-12px_rgba(139,92,246,0.4)] backdrop-blur-md">
+   977→        {/* Count badge */}
+   978→        <div className="flex items-center gap-1.5 rounded-md border border-violet-500/30 bg-violet-500/10 px-2 py-1 text-xs">
+   979→          <CheckSquare className="size-3.5 text-violet-300" />
+   980→          <span className="font-semibold text-violet-200">{selectedCount}</span>
+   981→          <span className="text-slate-400">selected</span>
+   982→        </div>
+   983→
+   984→        <Separator
+   985→          orientation="vertical"
+   986→          className="mx-1 h-5 bg-slate-700/60"
+   987→        />
+   988→
+   989→        {/* Approve (emerald) */}
+   990→        <Button
+   991→          type="button"
+   992→          variant="outline"
+   993→          size="sm"
+   994→          disabled={anyLoading}
+   995→          onClick={() => onExecute('approve')}
+   996→          className="h-7 gap-1.5 border-emerald-500/40 bg-emerald-500/10 px-2 text-xs text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200"
+   997→        >
+   998→          {isLoading('approve') ? (
+   999→            <Loader2 className="size-3 animate-spin" />
+  1000→          ) : (
+  1001→            <CheckCircle className="size-3" />
+  1002→          )}
+  1003→          Approve
+  1004→        </Button>
+  1005→
+  1006→        {/* Set Status (amber, dropdown) */}
+  1007→        <DropdownMenu>
+  1008→          <DropdownMenuTrigger asChild>
+  1009→            <Button
+  1010→              type="button"
+  1011→              variant="outline"
+  1012→              size="sm"
+  1013→              disabled={anyLoading}
+  1014→              className="h-7 gap-1.5 border-amber-500/40 bg-amber-500/10 px-2 text-xs text-amber-300 hover:bg-amber-500/20 hover:text-amber-200"
+  1015→            >
+  1016→              {isLoading('set-status') ? (
+  1017→                <Loader2 className="size-3 animate-spin" />
+  1018→              ) : (
+  1019→                <Tag className="size-3" />
+  1020→              )}
+  1021→              Set Status
+  1022→            </Button>
+  1023→          </DropdownMenuTrigger>
+  1024→          <DropdownMenuContent
+  1025→            align="start"
+  1026→            className="border-slate-700/60 bg-slate-900 text-slate-200"
+  1027→          >
+  1028→            <DropdownMenuLabel className="text-xs text-slate-400">
+  1029→              Set status for {selectedCount} project
+  1030→              {selectedCount === 1 ? '' : 's'}
+  1031→            </DropdownMenuLabel>
+  1032→            <DropdownMenuSeparator className="bg-slate-700/60" />
+  1033→            {BULK_STATUS_OPTIONS.map((opt) => (
+  1034→              <DropdownMenuItem
+  1035→                key={opt.value}
+  1036→                onSelect={() =>
+  1037→                  onExecute('set-status', { status: opt.value })
+  1038→                }
+  1039→                className="gap-2 text-xs focus:bg-slate-800/60"
+  1040→              >
+  1041→                <span
+  1042→                  className={cn('size-1.5 rounded-full', opt.dotClass)}
+  1043→                />
+  1044→                {opt.label}
+  1045→              </DropdownMenuItem>
+  1046→            ))}
+  1047→          </DropdownMenuContent>
+  1048→        </DropdownMenu>
+  1049→
+  1050→        {/* Re-render (violet) — with confirmation dialog */}
+  1051→        <Button
+  1052→          type="button"
+  1053→          variant="outline"
+  1054→          size="sm"
+  1055→          disabled={anyLoading}
+  1056→          onClick={() => onConfirmDialogChange('re-render')}
+  1057→          className="h-7 gap-1.5 border-violet-500/40 bg-violet-500/10 px-2 text-xs text-violet-300 hover:bg-violet-500/20 hover:text-violet-200"
+  1058→        >
+  1059→          {isLoading('re-render') ? (
+  1060→            <Loader2 className="size-3 animate-spin" />
+  1061→          ) : (
+  1062→            <RefreshCcw className="size-3" />
+  1063→          )}
+  1064→          Re-render
+  1065→        </Button>
+  1066→
+  1067→        {/* Delete (rose) — with confirmation dialog */}
+  1068→        <Button
+  1069→          type="button"
+  1070→          variant="outline"
+  1071→          size="sm"
+  1072→          disabled={anyLoading}
+  1073→          onClick={() => onConfirmDialogChange('delete')}
+  1074→          className="h-7 gap-1.5 border-rose-500/40 bg-rose-500/10 px-2 text-xs text-rose-300 hover:bg-rose-500/20 hover:text-rose-200"
+  1075→        >
+  1076→          {isLoading('delete') ? (
+  1077→            <Loader2 className="size-3 animate-spin" />
+  1078→          ) : (
+  1079→            <Trash2 className="size-3" />
+  1080→          )}
+  1081→          Delete
+  1082→        </Button>
+  1083→
+  1084→        {/* Confirmation dialog for delete / re-render */}
+  1085→        <AlertDialog
+  1086→          open={confirmDialog !== null}
+  1087→          onOpenChange={(open) => {
+  1088→            if (!open) onConfirmDialogChange(null)
+  1089→          }}
+  1090→        >
+  1091→          <AlertDialogContent className="border-slate-700/60 bg-slate-950 text-slate-100">
+  1092→            <AlertDialogHeader>
+  1093→              <AlertDialogTitle className="flex items-center gap-2 text-base">
+  1094→                {confirmDialog === 'delete' ? (
+  1095→                  <>
+  1096→                    <Trash2 className="size-4 text-rose-400" />
+  1097→                    Delete {selectedCount} project
+  1098→                    {selectedCount === 1 ? '' : 's'}?
+  1099→                  </>
+  1100→                ) : (
+  1101→                  <>
+  1102→                    <RefreshCcw className="size-4 text-violet-400" />
+  1103→                    Re-render {selectedCount} project
+  1104→                    {selectedCount === 1 ? '' : 's'}?
+  1105→                  </>
+  1106→                )}
+  1107→              </AlertDialogTitle>
+  1108→              <AlertDialogDescription className="text-sm text-slate-400">
+  1109→                {confirmDialog === 'delete'
+  1110→                  ? 'This will permanently delete the selected video projects along with their policy reviews and any associated uploads. The underlying scripts and video ideas will be preserved. This action cannot be undone.'
+  1111→                  : 'This will reset each selected project back to "producing" with render progress at 0%. The actual re-render will be triggered by the agent pipeline — your dashboard will refresh to show the new pending state.'}
+  1112→              </AlertDialogDescription>
+  1113→            </AlertDialogHeader>
+  1114→            <AlertDialogFooter>
+  1115→              <AlertDialogCancel className="border-slate-700/60 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-slate-100">
+  1116→                Cancel
+  1117→              </AlertDialogCancel>
+  1118→              <AlertDialogAction
+  1119→                onClick={() => {
+  1120→                  if (confirmDialog === 'delete') {
+  1121→                    onExecute('delete')
+  1122→                  } else if (confirmDialog === 're-render') {
+  1123→                    onExecute('re-render')
+  1124→                  }
+  1125→                }}
+  1126→                className={cn(
+  1127→                  confirmDialog === 'delete'
+  1128→                    ? 'border border-rose-500/50 bg-rose-500/20 text-rose-200 hover:bg-rose-500/30 hover:text-rose-100'
+  1129→                    : 'border border-violet-500/50 bg-violet-500/20 text-violet-200 hover:bg-violet-500/30 hover:text-violet-100',
+  1130→                )}
+  1131→              >
+  1132→                {confirmDialog === 'delete' ? (
+  1133→                  <>
+  1134→                    <XCircle className="size-3.5" />
+  1135→                    Delete
+  1136→                  </>
+  1137→                ) : (
+  1138→                  <>
+  1139→                    <RefreshCcw className="size-3.5" />
+  1140→                    Re-render
+  1141→                  </>
+  1142→                )}
+  1143→              </AlertDialogAction>
+  1144→            </AlertDialogFooter>
+  1145→          </AlertDialogContent>
+  1146→        </AlertDialog>
+  1147→      </div>
+  1148→    </motion.div>
+  1149→  )
+  1150→}
+  1151→
+  1152→export default VideoProjectExplorer
+  1153→

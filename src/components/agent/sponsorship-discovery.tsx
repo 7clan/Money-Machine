@@ -305,9 +305,9 @@ function SponsorshipCard({ data }: { data: Sponsorship }) {
               <span className="text-xs font-medium text-slate-400">Deliverables</span>
               <ul className="space-y-0.5">
                 {data.deliverables.map((d, i) => (
-                  <li key={i} className="flex items-center gap-1.5 text-xs text-slate-300">
-                    <div className="size-1 rounded-full bg-violet-400/60" />
-                    {d}
+                  <li key={i} className="flex items-start gap-1.5 text-xs text-slate-300">
+                    <div className="size-1 rounded-full bg-violet-400/60 mt-1.5 shrink-0" />
+                    <span className="min-w-0 break-words">{d}</span>
                   </li>
                 ))}
               </ul>

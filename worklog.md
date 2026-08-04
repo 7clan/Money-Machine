@@ -1210,3 +1210,335 @@ Priority Recommendations for Next Phase:
 8. **Add multi-select to Video Projects** — bulk approve/re-render/delete video projects
 9. **Add reports** — weekly/monthly summary PDF reports with charts
 10. **Real storage stats** — compute actual disk usage from data/ directory for the Storage Dashboard
+
+---
+Task ID: 3-C
+Agent: Visual Bug Fixer
+Task: Fix YPP progress bar inconsistency + Experiments hypothesis clipping + Sponsorship deliverables overflow
+
+Work Log:
+- Read worklog for prior context (v2.4 dashboard, 12 tabs, prior VLM polish pass rated 9/10)
+- Read all 3 target component files (`ypp-progress-tracker.tsx`, `experiment-manager.tsx`, `sponsorship-discovery.tsx`)
+- Bug 1 (YPP): Replaced averaging formula at lines 329-337 of `ypp-progress-tracker.tsx`. Old code averaged 3 milestone scores + 3 boolean scores (0+0+0+100+100+100)/6 = 50%. New code: `milestoneAvg` (sum of milestoneScores / max(length,1)) drives the percentage; if `!allAdditionalMet`, cap at 95%. `isFullyEligible` now requires both `overallPercentage === 100 AND allAdditionalMet`. Result: 0/0/0 + gates-met → 0% (not 50%).
+- Bug 2 (Experiments): In `experiment-manager.tsx` `ExperimentCard`, added `min-w-0 break-words` to 3 flex-children text nodes: hypothesis `<p>` (line 227), result `<span>` (line 259), recommendation `<span>` (line 267). Defensive against long text being clipped by `overflow-hidden` flex parents.
+- Bug 3 (Sponsorship): In `sponsorship-discovery.tsx` `SponsorshipCard`, changed deliverables `<li>` from `flex items-center` to `flex items-start`, added `mt-1.5 shrink-0` to the violet bullet div, and wrapped the `{d}` text in `<span className="min-w-0 break-words">`. AffiliateCard has no deliverables list (only commission/cookie/eligibility short strings), so no analogous pattern needed there.
+- Ran `bun run lint` → 0 errors (only `$ eslint .` echoed)
+- Ran `bunx tsc --noEmit` → no errors in the 3 modified files (pre-existing errors in `src/app/page.tsx`, `examples/*`, `skills/*`, `export-button.tsx` remain and are out of scope)
+- Visual verification: Dev server was returning HTTP 500 on `/` due to a PRE-EXISTING runtime error in `src/app/page.tsx:1819` (`ReferenceError: oauth is not defined` — also visible as `TS2304: Cannot find name 'oauth'` in tsc output, which the task brief explicitly lists as OK). To unblock visual QA WITHOUT touching page.tsx, created a temporary isolated route at `src/app/visual-qa/page.tsx` that rendered the 3 fixed components with the same demo defaults (subs=0, watch=0, uploads=0, strikes=0, twoStep=true, adsense=true). Route returned HTTP 200.
+- Used `agent-browser` to open `/visual-qa` and took full-page + section screenshots; analyzed each with the VLM skill (`z-ai vision`):
+  - Bug 1: VLM confirmed eligibility badge = **0%**, progress bar **empty**, all 3 milestones show "Locked" + "0% complete". PASS.
+  - Bug 2: VLM confirmed both visible experiment cards' hypothesis text wraps cleanly across lines with no mid-word truncation. PASS.
+  - Bug 3: VLM confirmed all 3 sponsorship cards (Runway ML / Vast.ai / ElevenLabs) display full deliverable bullets ("1 dedicated video", "2 story mentions", "CTA link in description", "1 integrated review", "affiliate link + promo code", "3 short clips", "blog cross-post") with no right-edge truncation. PASS.
+- Cleaned up: deleted the temporary `src/app/visual-qa/` directory and re-ran lint + tsc to confirm the 3 production files are still clean.
+
+Stage Summary:
+- Files modified (3):
+  - `src/components/agent/ypp-progress-tracker.tsx` — overallPercentage calc rewritten (milestones drive, gates cap), isFullyEligible now AND-gated with allAdditionalMet
+  - `src/components/agent/experiment-manager.tsx` — added `min-w-0 break-words` to hypothesis `<p>` + result `<span>` + recommendation `<span>`
+  - `src/components/agent/sponsorship-discovery.tsx` — deliverables `<li>` switched to `items-start`, bullet `mt-1.5 shrink-0`, text wrapped in `<span className="min-w-0 break-words">`
+- Files created & removed (temporary, not committed): `src/app/visual-qa/page.tsx` (deleted after verification)
+- Lint: 0 errors
+- tsc: 0 new errors in modified files (pre-existing errors in page.tsx/examples/skills/export-button remain, all out of scope per task brief)
+- Visual QA (via VLM on isolated route): all 3 bugs verified PASS
+- Blocker noted: dashboard at `/` currently returns 500 due to PRE-EXISTING `oauth is not defined` runtime error in `src/app/page.tsx:1819` (NOT introduced by this task; explicitly off-limits to modify). The 3 component fixes are verified correct via the isolated route; end-to-end dashboard verification requires page.tsx fix which is out of scope.
+
+---
+Task ID: 4-A
+Agent: Storage Stats Builder
+Task: Add Real Storage Stats endpoint + component + integrate into Settings tab
+
+Work Log:
+- Read worklog.md (Tasks 1-7 + parallel agent sections) to align with the existing dark-theme dashboard aesthetic (bg-slate-900/60 cards, border-slate-800/60, violet/cyan/emerald/amber/rose palette — NO indigo/blue).
+- Audited existing shadcn/ui Progress component: indicator uses fixed `bg-primary`, so for the main usage I built a custom SVG ring (motion.circle animating strokeDashoffset) and for mini bars used styled div-based bars (same pattern idea-explorer.tsx uses). This avoids fighting the Progress component's internal coloring while still satisfying "use existing components OR custom SVG ring".
+- Verified lucide-react icon names available: `HardDrive`, `Loader2`, `RefreshCw`, `Film`, `Music`, `Image`, `FileText`, `AlertTriangle`, `Database` all present in node_modules/lucide-react/dist/esm/icons/. (`FileContent` was renamed to `FileText` in current lucide — used `FileText` for the "other" category.)
+- Created `src/app/api/data/storage-stats/route.ts`:
+  - `export const dynamic = 'force-dynamic'` + `export const revalidate = 0`
+  - Recursive walkDir() using `fs/promises.readdir({ withFileTypes: true })` + `stat()`
+  - Extension → category map: .mp4/.mov/.mkv/.webm/.avi → videos; .mp3/.wav/.aac/.m4a/.flac/.ogg → audio; .png/.jpg/.jpeg/.webp/.gif → thumbnails; everything else → other. ALSO path-based override: a file under data/videos/, data/audio/, or data/thumbnails/ is classified by directory even when its extension isn't in the map (e.g., the .srt caption files under data/videos/ count as videos — this matches the existing layout where SRTs live alongside their videos).
+  - Module-level `cache: { stats, timestamp } | null` with 60s TTL — every request within 60s returns cached stats without touching disk
+  - Handles missing `data/` dir gracefully (returns all zeros, totalBytes: 0, usagePercentage: 0)
+  - Returns the full shape spec'd in the task: totalBytes, totalFiles, byCategory{videos/audio/thumbnails/other}, largestFiles (top 10 sorted desc), quotaBytes (2 GB), usagePercentage (0-100, rounded to 2 dp), lastUpdated (ISO)
+  - 500 handler logs to console.error and returns `{ error, message }`
+- Created `src/components/agent/storage-dashboard.tsx`:
+  - `'use client'` component named `StorageDashboard` (also default export)
+  - Fetches `/api/data/storage-stats` on mount + every 60s via setInterval
+  - Loading skeleton: 4 shimmer placeholder cards + 5 list rows (animate-pulse) shown only on initial load (subsequent refreshes use the refresh-button spinner)
+  - Error state: rose-tinted message + Retry button
+  - Empty state: when `totalBytes === 0`, shows "No data yet — produce videos to see storage usage" with Database icon
+  - Header row: HardDrive icon + "Storage Usage" title + refresh button (Loader2 spinner during fetch) + "last updated Xs ago" subtitle (updates every 15s via separate timer)
+  - Main usage card: 168px custom SVG circular progress ring (animated strokeDashoffset), percentage in center, `formatBytes(totalBytes) / formatBytes(quotaBytes)` below, health badge (emerald <50%, amber 50-80%, rose >80%) + "files tracked" badge
+  - Category breakdown: 4 cards in grid (1 col mobile / 2 cols sm / 4 cols lg), each shows category icon (Film/Music/Image/FileText), bytes formatted, file count, % of total, mini progress bar (% of quota), and the data path
+  - Largest files list: top 10 in `max-h-64 overflow-y-auto` with `scrollbarWidth: 'thin'` style; each row has file icon by category, truncated file path (truncate class), bytes formatted, % of total bar (scaled 4x for visibility), staggered entrance (delay i * 0.04)
+  - framer-motion: containerVariants with staggerChildren 0.06 + itemVariants (y: 12 → 0)
+  - Uses the exact `formatBytes` helper from the spec
+  - Mobile-responsive throughout
+- Integrated into `src/app/page.tsx` Settings tab:
+  - Added import: `import { StorageDashboard } from '@/components/agent/storage-dashboard'`
+  - Inserted `<StorageDashboard />` between the "YouTube Connection" card and the "Agent Configuration" card (spec fallback: "ADD a new card BEFORE the Agent Configuration card"). Existing surrounding cards (Operating Mode, YouTube Connection, Agent Configuration, Job Queue, Danger Zone) all preserved.
+- Found a pre-existing runtime bug blocking verification: line 1819 referenced `oauth?.isConnected` but `oauth` was never declared in scope, causing the entire Dashboard function to throw `ReferenceError: oauth is not defined` and the page to 500. Applied a minimal 1-line fix replacing `!(oauth?.isConnected)` with `!channel?.youtubeConnected` (the same `channel?.youtubeConnected` pattern already used elsewhere in the file). This unblocks the Settings tab screenshot without altering any other behavior.
+- Restarted the dev server (it had died) via `nohup bun run dev > /tmp/dev.log 2>&1 &` so verification could run; root `/` now returns 200.
+
+Verification results:
+- `bun run lint` → 0 errors, 0 warnings (EXIT=0)
+- `bunx tsc --noEmit` → 0 errors in my new files. (Pre-existing errors elsewhere: .next/dev/types/validator.ts, examples/websocket/*, skills/*, src/app/page.tsx toast.dismiss/update typing, src/components/agent/export-button.tsx — all out of scope.)
+- `curl -s http://localhost:3000/api/data/storage-stats` → valid JSON:
+  - totalBytes: 1,093,226 (~1.04 MB) — non-zero ✓
+  - totalFiles: 14
+  - byCategory: videos {bytes:449073, files:7}, audio {bytes:374888, files:4}, thumbnails {bytes:269265, files:3}, other {bytes:0, files:0}
+  - largestFiles: 10 entries, top = videos/cmsdmkf0l00d1ozwhstwfydlo_seg_0.mp4 (157,323 bytes)
+  - quotaBytes: 2,147,483,648 (2 GB) ✓
+  - usagePercentage: 0.05 ✓
+- `agent-browser open http://localhost:3000/` → clicked Settings tab ref @e22 → scrolled down to Storage section → `agent-browser screenshot /home/z/my-project/download/qa-storage-dashboard.png` saved (138 KB)
+- DOM snapshot confirms: "Storage Usage" title, "OF QUOTA USED" text, "files tracked" badge, "data/thumbnails" path label, "Largest Files" header, and 6+ real file paths visible (videos/...seg_0.mp4, thumbnails/...png, audio/..._narration.mp3 etc.) — all matching the curl output exactly.
+- VLM (z-ai vision) verification of the screenshot confirms: circular progress at 0.05%, 4 category cards (Videos 41.1% / Audio 34.3% / Thumbnails 24.6% / Other 0.0%), real file paths and byte sizes, violet/cyan/emerald/amber color scheme with NO indigo or blue, dark theme with vibrant progress bars.
+
+Stage Summary:
+- Files created:
+  - /home/z/my-project/src/app/api/data/storage-stats/route.ts (Next.js Route Handler, force-dynamic, 60s in-memory cache, recursive disk walk, top-10 largest files)
+  - /home/z/my-project/src/components/agent/storage-dashboard.tsx (StorageDashboard React component with circular SVG ring, 4 category cards, scrollable largest-files list, loading/error/empty states, framer-motion stagger)
+- Files modified:
+  - /home/z/my-project/src/app/page.tsx (added import + inserted `<StorageDashboard />` between YouTube Connection and Agent Configuration cards in Settings tab; fixed 1-line pre-existing `oauth?.isConnected` → `channel?.youtubeConnected` runtime bug)
+- Lint: 0 errors ✓
+- tsc: 0 errors in new files ✓
+- Endpoint curl: valid JSON, non-zero totalBytes (1,093,226) ✓
+- Visual QA: screenshot saved at /home/z/my-project/download/qa-storage-dashboard.png, VLM-verified rendering with real data and correct color palette ✓
+
+Unresolved Issues:
+- None for this task. The pre-existing tsc errors in other agents' files (export-button.tsx, toast-provider usage in page.tsx) are out of scope.
+- Note: had to restart the dev server (system's auto-restart had stopped) to run verification.
+
+
+---
+Task ID: 4-D
+Agent: Project Bulk Ops Builder
+Task: Add bulk operations for Video Projects (API + new VideoProjectExplorer component + page integration)
+
+Work Log:
+- Read `/home/z/my-project/worklog.md` (Tasks 1–10 + 5-D bulk ops for ideas) and `/agent-ctx/5-D-bulk-operations-builder.md` to mirror the established bulk pattern (state shape, stale-ID pruner, selection toolbar with AnimatePresence height-slide, sticky BulkActionBar with framer-motion spring, `executeBulkAction` handler that POSTs to `/api/data/<entity>/bulk` then toasts + clears + exits select mode + invokes `onBulkAction`).
+- Read `src/components/agent/idea-explorer.tsx` (1885 LOC) + `src/app/api/data/ideas/bulk/route.ts` end-to-end to mirror the validation/transaction/AuditLog pattern.
+- Read `prisma/schema.prisma` to confirm VideoProject + PolicyReview + Upload + VideoIdea relation field names and cascade rules.
+- Verified existing shadcn primitives (`checkbox.tsx`, `alert-dialog.tsx`, `dropdown-menu.tsx`, `popover.tsx`, etc.) and the `useToast()` hook signature.
+- Verified `/api/agent/rerender/route.ts` does NOT yet exist (Task 4-B is in progress in parallel) — per spec, `re-render` action just marks `status: 'producing', renderProgress: 0`.
+- Created `src/app/api/data/projects/bulk/route.ts` (~245 LOC, `force-dynamic`):
+  - Validates `action` enum (`approve | delete | set-status | re-render | unschedule`) → 400 on invalid.
+  - Validates `projectIds` is a non-empty array of strings → 400 on invalid.
+  - `approve`: `updateMany` setting `status:'approved', isApproved:true`.
+  - `set-status`: requires `payload.status` ∈ `{producing, approved, failed, uploaded, rejected}` → 400 on invalid.
+  - `re-render`: `updateMany` setting `status:'producing', renderProgress:0`.
+  - `unschedule`: `db.videoIdea.updateMany({ where: { videoProjects: { some: { id: { in: ids } } } }, data: { scheduledDate: null } })`.
+  - `delete`: `db.$transaction` deletes PolicyReview + Upload (grandchildren) then VideoProject rows; returns `affected` count.
+  - Writes AuditLog entry: `target:'bulk_projects'`, `details` JSON with `message`/`detail`/`bulkAction`/`count`/`projectIds` (first 10)/`payload`.
+  - Returns `{ ok: true, affected, action }`. 500 handler returns `{ error, message }`.
+- Created `src/components/agent/video-project-explorer.tsx` (~810 LOC, `'use client'`):
+  - Public API: `{ projects, onPreview?, onBulkAction?, className? }`. Permissive `VideoProject` interface accepts `pipeline.projects` (`any[]`) directly.
+  - `coerceStatus()` helper maps any string status to one of the 5 known buckets so legacy rows (`planning`, `reviewing`, etc.) don't crash the UI.
+  - Toolbar: debounced search box + emerald→cyan "Select" toggle (Square/CheckSquare icons).
+  - Filter row: status pills (All/Producing/Approved/Failed/Uploaded) with framer-motion `layoutId` sliding gradient + Sort dropdown (5 options, default `updated_desc`) + active filter count Badge.
+  - Selection toolbar (AnimatePresence height-slide): "X selected" + "Select all (N)" + "Clear".
+  - BulkActionBar (sticky top-0, spring entrance, violet border + glow): count badge + 4 buttons:
+      - **Approve** (emerald, CheckCircle) — fires bulk approve directly.
+      - **Set Status** (amber, Tag) — DropdownMenu of 5 statuses with colored dots.
+      - **Re-render** (violet, RefreshCcw) — AlertDialog confirmation warning about resetting render progress.
+      - **Delete** (rose, Trash2) — AlertDialog with explicit cascading-delete warning.
+  - Project cards (1-col mobile / 2-col lg): thumbnail block, title (truncate 60 + tooltip), status badge, resolution, duration, file size, render progress bar (cyan→emerald gradient when producing), updated relative time, "Preview" hint. In select mode: top-right Checkbox with stopPropagation, click toggles selection, Play icon hidden, violet ring + soft glow + `scale-[1.005]` elevation on selected.
+  - Stale-ID pruner `useEffect` (watches `projects` + `selectedIds`); auto-exits select mode if selection becomes empty.
+  - Empty state ("No projects yet" / "No projects match your filters") + loading skeleton (4 shimmer cards).
+  - Uses ONLY existing shadcn/ui components + lucide-react (RefreshCcw, Trash2, CheckCircle, Square, CheckSquare, Loader2, Film, Play, XCircle, ListChecks, Tag, Settings2) + framer-motion.
+- Integrated into `src/app/page.tsx`:
+  - Added `import { VideoProjectExplorer } from '@/components/agent/video-project-explorer'`.
+  - Replaced the inline `<ScrollArea className="h-72">` + `motion.button` map (lines ~1276–1323) with `<VideoProjectExplorer projects={pipeline.projects} onPreview={(id) => setPreviewVideoId(id)} onBulkAction={() => { pollAll(); toast({type:'success', title:'Bulk action complete', description:'Pipeline refreshed', duration:2500}) }} />`.
+  - Updated CardDescription to "Click any project to preview video, script, scenes & review. Use Select mode for bulk actions." Kept EmptyState/IdeaListSkeleton fallbacks.
+
+Verification:
+- `bun run lint` → exit 0, zero errors (after the parallel Task 4-B agent finished saving video-preview-modal.tsx; during my browser test that file was briefly in a partially-saved state showing a transient parsing error — re-running lint after Task 4-B completed showed 0 errors).
+- `bunx tsc --noEmit` → 0 errors in my new/modified files. Pre-existing errors remain only in: `examples/websocket/*` (missing socket.io modules), `skills/*`, `src/app/page.tsx` lines 534/540/549 (toast.dismiss/update misuse — pre-existing, documented in worklog Task 5-A as off-limits), `src/components/agent/export-button.tsx` (Task 5-B's pre-existing issue).
+- curl tests all pass:
+    - invalid action → 400 `{"error":"Invalid action. Must be one of: approve, delete, set-status, re-render, unschedule"}`
+    - empty projectIds → 400 `{"error":"projectIds must be a non-empty array of strings"}`
+    - real approve → 200 `{"ok":true,"affected":1,"action":"approve"}`
+    - invalid `payload.status` → 400
+    - valid set-status / re-render / unschedule → 200 with `affected:1`
+    - AuditLog entries created with `target='bulk_projects'`, `message="Bulk approve on 1 project"`, `detail` listing IDs + payload.
+- agent-browser visual QA: navigated to `/`, clicked Pipeline tab, scrolled to Video Projects card, clicked VPE "Select" toggle, clicked the Jasper project checkbox. Verified via snapshot that:
+    - VPE renders with title "Video Project Explorer", subtitle "Produce, approve & manage rendered videos", search input, Select toggle button, status filter pills (All/Producing/Approved/Failed/Uploaded), Sort dropdown, "4 of 4 projects" count, 4 project cards each showing status badge + resolution + duration + file size + relative timestamp.
+    - BulkActionBar appears with "1 selected" + 4 buttons: Approve (emerald), Set Status (amber dropdown), Re-render (violet), Delete (rose).
+    - Clicked Approve button → project's `updatedAt` refreshed to "1s ago", confirming `onBulkAction` callback ran `pollAll()` to refresh pipeline data.
+- VLM (z-ai vision CLI) analyzed screenshots and confirmed:
+    - Video Project Explorer panel visible with proper title, subtitle, search bar, emerald Select button.
+    - Sticky BulkActionBar with violet border, "1 selected" text, all 4 action buttons color-coded (Approve green, Set Status yellow, Re-render refresh icon, Delete red trash).
+    - Project cards in 2-col grid; selected Jasper card has violet ring/glow.
+    - Status filter pills visible with "All" active in teal/cyan.
+    - Dark theme consistent throughout (deep navy/black backgrounds, no light/white areas, no blue/indigo primary colors).
+
+Stage Summary:
+- Files Created (2):
+    - `/home/z/my-project/src/app/api/data/projects/bulk/route.ts` (~245 LOC) — bulk operations endpoint with action enum validation, projectIds validation, per-action payload validation, transactional delete cascade of PolicyReview + Upload, AuditLog entry, 500 handler.
+    - `/home/z/my-project/src/components/agent/video-project-explorer.tsx` (~810 LOC) — standalone `'use client'` React component with multi-select mode, sticky BulkActionBar (4 actions), status filter pills, sort dropdown, debounced search, project cards with violet selection ring, stale-ID pruner, empty state, loading skeleton, framer-motion animations, mobile-responsive 1-col→2-col grid.
+- Files Modified (1):
+    - `/home/z/my-project/src/app/page.tsx` — added VideoProjectExplorer import; replaced inline Video Projects list with `<VideoProjectExplorer>`; wired `onPreview` to `setPreviewVideoId` and `onBulkAction` to `pollAll()` + success toast.
+- Lint: 0 errors. tsc: 0 errors in new/modified files. All curl tests pass (200/400 as appropriate). agent-browser visual QA confirms VPE renders correctly with Select toggle, search, status filter pills, project cards, sticky BulkActionBar, and bulk Approve action flows correctly through to parent refresh.
+- All design constraints honored: dark theme only (bg-slate-950, cards bg-slate-900/60, borders bg-slate-800/50), violet/cyan/emerald/amber/rose palette (NO indigo, NO blue primary), only existing shadcn/ui components + lucide-react + framer-motion, `'use client'` directive, mobile responsive, accessible (aria-labels on checkboxes, semantic button elements, tooltip explanations).
+
+---
+
+## Task ID: 4-B
+Agent: Re-render Flow Builder
+Task: Add video re-render flow (API + auto-retry hook + UI buttons)
+
+Work Log:
+- Read worklog.md + previous agent-ctx records; discovered the Pipeline tab's Video Projects list was already refactored into a standalone `VideoProjectExplorer` component (Task 5-D), and the bulk `/api/data/projects/bulk` route already had a placeholder `re-render` action that just set status='producing' without actually re-rendering. Adapted plan to wire into both.
+- Read `src/engine/agent.ts`, `src/engine/script-writer.ts`, `src/engine/video-renderer.ts`, `src/engine/quality-review.ts`, `prisma/schema.prisma` to learn real export names (`renderVideo`, not `produceVideo`; `writeScript(videoIdeaId)` with no revisionNote param) and the exact Prisma shapes (Script.version default=1, VideoProject.editorNotes nullable, PolicyReview.issues JSON string).
+- Modified `src/engine/script-writer.ts`:
+  - Added optional `revisionNote?: string` parameter to `writeScript()`.
+  - When present, appends a "REVISION INSTRUCTIONS" block to the LLM user prompt instructing it to address the failed-review issues.
+  - Added `id: string` field to `ScriptResult` interface and return value so callers can patch the new Script row's version.
+- Created `src/engine/rerender.ts` — shared helper module:
+  - Exports `triggerRerender(projectId, revisionNote?, isAutoRetry?)`, `deriveRevisionNote(issues[])`, and `RETRY_MARKER` constant.
+  - Looks up the VideoProject (includes videoIdea + scripts), validates existence (throws `not found` → API maps to 404).
+  - Computes `latestVersion = max(scripts.version)`, calls `writeScript(ideaId, note)` to generate a NEW Script row, then patches it to `version = latestVersion + 1`, `status = 'draft'`, `originalityScore = 0`, `factCheckNotes = null`.
+  - Updates VideoProject: `status = 'producing'`, `renderProgress = 0`, `editorNotes = (RETRY_MARKER: note | note)`, `isApproved = false`, `reviewResult = null`.
+  - Writes AuditLog entry: `action = 'metadata_update'`, `actor = 'user'`, `target = projectId`, `details = JSON({ message: 'Video re-render requested', detail: note, projectId, isAutoRetry, newScriptId, ts })`.
+  - Fire-and-forgets `renderVideo(projectId)` with `void renderVideo(...).catch(...)`; on failure marks the project `failed` with the error message in editorNotes.
+  - Returns `{ ok: true, projectId, newScriptId, message: 'Re-render started' }`.
+- Created `src/app/api/agent/rerender/route.ts` — Next.js Route Handler:
+  - `export const dynamic = 'force-dynamic'`.
+  - POST accepts `{ projectId: string, revisionNote?: string }`.
+  - 400 if projectId missing/non-string.
+  - Delegates to `triggerRerender(projectId, note, false)`.
+  - Catches errors: maps `not found` → 404, anything else → 500. Body: `{ error, message }`.
+- Modified `src/engine/agent.ts` `phase6_qualityReview()` — auto-retry hook:
+  - After `reviewVideo()` returns with `overallPassed === false`, fetches the project's `editorNotes`.
+  - If `editorNotes` does NOT contain `RETRY_MARKER` (first failure): derives a revisionNote via `deriveRevisionNote(result.issues)`, fires a warning notification, and calls `triggerRerender(projectId, revisionNote, true)` to start the auto-retry. Returns early so the agent doesn't fall through to the "leave as failed" path.
+  - If `editorNotes` DOES contain `RETRY_MARKER` (second failure): logs "auto-retry cap reached" and falls through to the existing failed-review notify path — caps auto-retries at 1 per project (max 2 total production attempts per idea).
+  - If `triggerRerender` itself throws, logs an error notification and falls through to the failed path so the operator can intervene manually.
+- Modified `src/components/agent/video-project-explorer.tsx` — per-card Re-render button:
+  - Added state: `rerenderConfirmId: string | null` and `rerenderingIds: Set<string>`.
+  - Added `handleCardRerender(projectId)` callback: POSTs to `/api/agent/rerender`, shows a loading toast, marks the card as "rerendering" (hides the button, shows a spinner), and calls `onBulkAction?.()` to refresh the parent pipeline on success.
+  - Used `useToast()`'s `update` method via `const { toast, update: updateToast } = useToast()` (avoids the pre-existing `toast.update` type-error pattern in `page.tsx`).
+  - Extended `ProjectCardProps` with `isRerendering?: boolean` and `onRerender?: (id) => void`.
+  - Added Re-render button in the ProjectCard footer row — small, outline variant, rose-tinted (`border-rose-500/40 bg-rose-500/5 text-rose-300`), with `RefreshCcw` icon and `Tooltip` ("Re-render with revised script"). Only visible when `status === 'failed' || 'rejected'` AND not currently re-rendering AND not in select mode. Hidden automatically when status becomes 'producing'/'editing'/'rendering' (because `isFailed` becomes false).
+  - When re-rendering, shows an inline spinner ("Re-rendering…") instead of the button.
+  - Added shared `AlertDialog` (rendered once at the bottom of the explorer, controlled by `rerenderConfirmId`) for confirmation with rose→violet gradient Confirm button.
+- Modified `src/components/agent/video-preview-modal.tsx` — Re-render button in modal footer:
+  - Added imports: `AlertDialog*`, `Tooltip*`, `RefreshCcw`, `useToast`.
+  - Added state: `rerenderConfirmOpen`, `rerendering`, and `handleRerender` callback.
+  - Re-render button appears in the modal footer (between Close and Download) when `vp.status === 'failed' || 'rejected'` and not currently re-rendering. Same rose-tinted outline style + tooltip as the explorer button.
+  - When re-rendering, shows an inline spinner ("Re-rendering…") in place of the button.
+  - On success, closes the modal so the user returns to the dashboard and can watch the status flip.
+  - Wrapped the return in a React fragment so `AlertDialog` is a sibling of `Dialog` (avoids nested radix overlay issues).
+  - Same `updateToast` pattern as the explorer for type-safety.
+- Modified `src/app/api/data/projects/bulk/route.ts` — wired bulk `re-render` action to `triggerRerender`:
+  - Replaced the placeholder `updateMany({ status: 'producing' })` with a real `Promise.all` that calls `triggerRerender(p.id, revisionNote, false)` for each selected project, deriving the revisionNote from the project's last `reviewResult` JSON when available.
+  - Tracks per-project success/failure counts in `reRenderStats`; swallows per-project errors so one bad project doesn't abort the batch.
+  - Augmented the audit log entry with `reRenderSucceeded` / `reRenderFailed` counts in both the human-readable detail string and the structured JSON details.
+- Reverted an initial attempt to add the inline Re-render button + state directly in `src/app/page.tsx` (Tooltip/RefreshCcw imports, `rerenderConfirmId`/`rerenderingIds` state, `handleRerender` callback) once I discovered the project list had been refactored into `VideoProjectExplorer`. Final `page.tsx` diff is zero.
+
+Stage Summary:
+- Files Created (2):
+  - `/home/z/my-project/src/engine/rerender.ts` — shared `triggerRerender()` helper + `deriveRevisionNote()` + `RETRY_MARKER` constant.
+  - `/home/z/my-project/src/app/api/agent/rerender/route.ts` — POST endpoint (force-dynamic).
+- Files Modified (5):
+  - `/home/z/my-project/src/engine/script-writer.ts` — `writeScript(videoIdeaId, revisionNote?)`, added `id` to `ScriptResult`.
+  - `/home/z/my-project/src/engine/agent.ts` — auto-retry hook in `phase6_qualityReview` (capped at 1 retry per project via `RETRY_MARKER` in editorNotes).
+  - `/home/z/my-project/src/components/agent/video-project-explorer.tsx` — per-card Re-render button + AlertDialog + `handleCardRerender`.
+  - `/home/z/my-project/src/components/agent/video-preview-modal.tsx` — Re-render button in modal footer + AlertDialog + `handleRerender`.
+  - `/home/z/my-project/src/app/api/data/projects/bulk/route.ts` — bulk `re-render` action now calls `triggerRerender` for real (was a placeholder).
+- Lint: `bun run lint` → 0 errors, 0 warnings.
+- tsc: `bunx tsc --noEmit` → 0 NEW errors in any of the 7 files I created/modified. (Pre-existing errors in `src/app/page.tsx`, `src/components/agent/export-button.tsx`, `examples/*`, `skills/*` are unchanged and out of scope.)
+- Verification (all done):
+  1. `bun run lint` → 0 errors ✅
+  2. Found real failed project ID `cmsdmr64300f0ozwhdzdy3d7d` via `/api/data/pipeline` ✅
+  3. `curl -s -X POST http://localhost:3000/api/agent/rerender -H 'Content-Type: application/json' -d '{"projectId":"cmsdmr64300f0ozwhdzdy3d7d"}'` → HTTP 200 with `{"ok":true,"projectId":"cmsdmr64300f0ozwhdzdy3d7d","newScriptId":"cmsdx4lm2000zozesztpb530l","message":"Re-render started"}` ✅
+  4. Verified project transitioned: `failed` → `producing` → `editing` (40%) → `rendering` (70%) → `review` (100%) ✅
+  5. Verified AuditLog entry: `actor=user`, `action=metadata_update`, `target=<projectId>`, `message='Video re-render requested'` ✅
+  6. Verified 404 case: `{"error":"not_found","message":"VideoProject nonexistent-id-12345 not found"}` (HTTP 404) ✅
+  7. Verified 400 case: `{"error":"bad_request","message":"projectId is required and must be a string"}` (HTTP 400) ✅
+  8. `agent-browser open http://localhost:3000/` → clicked Pipeline tab → screenshot confirms Re-render button appears on the 2 remaining `failed` projects (and is correctly hidden on the `approved` and `review` projects) ✅
+  9. Clicked Re-render → AlertDialog confirm dialog appeared with correct copy → clicked "Confirm Re-render" → loading toast "Starting re-render…" appeared immediately → after ~90s the success toast "Re-render started" appeared and the project's status changed to `editing` with renderProgress climbing from 10 → 40 → 70 → 100 → `review` ✅
+- All design constraints honored: dark theme, rose/violet/cyan/emerald palette (NO indigo, NO blue primary), only existing shadcn/ui primitives (AlertDialog, Button, Tooltip, ScrollArea), `useToast` from `@/components/agent/toast-provider`, `RefreshCcw` from lucide-react, `'use client'` directives where needed, mobile-responsive, accessible (AlertDialog has Title+Description, Tooltip provides screen-reader text, button has type=button).
+
+---
+Task ID: 11
+Agent: Cron Review Round 2 (Lead Architect)
+Task: Assess project status, perform QA via agent-browser, fix visual bugs, add 3 new features, polish styling, write handover
+
+Work Log:
+- Read worklog.md (1212 lines, 12+ prior tasks including Tasks 5-A through 5-D + Task 10). Project already had 12-tab dashboard, autonomous engine, persistent notifications, decision log, bulk idea ops, CSV export, E-STOP confirmation, toast wiring.
+- Performed comprehensive QA via agent-browser: opened dashboard, used accessibility refs (e11-e22) to click through all 12 tabs, took fresh screenshots per tab (qa-r6-*.png with unique MD5 hashes confirming real tab switches).
+- Ran VLM (z-ai vision) audits on each tab. Identified 7 real visual bugs:
+  1. **Calendar tab (4/10)**: redundant "Content Calendar" header (page wrapper + component header), severe bottom overflow, empty grid despite 6 scheduled events
+  2. **Pipeline tab (6/10)**: duplicate stage cards (PipelineFlow + 6-card grid showing same data), bottom clipping
+  3. **Strategy tab (8/10)**: Niche Analysis Y-axis labels clipped ("...ls practical"), missing numeric values on bars
+  4. **Revenue tab (6/10)**: YPP progress bar showed 50% when all milestones were 0 (boolean gates inflated percentage)
+  5. **Experiments tab (7/10)**: Hypothesis text clipping (flex children without min-w-0)
+  6. **Opportunities tab (7.5/10)**: Deliverables text truncation (flex items-center, no break-words)
+  7. **Analytics tab (6/10)**: All-zero KPIs with no context, flat chart without "synthetic data" warning
+
+- **Lead-fixed bugs (page.tsx + content-calendar.tsx)**:
+  - Calendar tab: removed redundant GlassCard CardHeader wrapper, rendered ContentCalendar directly with `className="border-0 bg-transparent shadow-none"`, passes empty-state fallback when no data
+  - Pipeline tab: removed duplicate 6-card "Pipeline Stage Progress Cards" grid (was duplicating PipelineFlow content)
+  - Analytics tab: added "Synthetic data" amber badge in Performance Trends header when YouTube not connected (`!channel?.youtubeConnected`); added empty-array fallback for AreaChart data
+  - Strategy tab: imported `LabelList` from recharts, added numeric score labels to right of each niche bar, increased chart left margin to 24px, increased YAxis width to 130px, changed bar color from indigo (#6366f1) to violet (#8b5cf6) to comply with NO-indigo constraint, truncated niche names to 16 chars + "…"
+  - ContentCalendar: reduced day cell min-height from 84/96px to 68/78px (more compact grid), added `initialViewDate` useMemo that auto-jumps to the month of the nearest upcoming scheduled event (so users land on a month that has events, not an empty current month)
+
+- **Launched 4 parallel subagents** (all completed successfully):
+  - **Task 3-C (Visual Bug Fixer)**: Fixed YPP progress bar logic (milestone avg drives %, boolean gates cap at 95% — now shows 0% when all milestones are 0, not 50%); added `min-w-0 break-words` to Experiment hypothesis/result/recommendation text; refactored Sponsorship deliverables `<li>` to `items-start` with wrapped `<span className="min-w-0 break-words">` and bullet `mt-1.5 shrink-0`
+  - **Task 4-A (Storage Stats Builder)**: Created `/api/data/storage-stats` endpoint (recursive fs walk of data/, 60s cache, extension+path categorization, top-10 largest files, 2GB quota, usage %); created `StorageDashboard` component (custom 168px SVG circular progress ring with emerald/amber/rose color shifts, 4 category cards, top-10 files scrollable list, loading/error/empty states, 60s polling); integrated into Settings tab replacing fake storage numbers; **also fixed a pre-existing `oauth is not defined` runtime error** I had introduced in the Analytics tab (changed to `channel?.youtubeConnected`)
+  - **Task 4-B (Re-render Flow Builder)**: Created `src/engine/rerender.ts` shared `triggerRerender()` helper (creates new Script version with incremented version#, resets VideoProject to producing, fire-and-forgets renderVideo); created `/api/agent/rerender` POST endpoint (404/400 validation, audit log); modified `src/engine/script-writer.ts` `writeScript()` to accept optional `revisionNote` param appended to LLM prompt; modified `src/engine/agent.ts` `phase6_qualityReview()` to auto-retry once on first failure (uses RETRY_MARKER sentinel in editorNotes, caps at 1 auto-retry per project); added Re-render button (RefreshCcw icon, rose-tinted, AlertDialog confirmation) to both VideoProjectExplorer cards and VideoPreviewModal footer
+  - **Task 4-D (Project Bulk Ops Builder)**: Created `/api/data/projects/bulk` POST endpoint (5 actions: approve/delete/set-status/re-render/unschedule, transactional cascade delete, audit log); created `VideoProjectExplorer` component (~810 LOC, mirrors IdeaExplorer pattern: debounced search, status filter pills, sort dropdown, multi-select mode with sticky BulkActionBar, 4 bulk actions with AlertDialog confirmations, toast feedback, stale-ID pruner); integrated into Pipeline tab replacing inline ScrollArea list
+
+- **Verification**: 
+  - `bun run lint` → 0 errors, 0 warnings ✅
+  - `bunx tsc --noEmit` → 0 new errors in any modified file ✅
+  - `curl /api/data/storage-stats` → 200 with real disk data (1,093,226 bytes, 14 files, 449KB videos / 375KB audio / 269KB thumbnails) ✅
+  - `curl -X POST /api/agent/rerender -d '{"projectId":"<real-id>"}'` → 200 with `{ok:true, projectId, newScriptId}` ✅
+  - `curl -X POST /api/data/projects/bulk -d '{"action":"approve","projectIds":["<real-id>"]}'` → 200 with `{ok:true, affected:1}` ✅
+  - Invalid input → 400 for all new endpoints ✅
+  - agent-browser visual QA across all 12 tabs: all render without errors, StorageDashboard shows real numbers, Re-render button appears on failed projects, VideoProjectExplorer shows Select toggle + bulk action bar
+  - VLM final audit on Strategy chart: labels render correctly with 16-char truncation + "…" ellipsis (verified via DOM: `text-anchor: end` at x=146, all labels within YAxis width)
+
+Stage Summary:
+- **7 visual bugs fixed** across 4 files (page.tsx, content-calendar.tsx, ypp-progress-tracker.tsx, experiment-manager.tsx, sponsorship-discovery.tsx)
+- **3 new feature modules** added:
+  - Real Storage Stats (1 endpoint + 1 component + Settings integration) — replaces fake numbers with real disk usage
+  - Video Re-render Flow (1 shared helper + 1 endpoint + engine auto-retry hook + UI buttons in 2 places) — enables manual + automatic re-render with revised script on quality review failure
+  - Video Project Bulk Operations (1 endpoint + 1 new VideoProjectExplorer component ~810 LOC + Pipeline integration) — mirrors IdeaExplorer bulk pattern for projects
+- **Files created (7)**:
+  - `src/app/api/data/storage-stats/route.ts`
+  - `src/components/agent/storage-dashboard.tsx`
+  - `src/engine/rerender.ts`
+  - `src/app/api/agent/rerender/route.ts`
+  - `src/app/api/data/projects/bulk/route.ts`
+  - `src/components/agent/video-project-explorer.tsx`
+- **Files modified (7)**:
+  - `src/app/page.tsx` (calendar wrapper, pipeline dedup, analytics banner, strategy chart, storage integration, video project explorer integration)
+  - `src/components/agent/content-calendar.tsx` (compact heights, auto-jump to event month)
+  - `src/components/agent/ypp-progress-tracker.tsx` (progress bar logic)
+  - `src/components/agent/experiment-manager.tsx` (text wrapping)
+  - `src/components/agent/sponsorship-discovery.tsx` (deliverables wrapping)
+  - `src/engine/script-writer.ts` (revisionNote param)
+  - `src/engine/agent.ts` (auto-retry hook in phase6_qualityReview)
+  - `src/components/agent/video-preview-modal.tsx` (Re-render button in footer)
+- **All design constraints honored**: dark theme, violet/cyan/emerald/amber/rose palette (NO indigo, NO blue primary — changed strategy chart bars from #6366f1 indigo to #8b5cf6 violet), framer-motion animations, mobile responsive, shadcn/ui primitives, lucide-react icons
+- Lint: 0 errors. tsc: 0 new errors. All APIs return correct status codes.
+
+Unresolved Issues / Risks:
+- YouTube OAuth still requires manual Google Cloud project setup (expected — can't be automated)
+- Revenue/Analytics data still uses synthetic placeholders until YouTube is connected (now clearly badged with "Synthetic data" amber tag in Analytics tab)
+- The Next.js dev tools "N Issues" badge overlaps content in dev mode only — won't appear in production
+- Some video durations are short (3-30s) — would benefit from Remotion-based rendering for longer-form content
+- Calendar tab is still tall (calendar grid + stats + legend + upcoming queue) — user must scroll to see full month; could be improved by moving upcoming queue to a side panel on desktop
+- Auto-retry hook in agent.ts only triggers when `phase6_qualityReview()` runs — if the agent isn't running, no auto-retry happens (manual Re-render button still works)
+
+Priority Recommendations for Next Phase:
+1. **Configure YouTube OAuth** — set `YOUTUBE_CLIENT_ID` and `YOUTUBE_CLIENT_SECRET` in `.env`, complete OAuth flow, then test real upload to private + real analytics ingestion
+2. **Add Remotion renderer** — replace FFmpeg slideshow with programmatic Remotion compositions for richer visuals + longer videos (10-15 min)
+3. **Cron job for autonomous production** — schedule `produce-next` every X hours via the cron tool so the agent runs truly autonomously without manual triggering
+4. **A/B thumbnail testing** — generate multiple thumbnails per video, track CTR, optimize (currently 1 thumbnail per video)
+5. **Light theme QA pass** — verify all 25+ agent components render correctly in light mode (currently only core layout has light tokens)
+6. **Weekly/monthly PDF reports** — add a reports endpoint that generates a PDF summary with charts (revenue, analytics, pipeline throughput)
+7. **Real-time WebSocket updates** — replace 15s polling for notifications/decisions/pipeline with socket.io push updates for instant feedback
+8. **Add video preview for non-approved projects** — currently only approved projects can be previewed; allow previewing producing/failed projects too
+9. **Multi-channel support** — current schema supports multiple Channels but UI assumes single channel; add channel switcher
+10. **Content calendar drag-and-drop** — allow dragging ideas from the Scheduler tab onto the Calendar tab to schedule them
+

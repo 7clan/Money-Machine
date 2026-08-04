@@ -327,14 +327,19 @@ export function YPPProgressTracker({
   const allAdditionalMet = noStrikes && twoStepVerified && adsenseLinked
 
   // ── Overall eligibility ──
+  // Milestone progress drives the percentage; boolean gates are binary caps.
+  // OLD: averaged milestone scores AND boolean scores together (e.g. 0/0/0 + 3×100 = 50%).
+  // NEW: milestone avg is the percentage; unmet gates cap at 95% so the bar visually
+  // matches the milestone cards ("Locked" badges → 0% bar, not 50%).
   const milestoneScores = milestones.map((m) => m.percentage)
-  const additionalScores = [noStrikes ? 100 : 0, twoStepVerified ? 100 : 0, adsenseLinked ? 100 : 0]
-  const overallPercentage = Math.round(
-    ([...milestoneScores, ...additionalScores].reduce((a, b) => a + b, 0)) /
-    (milestoneScores.length + additionalScores.length)
-  )
-
-  const isFullyEligible = overallPercentage === 100
+  const milestoneAvg = milestoneScores.reduce((a, b) => a + b, 0) /
+    Math.max(milestoneScores.length, 1)
+  let overallPercentage = Math.round(milestoneAvg)
+  // If any additional requirement is unmet, cap at 95% (still shows progress but not "ready")
+  if (!allAdditionalMet) {
+    overallPercentage = Math.min(overallPercentage, 95)
+  }
+  const isFullyEligible = overallPercentage === 100 && allAdditionalMet
 
   // ── Estimated time projections (simple linear, assume ~5% monthly growth baseline) ──
   const subEstimate = estimateTimeToEligibility(subscribers, 1000, Math.max(1, subscribers * 0.05))

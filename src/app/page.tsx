@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip as RechartsTooltip, ResponsiveContainer, Cell
+  Tooltip as RechartsTooltip, ResponsiveContainer, Cell, LabelList
 } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -36,6 +36,7 @@ import {
 // ─── New Agent Feature Components ───────────────────────────────────
 import { VideoPreviewModal } from '@/components/agent/video-preview-modal'
 import { IdeaExplorer } from '@/components/agent/idea-explorer'
+import { VideoProjectExplorer } from '@/components/agent/video-project-explorer'
 import { QualityReviewPanel } from '@/components/agent/quality-review-panel'
 import { ContentCalendar } from '@/components/agent/content-calendar'
 import { GlassCard } from '@/components/agent/glass-card'
@@ -52,6 +53,7 @@ import { PerformanceMetrics } from '@/components/agent/performance-metrics'
 import { NotificationCenter } from '@/components/agent/notification-center'
 import { DecisionLog } from '@/components/agent/decision-log'
 import { ExportMenu } from '@/components/agent/export-menu'
+import { StorageDashboard } from '@/components/agent/storage-dashboard'
 import { useToast } from '@/components/agent/toast-provider'
 import {
   AlertDialog,
@@ -621,7 +623,7 @@ export default function Dashboard() {
   const nicheBarData = useMemo(() => {
     if (!channel?.niches?.length) return []
     return channel.niches.slice(0, 10).map((n: any) => ({
-      name: n.nicheName.length > 18 ? n.nicheName.slice(0, 18) + '...' : n.nicheName,
+      name: n.nicheName.length > 16 ? n.nicheName.slice(0, 16) + '…' : n.nicheName,
       score: n.compositeScore || 0,
       selected: n.isSelected,
     }))
@@ -1236,38 +1238,6 @@ export default function Dashboard() {
                   </div>
                 </GradientCard>
 
-                {/* Pipeline Stage Progress Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-                  {PIPELINE_STAGES.map((stage, i) => {
-                    const count = status?.pipeline?.[stage.key as keyof typeof status.pipeline] || 0
-                    const Icon = stage.icon
-                    const maxCount = Math.max(totalPipeline, 1)
-                    const pct = Math.round((count / maxCount) * 100)
-                    return (
-                      <motion.div
-                        key={stage.key}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.06, duration: 0.3 }}
-                        className={`p-3 rounded-xl border ${stage.border} ${stage.bg} text-center space-y-2`}
-                      >
-                        <Icon className={`w-5 h-5 mx-auto ${stage.textColor}`} />
-                        <p className={`text-xl font-bold ${stage.textColor}`}>{count}</p>
-                        <p className="text-[10px] text-slate-400">{stage.label}</p>
-                        <div className="w-full h-1 rounded-full bg-slate-800">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${pct}%` }}
-                            transition={{ delay: i * 0.06 + 0.2, duration: 0.5 }}
-                            className={`h-full rounded-full ${stage.textColor.replace('text-', 'bg-')}`}
-                          />
-                        </div>
-                        <p className="text-[9px] text-slate-500 font-mono">{pct}%</p>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   {/* Video Ideas — Enhanced with search / filter / detail drawer */}
                   <GlassCard variant="gradient" glowFrom="from-violet-500" glowTo="to-cyan-500" className="lg:col-span-1">
@@ -1302,57 +1272,23 @@ export default function Dashboard() {
                         <Film className="w-4 h-4 text-emerald-400" /> Video Projects
                         <Badge variant="outline" className="text-[10px] border-slate-600 ml-auto">{pipeline?.projects?.length || 0}</Badge>
                       </CardTitle>
-                      <CardDescription className="text-[10px]">Click any project to preview video, script, scenes & review</CardDescription>
+                      <CardDescription className="text-[10px]">Click any project to preview video, script, scenes &amp; review. Use Select mode for bulk actions.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <ScrollArea className="h-72">
-                        {pipeline?.projects?.length ? (
-                          <div className="space-y-1.5">
-                            {pipeline.projects.map((project: any, i: number) => (
-                              <motion.button
-                                key={project.id}
-                                initial={{ opacity: 0, x: -5 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.03 }}
-                                whileHover={{ scale: 1.01, x: 2 }}
-                                whileTap={{ scale: 0.99 }}
-                                onClick={() => setPreviewVideoId(project.id)}
-                                className="w-full text-left p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/30 hover:border-violet-500/50 hover:bg-slate-800/60 transition-colors space-y-1.5 cursor-pointer group"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Play className="w-3.5 h-3.5 text-slate-500 group-hover:text-violet-400 shrink-0 transition-colors" />
-                                  <span className="text-xs font-medium text-slate-200 truncate flex-1">{project.title}</span>
-                                  {project.duration && (
-                                    <span className="text-[10px] text-slate-500 font-mono shrink-0">{project.duration.toFixed(0)}s</span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 pl-5">
-                                  <Badge variant="outline" className={`text-[10px] ${
-                                    project.status === 'approved' || project.status === 'uploaded' ? 'border-emerald-500/50 text-emerald-400' :
-                                    project.status === 'failed' ? 'border-red-500/50 text-red-400' :
-                                    'border-amber-500/50 text-amber-400'
-                                  }`}>
-                                    {project.status}
-                                  </Badge>
-                                  {project.renderProgress > 0 && project.renderProgress < 100 && (
-                                    <div className="flex-1 flex items-center gap-2">
-                                      <Progress value={project.renderProgress} className="h-1.5 flex-1" />
-                                      <span className="text-[10px] text-slate-500 font-mono">{project.renderProgress}%</span>
-                                    </div>
-                                  )}
-                                  {project.status === 'approved' && (
-                                    <Badge variant="outline" className="text-[10px] border-violet-500/40 text-violet-300 ml-auto">
-                                      <Play className="w-2.5 h-2.5 mr-1" />Preview
-                                    </Badge>
-                                  )}
-                                </div>
-                              </motion.button>
-                            ))}
-                          </div>
-                        ) : (
-                          <EmptyState icon={Film} title="No projects yet" desc="Produce a video to see it appear here." />
-                        )}
-                      </ScrollArea>
+                      {pipeline?.projects?.length ? (
+                        <VideoProjectExplorer
+                          projects={pipeline.projects}
+                          onPreview={(id) => setPreviewVideoId(id)}
+                          onBulkAction={() => {
+                            pollAll()
+                            toast({ type: 'success', title: 'Bulk action complete', description: 'Pipeline refreshed', duration: 2500 })
+                          }}
+                        />
+                      ) : initialLoaded ? (
+                        <EmptyState icon={Film} title="No projects yet" desc="Produce a video to see it appear here." />
+                      ) : (
+                        <IdeaListSkeleton count={3} />
+                      )}
                     </CardContent>
                   </GlassCard>
                 </div>
@@ -1501,18 +1437,24 @@ export default function Dashboard() {
                         {/* Bar chart */}
                         <div className="h-64">
                           <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={nicheBarData} layout="vertical" margin={{ left: 10, right: 20, top: 5, bottom: 5 }}>
+                            <BarChart data={nicheBarData} layout="vertical" margin={{ left: 24, right: 36, top: 5, bottom: 5 }}>
                               <CartesianGrid strokeDasharray="3 3" stroke="#334155" horizontal={false} />
                               <XAxis type="number" domain={[0, 10]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                              <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                              <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 11, fill: '#cbd5e1' }} />
                               <RechartsTooltip
                                 contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
                                 labelStyle={{ color: '#e2e8f0' }}
                               />
-                              <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={20}>
+                              <Bar dataKey="score" radius={[0, 4, 4, 0]} maxBarSize={22}>
                                 {nicheBarData.map((entry, index) => (
-                                  <Cell key={`cell-${index}`} fill={entry.selected ? '#10b981' : '#6366f1'} fillOpacity={entry.selected ? 0.9 : 0.5} />
+                                  <Cell key={`cell-${index}`} fill={entry.selected ? '#10b981' : '#8b5cf6'} fillOpacity={entry.selected ? 0.9 : 0.55} />
                                 ))}
+                                <LabelList
+                                  dataKey="score"
+                                  position="right"
+                                  formatter={(v: any) => (typeof v === 'number' ? v.toFixed(1) : v)}
+                                  style={{ fontSize: 10, fill: '#94a3b8', fontWeight: 600 }}
+                                />
                               </Bar>
                             </BarChart>
                           </ResponsiveContainer>
@@ -1837,13 +1779,22 @@ export default function Dashboard() {
                 </div>
                 <GradientCard glow="from-blue-500/5 to-violet-500/5">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="w-4 h-4 text-blue-400" /> Performance Trends</CardTitle>
-                    <CardDescription className="text-[10px]">Views, engagement, and revenue over time</CardDescription>
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <CardTitle className="text-sm flex items-center gap-2"><BarChart3 className="w-4 h-4 text-blue-400" /> Performance Trends</CardTitle>
+                        <CardDescription className="text-[10px]">Views, engagement, and revenue over time</CardDescription>
+                      </div>
+                      {!channel?.youtubeConnected && (
+                        <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-300 bg-amber-500/10 shrink-0">
+                          <Sparkles className="w-3 h-3 mr-1" />Synthetic data
+                        </Badge>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={pipelineChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                        <AreaChart data={pipelineChartData.length ? pipelineChartData : [{time:'00:00',ideas:0,produced:0,uploaded:0}]} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                           <defs>
                             <linearGradient id="analyticsGrad1" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} /><stop offset="95%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient>
                             <linearGradient id="analyticsGrad2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.3} /><stop offset="95%" stopColor="#10b981" stopOpacity={0} /></linearGradient>
@@ -2000,24 +1951,19 @@ export default function Dashboard() {
           <TabsContent value="calendar" className="space-y-4">
             <AnimatePresence mode="wait">
               <motion.div key="calendar-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
-                <GlassCard variant="glow" glowFrom="from-violet-500" glowTo="to-cyan-500">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <CalendarDays className="w-4 h-4 text-violet-400" /> Content Calendar
-                    </CardTitle>
-                    <CardDescription className="text-[10px]">Scheduled releases, published videos, and upcoming production queue</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {pipeline?.ideas?.length || pipeline?.uploads?.length ? (
-                      <ContentCalendar
-                        ideas={pipeline?.ideas || []}
-                        uploads={pipeline?.uploads || []}
-                      />
-                    ) : (
+                {pipeline?.ideas?.length || pipeline?.uploads?.length ? (
+                  <ContentCalendar
+                    ideas={pipeline?.ideas || []}
+                    uploads={pipeline?.uploads || []}
+                    className="border-0 bg-transparent shadow-none"
+                  />
+                ) : (
+                  <GlassCard variant="glow" glowFrom="from-violet-500" glowTo="to-cyan-500">
+                    <CardContent className="py-10">
                       <EmptyState icon={CalendarDays} title="No calendar data" desc="Produce or schedule videos to populate the calendar." />
-                    )}
-                  </CardContent>
-                </GlassCard>
+                    </CardContent>
+                  </GlassCard>
+                )}
               </motion.div>
             </AnimatePresence>
           </TabsContent>
@@ -2190,6 +2136,9 @@ export default function Dashboard() {
                     )}
                   </CardContent>
                 </GradientCard>
+
+                {/* Storage Dashboard (real disk usage) */}
+                <StorageDashboard />
 
                 {/* Agent Configuration */}
                 <GradientCard glow="from-cyan-500/5 to-emerald-500/5">

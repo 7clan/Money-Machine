@@ -228,9 +228,26 @@ export function ContentCalendar({
   className,
 }: ContentCalendarProps) {
   const today = useMemo(() => startOfDay(new Date()), [])
-  const [viewDate, setViewDate] = useState<Date>(
-    () => new Date(today.getFullYear(), today.getMonth(), 1)
-  )
+
+  // Pre-compute the initial view month: if there's a nearest upcoming scheduled
+  // event in a different month, jump there. Otherwise default to this month.
+  const initialViewDate = useMemo(() => {
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+    // Inspect raw ideas/uploads for the nearest upcoming scheduled date.
+    const upcoming: Date[] = []
+    for (const raw of ideas) {
+      const idea = raw as CalendarIdea
+      const d = toDate(idea.scheduledDate)
+      if (d && d.getTime() >= today.getTime()) upcoming.push(d)
+    }
+    if (!upcoming.length) return thisMonth
+    upcoming.sort((a, b) => a.getTime() - b.getTime())
+    const nearest = upcoming[0]
+    const nearestMonth = new Date(nearest.getFullYear(), nearest.getMonth(), 1)
+    return nearestMonth
+  }, [today, ideas])
+
+  const [viewDate, setViewDate] = useState<Date>(initialViewDate)
   const [direction, setDirection] = useState(1)
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
@@ -683,7 +700,7 @@ function DayCell({
       type="button"
       onClick={onClick}
       className={cn(
-        'relative min-h-[84px] sm:min-h-[96px] rounded-md border p-1.5 text-left transition-colors flex flex-col gap-1',
+        'relative min-h-[68px] sm:min-h-[78px] rounded-md border p-1.5 text-left transition-colors flex flex-col gap-1',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50',
         inMonth
           ? 'bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-900/70'

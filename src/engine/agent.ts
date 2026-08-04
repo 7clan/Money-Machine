@@ -19,6 +19,7 @@ import { renderVideo } from './video-renderer'
 import { reviewVideo } from './quality-review'
 import { uploadVideo, isYouTubeConnected } from './youtube-client'
 import { llm } from './zai-provider'
+import { triggerRerender, deriveRevisionNote, RETRY_MARKER } from './rerender'
 
 export interface AgentStatus {
   state: string
@@ -365,6 +366,57 @@ export async function phase6_qualityReview(videoProjectId: string): Promise<stri
       await setAgentState('next_action', 'Upload to YouTube')
     } else {
       logAction(`Quality review FAILED: ${result.issues.join(', ')}`)
+
+      // ── Auto-retry hook ────────────────────────────────────────────
+      // If this is the FIRST failure on this project (no RETRY_MARKER in
+      // editorNotes yet), automatically trigger a re-render with a
+      // revisionNote derived from the failed checks. Capped at 1 retry
+      // per project — second failures stay as 'failed'.
+      const project = await db.videoProject.findUnique({
+        where: { id: videoProjectId },
+        select: { editorNotes: true },
+      })
+      const alreadyRetried = !!project?.editorNotes?.includes(RETRY_MARKER)
+
+      if (!alreadyRetried) {
+        const revisionNote = deriveRevisionNote(result.issues)
+        logAction(`Auto-retry: re-rendering ${videoProjectId} with revised script (attempt 1)`)
+        await notify({
+          type: 'warning',
+          category: 'pipeline',
+          title: 'Auto-retry: re-rendering video',
+          description: `First review failed — generating a revised script addressing: ${result.issues.slice(0, 2).join(' · ')}`,
+          isImportant: true,
+          targetId: videoProjectId,
+          targetType: 'video_project',
+          actionLabel: 'View pipeline',
+          actionTab: 'pipeline',
+        })
+        try {
+          const rerenderResult = await triggerRerender(videoProjectId, revisionNote, true)
+          logAction(`Re-render started (new script ${rerenderResult.newScriptId})`)
+          await setAgentState('next_action', 'Re-rendering with revised script')
+          return videoProjectId
+        } catch (rerenderErr: any) {
+          // If the auto-retry setup itself fails, fall through to the
+          // "leave as failed" path so the operator can intervene.
+          logAction(`Auto-retry failed: ${rerenderErr?.message || rerenderErr}`)
+          await notify({
+            type: 'error',
+            category: 'pipeline',
+            title: 'Auto-retry failed',
+            description: rerenderErr?.message || 'Could not start re-render — manual intervention required.',
+            isImportant: true,
+            targetId: videoProjectId,
+            targetType: 'video_project',
+            actionLabel: 'View pipeline',
+            actionTab: 'pipeline',
+          })
+        }
+      } else {
+        logAction(`Auto-retry cap reached — leaving ${videoProjectId} as failed`)
+      }
+
       await notify({
         type: 'error',
         category: 'pipeline',

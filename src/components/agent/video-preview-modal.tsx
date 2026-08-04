@@ -32,6 +32,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Tabs,
   TabsList,
   TabsTrigger,
@@ -43,6 +53,13 @@ import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { RefreshCcw } from 'lucide-react'
+import { useToast } from '@/components/agent/toast-provider'
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -642,6 +659,10 @@ export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [data, setData] = React.useState<VideoDetailResponse | null>(null)
+  const { toast, update: updateToast } = useToast()
+  // Re-render flow state
+  const [rerenderConfirmOpen, setRerenderConfirmOpen] = React.useState(false)
+  const [rerendering, setRerendering] = React.useState(false)
 
   React.useEffect(() => {
     if (!videoProjectId) {
@@ -693,7 +714,60 @@ export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
   const pillar = idea?.pillar
   const ps = pillar ? pillarStyle(pillar.color) : null
 
+  // Re-render is offered when the project failed review (or was rejected).
+  // Hidden while a re-render is already in-flight.
+  const isFailed = vp?.status === 'failed' || vp?.status === 'rejected'
+  const showRerender = !!vp && isFailed && !rerendering
+
+  const handleRerender = React.useCallback(async () => {
+    if (!videoProjectId) return
+    setRerenderConfirmOpen(false)
+    setRerendering(true)
+    const loadingId = toast({
+      type: 'loading',
+      title: 'Starting re-render…',
+      description: 'Generating a revised script and re-rendering the video.',
+      duration: 0,
+    })
+    try {
+      const res = await fetch('/api/agent/rerender', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: videoProjectId }),
+      })
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean
+        message?: string
+        error?: string
+      }
+      if (!res.ok || !data.ok) {
+        const errMsg = data?.message || data?.error || `Re-render failed (${res.status})`
+        updateToast(loadingId, { type: 'error', title: 'Re-render failed', description: errMsg, duration: 5000 })
+        setRerendering(false)
+        return
+      }
+      updateToast(loadingId, {
+        type: 'success',
+        title: 'Re-render started',
+        description: data?.message || 'A new script version is being generated.',
+        duration: 3500,
+      })
+      // Close the modal so the user is back on the dashboard where they
+      // can watch the project status flip to "producing" → "review".
+      onClose()
+    } catch (err) {
+      updateToast(loadingId, {
+        type: 'error',
+        title: 'Network error',
+        description: err instanceof Error ? err.message : 'Failed to reach server',
+        duration: 5000,
+      })
+      setRerendering(false)
+    }
+  }, [videoProjectId, toast, updateToast, onClose])
+
   return (
+    <>
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
       <DialogContent
         showCloseButton={false}
@@ -938,6 +1012,31 @@ export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
             >
               Close
             </Button>
+            {showRerender && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRerenderConfirmOpen(true)}
+                    className="gap-1.5 border-rose-500/40 bg-rose-500/5 text-rose-300 hover:border-rose-400/60 hover:bg-rose-500/10 hover:text-rose-200"
+                  >
+                    <RefreshCcw className="w-3.5 h-3.5" />
+                    Re-render
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="border-slate-700 bg-slate-800 text-slate-200">
+                  Re-render with revised script
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {rerendering && (
+              <span className="flex items-center gap-1.5 text-xs text-violet-300">
+                <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+                Re-rendering…
+              </span>
+            )}
             <Button
               asChild
               size="sm"
@@ -953,5 +1052,38 @@ export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Re-render confirmation dialog — sibling of Dialog so radix
+        doesn't complain about nested overlays. */}
+    <AlertDialog
+      open={rerenderConfirmOpen}
+      onOpenChange={setRerenderConfirmOpen}
+    >
+      <AlertDialogContent className="border-slate-800 bg-slate-950 text-slate-100">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-slate-100">
+            Re-render this video?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-slate-400">
+            A new script version will be generated addressing the failed
+            review issues, then the video will be re-rendered from scratch.
+            This may take a few minutes.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-slate-100">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => { void handleRerender() }}
+            className="border-0 bg-gradient-to-r from-rose-500 to-violet-500 text-white hover:from-rose-400 hover:to-violet-400"
+          >
+            <RefreshCcw className="mr-1.5 w-3.5 h-3.5" />
+            Confirm Re-render
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }

@@ -224,7 +224,7 @@ function ExperimentCard({
             {/* Hypothesis */}
             <div className="space-y-1">
               <span className="text-xs font-medium text-slate-400">Hypothesis</span>
-              <p className="text-xs text-slate-300 leading-relaxed">{data.hypothesis}</p>
+              <p className="text-xs text-slate-300 leading-relaxed min-w-0 break-words">{data.hypothesis}</p>
             </div>
 
             {/* Running: Progress */}
@@ -256,7 +256,7 @@ function ExperimentCard({
                       ? <TrendingUp className="size-3.5 mt-0.5 shrink-0" />
                       : <ArrowRight className="size-3.5 mt-0.5 shrink-0" />
                     }
-                    <span>{data.result}</span>
+                    <span className="min-w-0 break-words">{data.result}</span>
                   </div>
                 </div>
                 {data.recommendation && (
@@ -264,7 +264,7 @@ function ExperimentCard({
                     <span className="text-xs font-medium text-slate-400">Recommendation</span>
                     <div className="flex items-start gap-2 rounded-md bg-slate-800/40 px-2.5 py-2 text-xs text-slate-300">
                       <Sparkles className="size-3.5 mt-0.5 shrink-0 text-violet-400" />
-                      <span>{data.recommendation}</span>
+                      <span className="min-w-0 break-words">{data.recommendation}</span>
                     </div>
                   </div>
                 )}

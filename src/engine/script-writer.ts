@@ -10,6 +10,8 @@ import { extractJSONObject } from './json-utils'
 import { db } from '@/lib/db'
 
 export interface ScriptResult {
+  /** Database id of the newly-created Script row. */
+  id: string
   content: string
   outline: string
   hook: string
@@ -27,7 +29,17 @@ export interface ScriptResult {
   estimatedMinutes: number
 }
 
-export async function writeScript(videoIdeaId: string): Promise<ScriptResult> {
+/**
+ * Write (or revise) a script for a video idea.
+ *
+ * Pass an optional `revisionNote` to instruct the LLM to address issues from
+ * a failed quality review (or any other revision guidance). When provided,
+ * the note is appended to the user prompt as explicit revision instructions.
+ */
+export async function writeScript(
+  videoIdeaId: string,
+  revisionNote?: string
+): Promise<ScriptResult> {
   const idea = await db.videoIdea.findUnique({
     where: { id: videoIdeaId },
     include: {
@@ -44,6 +56,10 @@ export async function writeScript(videoIdeaId: string): Promise<ScriptResult> {
   // Get niche context
   const nicheState = await db.agentState.findUnique({ where: { key: 'selected_niche' } })
   const niche = nicheState ? JSON.parse(nicheState.value) : null
+
+  const revisionBlock = revisionNote?.trim()
+    ? `\n\nREVISION INSTRUCTIONS — A previous version of this script was rejected during quality review. Address the following issues and produce a corrected, fully-original script:\n${revisionNote.trim()}\n\nRewrite the script to fix these problems while keeping the same topic and overall structure. Do NOT reuse any wording from the previous version that caused the issues.`
+    : ''
 
   const scriptResponse = await llm([
     { role: 'system', content: `You are an expert YouTube script writer. Write an ORIGINAL script for this video.
@@ -91,7 +107,7 @@ ${idea.researchSources.map((s, i) => `[${i}] ${s.title} - ${s.notes || s.sourceU
 Key Claims:
 ${idea.claims.map(c => `- ${c.claim}${c.isUncertain ? ' (UNCERTAIN)' : ''}${c.isConflicting ? ' (CONFLICTING)' : ''}`).join('\n')}
 
-Write the complete original script now.` },
+Write the complete original script now.${revisionBlock}` },
   ])
 
   // Parse response
@@ -151,6 +167,7 @@ Write the complete original script now.` },
   })
 
   return {
+    id: script.id,
     content: fullContent,
     outline: scriptData.outline || '',
     hook: scriptData.hook || '',

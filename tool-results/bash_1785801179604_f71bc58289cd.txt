@@ -1,0 +1,400 @@
+- ✅ `bun run lint`: clean (0 errors)
+- ✅ `bunx tsc --noEmit`: clean (0 errors in src/)
+
+Stage Summary:
+- **6 new feature components** created (~5,000 LOC total) + 1 new API endpoint
+- **15 TypeScript errors fixed** across 6 source files
+- **1 hydration error fixed** (Math.random/Date.now → deterministic data)
+- **11 tabs** now functional (was 10) — added Scheduler
+- **Header enhanced** with Search/Theme/Notifications controls
+- **Layout wrapped** with ToastProvider for global toast access
+- **All design constraints honored**: dark theme default with light theme option, violet/cyan/emerald/amber/rose palette (NO indigo, NO blue primary), framer-motion animations throughout, lucide-react icons, shadcn/ui primitives, mobile-responsive
+- Dashboard now feels production-ready with command palette, theme toggle, notifications, rich activity feed, performance metrics, and content scheduling
+
+Unresolved Issues / Risks:
+- YouTube OAuth still requires manual Google Cloud project setup (expected — can't be automated)
+- Revenue/Analytics data still uses synthetic placeholders until YouTube is connected
+- NotificationCenter uses localStorage only (no real backend notification model yet)
+- Some scheduler ideas may not have compositeScore (newly created ideas have null scores)
+- ToastProvider is mounted but no component currently calls `useToast()` yet — ready for future use
+
+Priority Recommendations for Next Phase:
+1. **Wire toasts into agent actions** — call `toast({ type: 'success', title: 'Video produced' })` after `sendCommand()` returns
+2. **Add notification model to Prisma schema** — persist notifications across sessions/devices
+3. **Implement real analytics ingestion** — once YouTube connected, populate `AnalyticsSnapshot` and feed PerformanceMetrics from real data
+4. **Add Remotion renderer** — replace FFmpeg slideshow for richer, longer videos
+5. **Add video re-render flow** — when Quality Review fails, auto-retry with revised script
+6. **A/B thumbnail testing** — generate multiple thumbnails per video, track CTR
+7. **Cron job for autonomous production** — schedule `produce-next` every X hours via the cron tool
+8. **Add light theme styling pass** — verify all 18 agent components render correctly in light mode (currently only core layout has light tokens)
+9. **Bulk operations** — multi-select ideas for bulk schedule/approve/delete
+10. **Export/report generation** — PDF/CSV exports of revenue, analytics, pipeline
+
+---
+Task ID: 7
+Agent: Enhancement Round
+Task: QA assessment, bug fixes, and comprehensive feature enhancements
+
+Work Log:
+- **QA Bug Fixes Applied:**
+  - Fixed niche text truncation in StatusCard (was slicing to 16 chars, now displays full niche with truncate + title tooltip)
+  - Fixed Live Feed timestamp wrapping (changed w-16 to w-20, removed seconds, added whitespace-nowrap)
+  - Fixed Pause button contrast (changed text-amber-400 → text-amber-300 + font-semibold)
+  - Fixed StatusCard value overflow (made responsive text-xl sm:text-2xl, added truncate)
+- **Styling Polish:**
+  - Enhanced card hover effect (scale: 1.02, y: -2 lift)
+  - Added gradient accent top-border to all GradientCards (violet → cyan → emerald)
+  - Added shadow to GradientCards for depth
+  - Enhanced header glass effect (backdrop-blur-xl, shadow-sm)
+  - Added dot grid background pattern + enhanced gradient blur orbs
+  - Updated footer with richer info (version, mode, icons)
+- **New Features Added:**
+  - **Agent Cycle Visualization** — SVG ring diagram showing 6 autonomous loop stages (Research → Script → Produce → Review → Upload → Analyze) with active/past/idle states and animated pulses
+  - **Quick Actions Bar** — 6 one-click action buttons (Research Niche, Write Script, Produce Video, Review Quality, Upload, Analytics) with color-coded icons
+  - **AI Insights Cards** — 3 insight cards showing upload time optimization, engagement recommendations, quality rate trends
+  - **Revenue Forecast Chart** — 12-month projection with optimistic/expected/conservative curves (AreaChart with gradient fills)
+  - **Content Performance Comparison** — Bar chart comparing views/engagement/revenue across content pillars
+  - **Audience Demographics** — Age distribution bars with animated progress fills
+  - **Traffic Sources** — Horizontal bar breakdown (YouTube Search, Suggested, External, Browse, Direct)
+  - **Niche Comparison Matrix** — Multi-dimensional table with mini-bar indicators for Revenue/Audience/Competition/Evergreen/Production/Risk
+  - **Pipeline Stage Progress Cards** — 6-card grid with animated progress bars showing percentage per pipeline stage
+  - **Storage Dashboard** — Usage breakdown (Videos/Audio/Thumbnails/Other) with cleanup action
+  - **Batch Production Controls** — Single/Batch3/Batch5 production buttons with warning
+  - **Agent Runtime Statistics** — Uptime, cycles completed, avg cycle time, total API calls
+- **Added HelpCircle import** from lucide-react
+- **Lint passes cleanly** — No TypeScript or ESLint errors
+- **All APIs returning 200** — Dev server stable
+
+Stage Summary:
+- **~450 lines of new UI code** added to page.tsx (1769 → 2363 lines)
+- **12 new visual features/sections** added across Overview, Pipeline, Strategy, Revenue, Analytics, Settings tabs
+- **5 QA bugs fixed** (truncation, contrast, timestamp, overflow, header)
+- **6 styling improvements** (card borders, hover lift, header glass, dot grid, shadows, footer)
+- VLM QA rating: **8.5/10** (up from initial assessment)
+- Dashboard now has comprehensive production monitoring, analytics, and agent control capabilities
+
+Unresolved Issues / Risks:
+- YouTube OAuth still requires manual Google Cloud project setup
+- Revenue/Analytics data uses synthetic placeholders until YouTube connected
+- NotificationCenter uses localStorage only (no Prisma model)
+- Some new chart data is deterministic/synthetic (will improve with real data)
+- E-STOP button has no confirmation dialog (design choice for immediate stop)
+
+Priority Recommendations for Next Phase:
+1. **Wire toast notifications to agent actions** — call toast() after sendCommand() for user feedback
+2. **Add confirmation dialog to E-STOP** — prevent accidental emergency stops
+3. **Implement real analytics ingestion** — populate charts from YouTube API data
+4. **Add Remotion renderer** — richer video production pipeline
+5. **Cron job for autonomous production** — schedule produce-next on regular intervals
+6. **Add notification model to Prisma** — persist notifications across sessions
+7. **Light theme QA pass** — verify all new sections render correctly in light mode
+8. **Export/report generation** — PDF/CSV exports of revenue and analytics data
+9. **Multi-select bulk operations** — bulk schedule/approve/delete ideas
+10. **Real storage stats** — compute actual disk usage from data/ directory
+
+---
+Task ID: 5-A
+Agent: Notification Persistence Builder
+Task: Add persistent Notification backend (Prisma model + REST API + agent integration) and refactor NotificationCenter to fetch from API instead of localStorage.
+
+Work Log:
+- Read worklog.md (Tasks 1–9 + 9-F). Confirmed dashboard dark theme + NotificationCenter was localStorage-only; needed Prisma model + REST API + agent integration.
+- Added `Notification` model to prisma/schema.prisma (13 fields + 3 indexes: isRead, createdAt, category). Ran `bun run db:push` — schema synced, Prisma client regenerated.
+- Created src/app/api/data/notifications/route.ts (GET with ?filter=all|unread|important&limit=50 returning {notifications, counts:{total,unread,important}}; POST creating with type/category coercion + length truncation, 201 on success).
+- Created src/app/api/data/notifications/[id]/route.ts (PATCH {isRead:boolean} → 200; DELETE → 200; 404 on missing).
+- Created src/app/api/data/notifications/read-all/route.ts (POST updateMany isRead:false→true, returns {ok, updated:count}).
+- Updated src/engine/agent.ts: added `notify()` helper wrapping db.notification.create in try/catch (failures logged but never thrown). Added 8 notify() calls alongside logAction() for: niche selected, strategy created, video produced, video approved, video failed review (important), YouTube not connected (important, actionTab=settings), video uploaded, thumbnail upload failed (important).
+- Updated src/app/api/agent/command/route.ts: `stop` case now persists a Notification of type=error, category=agent, isImportant=true, actionTab=overview (wrapped in try/catch).
+- Refactored src/components/agent/notification-center.tsx: replaced localStorage with /api/data/notifications fetching; added 15s polling via setInterval; refreshes on popover open; Mark-all calls POST /read-all with optimistic update; click calls PATCH /:id {isRead:true} then navigates to actionTab via onNavigate; added `agent_event` type (Bolt icon, violet); preserved all visual design (dark slate-900/95, rose unread badge, filter tabs, staggered list, date-fns relative timestamps, empty states); kept controlled `notifications` prop mode for backward compat.
+- Updated src/lib/db.ts to defensively invalidate the cached PrismaClient in dev mode after `prisma db push` adds new models. Added SCHEMA_VERSION constant (bump on schema changes), bustPrismaRequireCache() helper (deletes node_modules/.prisma/client and @prisma/client entries from require.cache), and isStale check (version mismatch OR missing .notification delegate). Without this fix the running dev server kept using the stale PrismaClient cached in globalThis, causing `db.notification` to be undefined and GET /api/data/notifications to throw "Cannot read properties of undefined (reading 'findMany')".
+- Restarted dev server (it had died during the require-cache investigation) via `(bun run dev > dev.log 2>&1 &)`.
+
+Verification:
+- `bun run lint` → exit 0, zero errors (added eslint-disable-next-line for intentional dynamic require in lib/db.ts).
+- `bunx tsc --noEmit` → zero errors in any new/modified file. Pre-existing errors remain only in examples/websocket/*, skills/*, and src/app/page.tsx (toast.dismiss/update misuse — pre-existing, page.tsx off-limits per constraint).
+- `curl -s http://localhost:3000/api/data/notifications` → `{"notifications":[],"counts":{"total":0,"unread":0,"important":0}}` (200 OK, clean JSON).
+- Full CRUD curl-tested: POST creates (201), GET returns with correct counts, PATCH marks read, POST /read-all returns updated count, DELETE removes, GET returns empty.
+- Agent command integration verified: POST /api/agent/command {command:'stop'} creates an important error notification titled "Emergency stop activated" with actionTab=overview. Test artifact cleaned up.
+
+Stage Summary:
+- Files CREATED (5): src/app/api/data/notifications/route.ts, src/app/api/data/notifications/[id]/route.ts, src/app/api/data/notifications/read-all/route.ts
+- Files MODIFIED (4): prisma/schema.prisma (Notification model), src/engine/agent.ts (notify() helper + 8 call sites), src/app/api/agent/command/route.ts (stop creates important error notification), src/components/agent/notification-center.tsx (API-backed with 15s polling), src/lib/db.ts (dev-mode PrismaClient cache invalidation)
+- API surface: GET/POST /api/data/notifications, PATCH/DELETE /api/data/notifications/:id, POST /api/data/notifications/read-all
+- NotificationCenter remains a drop-in replacement — same props (onNavigate, className, optional `notifications` for controlled mode), same dark-theme visual design, but now persisted in SQLite via Prisma.
+
+---
+Task ID: 5-B
+Agent: CSV Export Builder
+Task: Add CSV export endpoints + UI buttons (export route, export-button, export-menu)
+
+Work Log:
+- Read worklog.md, prisma schema, db client, audit-logs/jobs/pipeline routes, shadcn Button/DropdownMenu components, and GlassCard/notification-center for styling conventions
+- Created `src/app/api/data/export/route.ts`: unified GET endpoint that takes `?type=<entity>` and returns `text/csv; charset=utf-8` with `Content-Disposition: attachment; filename="<type>-export-<YYYYMMDD-HHmmss>.csv"`
+  - Supports all 7 types: ideas, projects, uploads, revenue, analytics, audit-logs, jobs
+  - Each response prefixed with UTF-8 BOM (`\uFEFF`) so Excel auto-detects UTF-8
+  - RFC 4180 CSV escaping: fields containing comma/quote/newline/CR wrapped in double quotes, internal quotes doubled
+  - \r\n line endings for cross-platform Excel compatibility
+  - Header row always included (even for empty result sets)
+  - 400 response for missing `type` query param or unknown type, with validTypes list
+  - RevenueRecord.uploadId is not a Prisma relation, so revenue exporter does a batched Upload lookup to resolve `uploadTitle`
+  - AuditLog details parsed (JSON `{message, detail}` shape or plain string) and truncated to 200 chars
+  - Job error and VideoProject.reviewResult also truncated (200/500 chars)
+  - VideoIdea tags parsed from JSON array and joined with semicolons
+  - Prisma includes used for relations: VideoIdea.pillar, VideoProject.videoIdea, AnalyticsSnapshot.upload
+- Created `src/components/agent/export-button.tsx`: reusable 'use client' button
+  - Props: `{ type, label?, icon? }` — type is one of the 7 export types
+  - Uses shadcn Button (variant="outline", size="sm" or "icon")
+  - Triggers download via temporary `<a download>` element (preserves cookies/session, no new tab)
+  - Loading state: Loader2 spinner swap on Download icon for ~900ms
+  - Dark theme: border-slate-700/60, bg-slate-900/60, hover:border-violet-500/60 + hover:bg-violet-500/10 + hover:text-violet-200
+  - Compact icon mode (`icon=true`) renders only the Download icon
+  - Default label "Export <CapitalizedType>" (e.g. "Export Ideas", "Export Audit Logs")
+- Created `src/components/agent/export-menu.tsx`: 'use client' dropdown with all 7 export types
+  - Triggered by single "Export Data" outline button (also supports `iconOnly` mode)
+  - Each item has its own lucide icon with a distinct accent color (amber/violet/cyan/emerald/fuchsia/rose/sky — NO indigo, NO blue primary)
+  - Items show label + description, hover ring transitions to violet
+  - Active item shows Loader2 spinner in violet during the brief loading window
+  - Footer hint about UTF-8 BOM / Excel compatibility
+  - Dark theme styling consistent with GlassCard palette
+- Verified with `bun run lint` → 0 errors
+- Verified with curl:
+  - `curl -sI ".../api/data/export?type=ideas"` → 200, Content-Type: text/csv; charset=utf-8, Content-Disposition: attachment; filename="ideas-export-20260803-223548.csv"
+  - `curl -s ".../api/data/export?type=ideas" | head -3` → returns BOM + header row + data rows (with proper CSV escaping — `"{""overallPassed"":true,""issues"":[]}"` seen in projects export)
+  - `curl -s -o /dev/null -w "%{http_code}" ".../api/data/export?type=unknown"` → 400
+  - All 7 types return 200 with correct header row, including empty-result types (uploads/revenue/analytics/jobs in current DB)
+- Did NOT modify src/app/page.tsx, did NOT modify any existing API routes, did NOT modify prisma schema
+
+Stage Summary:
+- 3 new files: `src/app/api/data/export/route.ts`, `src/components/agent/export-button.tsx`, `src/components/agent/export-menu.tsx`
+- Lint: 0 errors
+- All 7 export types working and returning valid RFC 4180 CSV with UTF-8 BOM
+- Unknown type → 400, missing type → 400
+- Reusable UI components ready for the lead to integrate into Overview/Pipeline/Revenue/Analytics/Logs tabs
+
+---
+Task ID: 5-C
+Agent: Decision Log Builder
+Task: Build a "Decision Log" feature showing the agent's autonomous decisions over time — aggregated API + standalone React component + bonus stats endpoint.
+
+Work Log:
+- Read /home/z/my-project/worklog.md (Tasks 1–9 + 5-A, 5-B). Confirmed dashboard has 11 tabs (dark theme, violet/cyan/emerald/amber/rose palette — NO indigo, NO blue primary), db client at `@/lib/db`, existing audit-logs API pattern at `/api/data/audit-logs`.
+- Inspected prisma/schema.prisma — confirmed AuditLog, NicheAnalysis (isSelected, rejectionReason, compositeScore, notes), VideoIdea (compositeScore, status, tags), ContentPillar, Channel, PolicyReview (11 booleans + overallPassed + issues JSON) all present.
+- Verified dev server live and `/api/data/audit-logs` returns JSON (existing entries: emergency_stop, metadata_update).
+- Created `src/app/api/data/decisions/route.ts` (480 LOC):
+  - Exports `Decision`, `DecisionCounts`, `DecisionCategory` types per spec.
+  - Six source-mappers, each returning `Decision[]` and run via `Promise.all` for parallel aggregation:
+    - `decisionsFromAuditLog()` — AuditLog → categories emergency_stop→system, mode_change→mode, upload/publish→upload, strategy_change→strategy, metadata_update→content, token_refresh/revoke→system. Parses legacy string & new `{message, detail}` JSON details payloads.
+    - `decisionsFromNiches()` — NicheAnalysis → emits 3 variants: "Niche Selected" (isSelected=true, impact high, reasoning from notes), "Niche Rejected" (rejectionReason present, impact low), "Niche Analysed" (compositeScore≥6, no selection/rejection, impact low).
+    - `decisionsFromPillars()` — ContentPillar → "Content Pillar Created" (medium impact, metadata: priority/color/icon).
+    - `decisionsFromIdeas()` — VideoIdea → "Idea Generated" event (low/medium by compositeScore≥7) + a separate status-transition event per idea with non-default status (mapped researched/scripted/producing/reviewing/approved/uploaded/published/rejected to category content|production|review|upload).
+    - `decisionsFromPolicyReviews()` — PolicyReview → "Video Approved" / "Video Failed Review" (always impact high; description lists failed checks; metadata.issues + checks map of all 11 booleans).
+    - `decisionsFromChannels()` — Channel → "Strategy Created" (high impact, reasoning from brandPromise).
+  - De-dupes by id, sorts newest-first, computes `counts` (total / byCategory / last24h / last7d) over the FULL set BEFORE applying category filter & limit (so counts reflect the universe even when filtered).
+  - Honors `?category=<cat>&limit=<n>` query params (default 50, hard max 200). 400 on invalid category.
+  - 500 handler logs error to console + returns JSON `{error, detail}`.
+- Created `src/app/api/data/decisions/stats/route.ts` (297 LOC):
+  - Returns `{decisionsPerDay, topDecisionTypes, categoryDistribution, total}`.
+  - `decisionsPerDay` is a 30-day rolling window (UTC day buckets) pre-seeded with 0-count days so the chart always has every label, even when no decisions exist.
+  - `topDecisionTypes` = top 8 decisionType strings by frequency across all sources.
+  - `categoryDistribution` = count per category (all 8 categories pre-seeded so chart has every slice even when empty), sorted desc.
+  - Mirrors the same source logic as the main route but only emits aggregate counts (no row payload).
+- Created `src/components/agent/decision-log.tsx` (700+ LOC, 'use client'):
+  - **Header row**: Brain icon + "Agent Decision Log" title, "Every autonomous choice the agent has made" subtitle, last-updated timestamp (HH:mm:ss), Refresh button (spinner during silent refresh).
+  - **Stats row** (4 cards, 2-col on mobile / 4-col on md+): Total Decisions (violet), Last 24h (cyan), Last 7d (emerald), Most Active category (amber) — derived from `counts.byCategory` max.
+  - **Filter row**: 9 category pills (All, Niche, Strategy, Content, Production, Review, Upload, System, Mode) with count badges. Active state uses framer-motion `layoutId="decision-filter-pill"` for sliding gradient overlay (per-category gradient from CATEGORY_META).
+  - **Search box**: debounced 200ms (DEBOUNCE_MS), filters by title/description/decisionType. Resets pagination on change. Clear (X) button.
+  - **Timeline** (`max-h-[70vh] overflow-y-auto`, custom webkit + Firefox scrollbar styling via Tailwind arbitrary properties):
+    - Date separators (sticky top-0 with backdrop blur): "Today" / "Yesterday" / "EEE MMM d" via date-fns.
+    - Each row: animated colored dot (per-category, ping glow), vertical connector (gradient fade), card with decision-type chip (Icon + label), timestamp (HH:mm), impact badge (HIGH=rose / MEDIUM=amber / LOW=slate), title, description, optional reasoning in italic blockquote (`border-current` tinted per category), optional target link (`<type>: <last-8-of-id>` with chevron), and metadata chips (composite score, tags, issue count).
+    - Stagger entrance: `motion.div` with `initial={{opacity:0, x:-12}} animate={{opacity:1, x:0}}` delay = `min(index*0.04, 0.4)`. `AnimatePresence mode="popLayout"` for filter transitions.
+    - "Load more" button reveals +50 at a time (PAGE_SIZE), shows "(N of M)" counter.
+  - **Empty state**: friendly message "No decisions yet. Run initial setup to start the autonomous cycle." with violet blur glow.
+  - **Search-empty state**: "No decisions match 'X'" with Search icon.
+  - **Error state**: rose-tinted message + Try-again button.
+  - **Loading skeleton**: 6 staggered shimmer rows mimicking the timeline layout (dot + connector + card with pulse-bg placeholders).
+  - Polls every 30s (POLL_INTERVAL_MS) via `setInterval` with silent flag (no full-screen loading flip). Re-fetches on filter change. Cleans up interval on unmount.
+  - Footer hint showing applied filters + match count + "Auto-refreshes every 30s".
+  - Mobile responsive: stats grid 2-col → 4-col, filter pills wrap, search full-width on mobile / ml-auto w-64 on lg+.
+- Category colors (per spec): niche=violet, strategy=cyan, content=emerald, production=amber, review=rose, upload=fuchsia, system=slate, mode=red.
+- Verified with `bun run lint` → exit 0, zero errors.
+- Verified with `bunx tsc --noEmit` → zero errors in any of the 3 new files (no matches for `decision-log|decisions/route|decisions/stats`).
+- Verified endpoints with curl:
+  - `GET /api/data/decisions` → 200, returns `{decisions: [...50 entries...], counts: {total: 166, byCategory: {system:1, content:116, upload:2, review:3, production:4, strategy:10, niche:30}, last24h: 166, last7d: 166}}`.
+  - `GET /api/data/decisions?category=niche&limit=5` → 200, returns 5 niche decisions (counts still report the full universe).
+  - `GET /api/data/decisions?category=invalid` → 400 `{error: "Invalid category. Valid: niche, strategy, content, production, review, upload, system, mode"}`.
+  - `GET /api/data/decisions/stats` → 200, returns `{total: 166, topDecisionTypes: [...8 types, led by 'Idea Generated' (70), 'Metadata Updated' (46), 'Niche Analysed' (29)...], categoryDistribution: [...8 cats sorted desc...], decisionsPerDay: [30 entries with 'Aug 3'=166 and all others 0]}`.
+- Did NOT modify `src/app/page.tsx` (the lead will integrate the new tab). Did NOT modify any existing API route or Prisma schema.
+
+Stage Summary:
+- 3 new files created:
+  - `src/app/api/data/decisions/route.ts` (480 LOC) — unified decisions timeline API aggregating from AuditLog + NicheAnalysis + ContentPillar + VideoIdea + PolicyReview + Channel.
+  - `src/app/api/data/decisions/stats/route.ts` (297 LOC) — bonus aggregate stats endpoint (30-day series, top types, category distribution).
+  - `src/components/agent/decision-log.tsx` (700+ LOC) — standalone 'use client' React component ready to drop into a new dashboard tab.
+- Lint: 0 errors. tsc: 0 errors in new files. All curl tests pass (200/400 as appropriate).
+- API surface: `GET /api/data/decisions?category=<cat>&limit=<n>` + `GET /api/data/decisions/stats`.
+- Exact import paths for the lead:
+  - `import { DecisionLog, type Decision, type DecisionCategory } from '@/components/agent/decision-log'`
+  - Drop into page.tsx as a new tab content: `<DecisionLog className="space-y-4" />`
+  - Suggested tab config: `{ v: 'decisions', icon: Brain, label: 'Decisions' }` (insert between 'logs' and 'settings' — or wherever the lead prefers).
+- Honors all constraints: dark theme only, only shadcn/ui-compatible primitives + lucide-react + framer-motion (no new shadcn primitives needed beyond what's already imported), NO indigo / NO blue primary colors, Next.js route handlers, mobile responsive, 'use client' directive, custom scrollbar for max-h timeline area, framer-motion stagger entrance + AnimatePresence for filter transitions.
+
+---
+Task ID: 5-D
+Agent: Bulk Operations Builder
+Task: Add Bulk Operations to IdeaExplorer + Backend Support — bulk schedule/unschedule/delete/set-status/set-type/assign-pillar API + multi-select mode UI with action bar.
+
+Work Log:
+- Read `/home/z/my-project/worklog.md` and existing `src/components/agent/idea-explorer.tsx` (1198 LOC) to understand the IdeaExplorer's structure (search/filter/sort/drawer with framer-motion transitions, dark slate-950 theme, violet/cyan/emerald/amber/rose palette).
+- Read `prisma/schema.prisma` to confirm VideoIdea relations (ResearchSource, ClaimLedger, Script→Scene/VoiceTrack, VideoProject→PolicyReview/Upload) — all already declare `onDelete: Cascade`.
+- Read existing `src/app/api/data/ideas/[id]/schedule/route.ts` to match the audit-log format pattern (`{action:'metadata_update', actor:'user', target, details: JSON.stringify({message, detail, ...})}`).
+- Read `src/components/agent/toast-provider.tsx` to confirm `useToast()` hook signature: `toast({type, title, description, duration})`.
+- Verified shadcn primitives exist: `checkbox.tsx`, `popover.tsx`, `calendar.tsx` (react-day-picker v9), `alert-dialog.tsx`, `dropdown-menu.tsx` — all export the expected sub-components.
+- Created `src/app/api/data/ideas/bulk/route.ts` (277 LOC, `force-dynamic`):
+  - Single POST handler accepting `{action, ideaIds: string[], payload?}`.
+  - Validates `action` against enum (`schedule|unschedule|delete|set-status|set-type|assign-pillar`) → 400 on invalid.
+  - Validates `ideaIds` is a non-empty array of strings → 400 on invalid.
+  - Per-action payload validation: `schedule` requires `payload.date` (ISO string, parsed via `new Date()`); `set-status` requires `payload.status` ∈ 8 valid statuses; `set-type` requires `payload.type` ∈ `{short, longform}`; `assign-pillar` accepts `payload.pillarId` as string or null.
+  - `delete` runs inside `db.$transaction`: fetches related Script + VideoProject IDs first, then deletes PolicyReview + Upload (grandchildren of VideoProject), Scene + VoiceTrack (grandchildren of Script), then ResearchSource + ClaimLedger + Script + VideoProject (children of VideoIdea), then VideoIdea itself. Returns `affected = deleteMany.count`.
+  - All other actions use `db.videoIdea.updateMany({where:{id:{in:ids}}, data:{...}})` and capture `result.count` as `affected`.
+  - Writes an AuditLog entry with `target='bulk_ideas'` and `details = JSON.stringify({message, detail, bulkAction, count, ideaIds: first10, payload})` — the `message`/`detail` pair keeps the existing `/api/data/audit-logs` UI happy, the raw fields are kept for programmatic consumers.
+  - Returns `{ok:true, affected, action}`. 500 handler returns `{error, message}`.
+- Updated `src/components/agent/idea-explorer.tsx` (1198 → 1885 LOC, +687 LOC) with surgical MultiEdit:
+  - **Imports**: added `Checkbox`, `Popover*`, `Calendar as CalendarPicker`, `AlertDialog*`, `DropdownMenu*`, `useToast`, and 9 new lucide icons (`CheckSquare, Square, Trash2, CalendarClock, Tag, Loader2, ListChecks, XCircle`).
+  - **IdeaExplorerProps**: added `onBulkAction?: (action: string, count: number) => void` so parent can refresh its own data after a bulk op.
+  - **Constants**: added `BULK_STATUS_OPTIONS` (8 statuses with dot colors), `BULK_TYPE_OPTIONS` (short/longform), and `BulkActionType` union.
+  - **Bulk state** in `IdeaExplorer`: `selectMode`, `selectedIds: Set<string>`, `bulkLoading: BulkActionType|null`, `scheduleDate` (defaults to +7 days), `scheduleOpen`, `confirmDialog: null|'delete'|'unschedule'`.
+  - **Stale-ID pruner**: `useEffect` watches `ideas` + `selectedIds` and removes IDs that no longer exist in the parent's ideas list (e.g. after a bulk delete the parent passes a fresh list); auto-exits select mode if selection becomes empty.
+  - **Handlers**: `toggleSelectMode`, `toggleSelect`, `selectAllFiltered` (selects all filteredIdeas, not just visible), `clearSelection`, `executeBulkAction` (fetch POST → toast success/error → clear selection → exit select mode → invoke `onBulkAction`), and updated `handleCardClick` to toggle selection when in select mode (instead of opening the drawer).
+  - **Toolbar**: added a "Select" toggle button (Square/CheckSquare icon) next to the search input. When active, it shows a violet→cyan gradient. Tooltip explains "Enter/Exit selection mode".
+  - **Selection toolbar** (AnimatePresence height-slide): shows "X selected" or "Selection mode — click cards to select" with "Select all (N)" + "Clear" buttons.
+  - **BulkActionBar** (sticky top-0, framer-motion spring entrance): count badge, separator, then 6 action controls:
+    - Schedule → Popover with CalendarPicker (single mode, `[--primary:oklch(0.606_0.25_292.717)]` CSS var override forces violet selected-day on the otherwise light-theme calendar) + date display + Apply button.
+    - Unschedule → opens AlertDialog (amber) for confirmation.
+    - Set Status → DropdownMenu of 8 statuses with colored dots.
+    - Set Type → DropdownMenu of short/longform.
+    - Assign Pillar → DropdownMenu of existing pillars + "Unassign pillar" option (disabled if no pillars exist).
+    - Delete → opens AlertDialog (rose) with explicit warning about cascading deletes of scripts/scenes/voice tracks/video projects/policy reviews/uploads/research sources/claim ledger entries.
+  - Each action button shows `Loader2 animate-spin` when it's the in-flight action; all buttons disabled while any action is loading.
+  - **IdeaCard**: added `selectMode`, `isSelected`, `onToggleSelect` props. In select mode: hides the ChevronDown, renders a `Checkbox` in the top-right corner (`absolute right-2 top-2 z-10`) with `stopPropagation` on the wrapper to prevent double-toggle (checkbox's `onCheckedChange` is the single source of truth). Selected cards get a violet `ring-2 ring-violet-500/50`, `border-violet-500/60`, soft violet glow, and `scale-[1.005]` elevation. Hover effects still apply.
+  - **Persistence**: selection state survives filter changes (filters are local state, selection is independent). Tab switch / page refresh naturally clears state (component unmounts); the stale-ID pruner also handles parent-driven refresh.
+- Ran `bun run lint` → exit 0, zero errors.
+- Verified endpoints with curl:
+  - `POST /api/data/ideas/bulk -d '{"action":"invalid","ideaIds":["x"]}'` → 400 `{error:"Invalid action. Must be one of: schedule, unschedule, delete, set-status, set-type, assign-pillar"}`.
+  - `POST /api/data/ideas/bulk -d '{"action":"delete","ideaIds":["nonexistent"]}'` → 200 `{ok:true, affected:0, action:"delete"}`.
+  - Empty `ideaIds:[]` → 400. Missing `ideaIds` → 400. Invalid `payload.status` → 400. Missing `payload.date` for schedule → 400.
+  - Real idea end-to-end: `set-status` → 1 affected; `schedule` → 1 affected; `unschedule` → 1 affected. Audit log entries created with `target='bulk_ideas'`, `message="Bulk <action> on N idea(s)"`, and `detail` listing IDs + payload.
+  - Confirmed audit log entries surface correctly through `GET /api/data/audit-logs` (the `parseLog` helper picks up the `message`/`detail` fields).
+- Verified `/` page still renders HTTP 200 with no compile errors in dev.log.
+- Did NOT modify `src/app/page.tsx` (the lead will integrate `onBulkAction` if needed). Did NOT modify Prisma schema. Did NOT modify any existing API route.
+
+Stage Summary:
+- 1 new file: `src/app/api/data/ideas/bulk/route.ts` (277 LOC) — bulk operations endpoint with action enum validation, ideaIds validation, per-action payload validation, transactional delete with explicit cascade of all descendant tables, and AuditLog entry.
+- 1 modified file: `src/components/agent/idea-explorer.tsx` (1198 → 1885 LOC, +687 LOC) — adds multi-select mode, selection toolbar, sticky bulk action bar (Schedule with calendar popover, Unschedule with confirmation, Set Status / Set Type / Assign Pillar dropdowns, Delete with confirmation), violet ring + elevation on selected cards, framer-motion AnimatePresence transitions, toast feedback via existing useToast, and new `onBulkAction` callback prop.
+- Lint: 0 errors. All curl tests pass (200 for valid, 400 for invalid). Page renders 200. Audit log entries created correctly.
+- Backwards compatible: existing `ideas`, `onSelectIdea`, `className` props preserved. Search/filter/sort/drawer functionality untouched. New `onBulkAction` prop is optional.
+- Palette honored: violet (primary action), cyan (schedule accent), emerald (status), amber (unschedule warning), rose (delete). NO indigo, NO blue primary.
+- For the lead: if you want the dashboard to refresh its pipeline data after a bulk op, pass `onBulkAction={() => refetchPipeline()}` to `<IdeaExplorer>`. Otherwise the parent's `ideas` prop won't update and the user will see stale cards until the next poll.
+
+---
+Task ID: 10
+Agent: Cron Review Round (Lead Architect)
+Task: Assess project status, perform QA via agent-browser, fix bugs, add features, polish styling, write handover
+
+Work Log:
+- Read worklog.md (905 lines, 12+ prior tasks) to understand project state
+- Verified dev server running; QA via agent-browser across all 11 existing tabs
+- VLM-assisted QA (z-ai vision CLI) identified 3 real bugs:
+  1. **HIGH**: Niche card in KPI row showed text "AI tools practical" while other 3 cards showed numbers — visual inconsistency
+  2. **MEDIUM**: Pipeline Items card showed "67" but Pipeline Flow Ideas stage showed "66" — VLM perceived as data discrepancy (actually correct: 66 ideas + 1 approved = 67 total, but unclear sub-text)
+  3. **MEDIUM**: E-STOP button had no confirmation dialog — risk of accidental activation
+- Fixed all 3 bugs:
+  - Niche card now shows "8.5/10" (numeric score with /10 suffix) with niche name as sub-text
+  - Pipeline Items sub-text now shows "66 ideas · 1 approved" for clarity
+  - Added AlertDialog confirmation for E-STOP activation (Resume still one-click)
+  - Added `valueSuffix`, `hint` props to StatusCard for richer display + hover tooltips
+  - Added hover scale animation on StatusCard icon containers
+- Wired toast notifications to all agent commands (loading → success/error transitions via useToast + COMMAND_LABELS map covering 12 commands)
+- Launched 4 parallel subagents (Tasks 5-A, 5-B, 5-C, 5-D), all completed successfully:
+  - **5-A (Notification Persistence)**: Added `Notification` Prisma model + 3 API routes (`/api/data/notifications`, `[id]`, `read-all`) + integrated NotificationCenter to fetch from API with 15s polling (replaced localStorage) + agent.ts now creates notifications on 8 important events + emergency stop creates important notification + PrismaClient cache-bust helper for dev mode
+  - **5-B (CSV Export)**: Added unified `/api/data/export?type=<entity>` endpoint supporting 7 types (ideas/projects/uploads/revenue/analytics/audit-logs/jobs) with RFC 4180 CSV escaping + UTF-8 BOM + timestamped filenames + 400 on invalid type + 2 reusable UI components (`ExportButton` + `ExportMenu` with dropdown)
+  - **5-C (Decision Log)**: Added `/api/data/decisions` endpoint aggregating from 6 sources (AuditLog + NicheAnalysis + ContentPillar + VideoIdea + PolicyReview + Channel) into unified timeline + `/api/data/decisions/stats` bonus endpoint (30-day series, top types, category distribution) + 700+ LOC `decision-log.tsx` component with 4 stat cards, 9 category filter pills (framer-motion layoutId sliding gradient), debounced search, vertical timeline with date separators, per-category colored dots with ping glow, impact badges, "Load more", empty/error/loading states, 30s polling
+  - **5-D (Bulk Operations)**: Added `/api/data/ideas/bulk` POST endpoint supporting 6 actions (schedule/unschedule/delete/set-status/set-type/assign-pillar) with transactional cascade delete + audit log + 687 LOC of enhancements to `idea-explorer.tsx`: multi-select mode toggle, per-card checkboxes, sticky BulkActionBar with 6 action buttons (Schedule with Popover+Calendar, Unschedule, Set Status, Set Type, Assign Pillar, Delete with AlertDialog confirmation), toast feedback, selection persistence across filter changes, stale-ID auto-pruning
+- Integrated all new components into `src/app/page.tsx`:
+  - Added new "Decisions" tab (12th tab, between Logs and Settings) with GitBranch icon
+  - Added `<DecisionLog />` component in the new tab
+  - Added `<ExportMenu />` button in header (between Search and ThemeToggle, hidden on xs)
+  - Wired `<IdeaExplorer onBulkAction={...} />` to refresh pipeline + show success toast
+  - Added GitBranch to lucide-react imports
+  - Added Decisions nav entry to CommandPalette with Ctrl+! shortcut
+  - Updated keyboard shortcut tab list to include 'decisions' (12 tabs now)
+  - Bumped version to v2.4
+- Fixed bug in decision-log.tsx: Last 24h / Last 7d stat cards had confusingly swapped sub-descriptions; changed to show "% of total" percentage
+- Verified end-to-end via agent-browser:
+  - All 12 tabs render without errors
+  - E-STOP confirmation dialog appears on click, Cancel works, Activate E-STOP fires toast
+  - Toast notifications work: loading spinner → success/error with proper colors
+  - Decisions tab shows 174 decisions with proper categorization (Content: 121, Niche: 30, Strategy: 10, etc.)
+  - IdeaExplorer bulk mode: Select toggle reveals checkboxes, clicking cards selects them, BulkActionBar slides in with all 6 action buttons
+  - NotificationCenter shows persistent YouTube-not-connected notification from backend (not localStorage)
+  - CSV export returns proper text/csv with attachment headers
+  - Bulk API validates input (400 on invalid action)
+- Lint: 0 errors. TypeScript: clean for all new/modified files.
+- VLM final polish rating: 9/10 across all tabs (up from 8/10 initial)
+
+Stage Summary:
+- **3 critical bugs fixed** (Niche card inconsistency, E-STOP no confirmation, no toast feedback)
+- **4 new feature modules** added by parallel subagents:
+  - Persistent Notification backend (Prisma model + 3 APIs + agent integration)
+  - CSV Export system (1 unified endpoint + 2 reusable UI components)
+  - Decision Log feature (2 APIs + 700+ LOC component, new 12th tab)
+  - Bulk Operations (1 API + 687 LOC of IdeaExplorer enhancements)
+- **12 tabs** now functional (was 11) — added Decisions
+- **Header enhanced** with ExportMenu button
+- **IdeaExplorer upgraded** with multi-select + bulk action bar
+- **Toasts wired** to all 12 agent commands with loading→success/error transitions
+- **E-STOP confirmation** prevents accidental activation
+- All design constraints honored: dark theme, violet/cyan/emerald/amber/rose palette (NO indigo/blue primary), framer-motion animations, mobile responsive, accessible
+
+Files Created (8 new files):
+- `/home/z/my-project/prisma/schema.prisma` — added Notification model
+- `/home/z/my-project/src/app/api/data/notifications/route.ts`
+- `/home/z/my-project/src/app/api/data/notifications/[id]/route.ts`
+- `/home/z/my-project/src/app/api/data/notifications/read-all/route.ts`
+- `/home/z/my-project/src/app/api/data/export/route.ts`
+- `/home/z/my-project/src/app/api/data/decisions/route.ts`
+- `/home/z/my-project/src/app/api/data/decisions/stats/route.ts`
+- `/home/z/my-project/src/app/api/data/ideas/bulk/route.ts`
+- `/home/z/my-project/src/components/agent/decision-log.tsx`
+- `/home/z/my-project/src/components/agent/export-button.tsx`
+- `/home/z/my-project/src/components/agent/export-menu.tsx`
+
+Files Modified (7 files):
+- `/home/z/my-project/src/app/page.tsx` — integrated all new components, added Decisions tab, wired toasts, added E-STOP AlertDialog, fixed Niche card, bumped to v2.4
+- `/home/z/my-project/src/engine/agent.ts` — added notify() helper + 8 notification call sites
+- `/home/z/my-project/src/app/api/agent/command/route.ts` — emergency stop creates important notification
+- `/home/z/my-project/src/components/agent/notification-center.tsx` — replaced localStorage with API polling
+- `/home/z/my-project/src/components/agent/idea-explorer.tsx` — added 687 LOC of bulk operations features
+- `/home/z/my-project/src/components/agent/command-palette.tsx` — added Decisions nav entry
+- `/home/z/my-project/src/components/agent/decision-log.tsx` — fixed stat card sub-descriptions
+- `/home/z/my-project/src/lib/db.ts` — added PrismaClient cache-bust for dev mode
+
+Unresolved Issues / Risks:
+- YouTube OAuth still requires manual Google Cloud project setup (expected — can't be automated)
+- Revenue/Analytics data still uses synthetic placeholders until YouTube is connected
+- The "N Issues" badge in bottom-left is the Next.js dev tools overlay (dev-mode only, won't appear in production)
+- Dev server occasionally stops in sandbox (restarts fine with `bun run dev`)
+- Some video durations are short (3-30s) — would benefit from Remotion-based rendering for longer-form content
+- No automated analytics collection yet (endpoint exists but YT not connected)
+- Agent currently in `ready` state after resume
+
+Priority Recommendations for Next Phase:
+1. **Configure YouTube OAuth** — set `YOUTUBE_CLIENT_ID` and `YOUTUBE_CLIENT_SECRET` in `.env`, complete OAuth flow, then test real upload to private
+2. **Add Remotion renderer** — replace FFmpeg slideshow with programmatic Remotion compositions for richer visuals + longer videos
+3. **Implement real analytics ingestion** — once YT connected, call `/api/agent/collect-analytics` periodically to populate `AnalyticsSnapshot` and feed PerformanceMetrics from real data
+4. **Add video re-render flow** — when Quality Review fails, currently the project is just marked `failed`; should auto-retry with revised script
+5. **A/B thumbnail testing** — generate multiple thumbnails per video, track CTR, optimize
+6. **Cron job for autonomous production** — schedule `produce-next` every X hours via the cron tool so the agent runs truly autonomously
+7. **Light theme QA pass** — verify all 20+ agent components render correctly in light mode
+8. **Add multi-select to Video Projects** — bulk approve/re-render/delete video projects
+9. **Add reports** — weekly/monthly summary PDF reports with charts
+10. **Real storage stats** — compute actual disk usage from data/ directory for the Storage Dashboard
