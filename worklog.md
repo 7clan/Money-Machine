@@ -1939,3 +1939,34 @@ Stage Summary:
 - Disconnect flow with token revocation and cleanup
 - Proper CSRF protection, audit logging, and notifications throughout
 - Key files: `/api/youtube/auth/route.ts`, `/api/youtube/callback/route.ts`, `/api/youtube/disconnect/route.ts`
+
+---
+Task ID: 9
+Agent: Lead Developer
+Task: Build YouTube Setup Wizard and Demo Mode for instant YouTube connection
+
+Work Log:
+- Created YouTubeSetupWizard component (5-step guided setup):
+  - Step 1: Welcome — explains benefits of connecting, security info
+  - Step 2: Create Google Cloud Project — link to console, step-by-step
+  - Step 3: Enable YouTube Data API v3 — direct link to API page
+  - Step 4: Create OAuth Credentials — redirect URI with copy button, consent screen instructions
+  - Step 5: Enter Credentials — Client ID + Secret inputs with validation, saves to .env
+- Created `/api/youtube/save-credentials` route — writes credentials to .env file
+- Created `/api/youtube/demo-connect` route — simulates YouTube connection with mock data
+- Added Demo Mode: one-click YouTube simulation without real Google credentials
+  - Creates demo OAuth connection with fake tokens
+  - Creates demo channel with "Demo YouTube Channel" name
+  - Creates audit log + notification
+- Updated Overview banner: now shows "Setup Wizard" + "Demo Mode" buttons
+- Updated Settings YouTube card: "Setup Wizard" + "Demo Mode" + "Connect directly" options
+- Top bar badge: click now opens wizard when not connected, goes to settings when connected
+- Wizard has progress bar, back/next navigation, step indicators, and Demo Mode escape hatch
+- Tested all flows with agent-browser: wizard navigation works, demo mode activates, connected state persists
+- Zero console errors, lint passes clean
+
+Stage Summary:
+- Users now have 3 ways to connect YouTube: Setup Wizard (guided 5-step), Demo Mode (instant simulation), Direct Connect (for existing credentials)
+- The Setup Wizard walks users through every Google Cloud step with direct links and copy-to-clipboard
+- Demo Mode enables full studio exploration without any Google account
+- Key files: `youtube-setup-wizard.tsx`, `/api/youtube/save-credentials/route.ts`, `/api/youtube/demo-connect/route.ts`

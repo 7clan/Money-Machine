@@ -55,6 +55,7 @@ import { NotificationCenter } from '@/components/agent/notification-center'
 import { DecisionLog } from '@/components/agent/decision-log'
 import { ExportMenu } from '@/components/agent/export-menu'
 import { StorageDashboard } from '@/components/agent/storage-dashboard'
+import { YouTubeSetupWizard } from '@/components/agent/youtube-setup-wizard'
 import { useToast } from '@/components/agent/toast-provider'
 import { AgentPulseIndicator } from '@/components/agent/agent-pulse'
 import { SmartRecommendations } from '@/components/agent/smart-recommendations'
@@ -529,6 +530,8 @@ export default function Dashboard() {
   const [ytConnecting, setYtConnecting] = useState(false)
   const [ytDisconnecting, setYtDisconnecting] = useState(false)
   const [ytSetupInfo, setYtSetupInfo] = useState<any>(null)
+  const [ytWizardOpen, setYtWizardOpen] = useState(false)
+  const [ytDemoMode, setYtDemoMode] = useState(false)
   const { toast } = useToast()
 
   // ── YouTube OAuth Callback Handler ────────────────────────────────
@@ -619,7 +622,7 @@ export default function Dashboard() {
       if (!res.ok) {
         if (data.setupRequired) {
           setYtSetupInfo(data)
-          toast({ type: 'error', title: 'Setup Required', description: data.message, duration: 7000 })
+          setYtWizardOpen(true) // Open the setup wizard instead of just showing a toast
         } else {
           toast({ type: 'error', title: 'Connection Failed', description: data.error || data.message || 'Unknown error', duration: 5000 })
         }
@@ -664,6 +667,35 @@ export default function Dashboard() {
     } finally {
       setYtConnecting(false)
     }
+  }
+
+  const enableDemoMode = async () => {
+    setYtConnecting(true)
+    try {
+      const res = await fetch('/api/youtube/demo-connect', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        toast({ type: 'error', title: 'Demo Mode Failed', description: data.error || data.message, duration: 5000 })
+        return
+      }
+      setYtDemoMode(true)
+      setYtWizardOpen(false)
+      toast({ type: 'success', title: 'Demo Mode Activated', description: data.message, duration: 5000 })
+      await fetchChannel()
+    } catch (e: any) {
+      toast({ type: 'error', title: 'Demo Mode Error', description: e.message, duration: 5000 })
+    } finally {
+      setYtConnecting(false)
+    }
+  }
+
+  const handleWizardComplete = async (clientId: string, clientSecret: string) => {
+    setYtWizardOpen(false)
+    toast({ type: 'success', title: 'Credentials Saved!', description: 'Now click "Connect YouTube" to authorize with Google.', duration: 7000 })
+    // Small delay for the env to be picked up
+    await new Promise(r => setTimeout(r, 2000))
+    // Now try the actual OAuth flow
+    await connectYouTube()
   }
 
   const disconnectYouTube = async () => {
@@ -1010,27 +1042,38 @@ export default function Dashboard() {
                     className="relative overflow-hidden rounded-xl border border-red-500/30 bg-gradient-to-r from-red-500/10 via-slate-900/80 to-amber-500/10 p-4"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-amber-500/5 animate-pulse" />
-                    <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
-                          <Youtube className="w-6 h-6 text-red-400" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-slate-100">YouTube Not Connected</p>
-                          <p className="text-xs text-slate-400">Connect your YouTube channel to enable video uploads, analytics collection, and autonomous publishing.</p>
+                    <div className="relative flex flex-col gap-3">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
+                            <Youtube className="w-6 h-6 text-red-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-100">YouTube Not Connected</p>
+                            <p className="text-xs text-slate-400">Connect your channel to enable uploads, analytics, and autonomous publishing.</p>
+                          </div>
                         </div>
                       </div>
-                      <Button
-                        onClick={connectYouTube}
-                        disabled={ytConnecting}
-                        className="shrink-0 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-2"
-                      >
-                        {ytConnecting ? (
-                          <><Loader2 className="w-4 h-4 animate-spin" /> Connecting...</>
-                        ) : (
-                          <><Youtube className="w-4 h-4" /> Connect YouTube</>
-                        )}
-                      </Button>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          onClick={() => setYtWizardOpen(true)}
+                          className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-2"
+                        >
+                          <Youtube className="w-4 h-4" /> Setup Wizard
+                        </Button>
+                        <Button
+                          onClick={enableDemoMode}
+                          disabled={ytConnecting}
+                          variant="outline"
+                          className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 gap-2"
+                        >
+                          {ytConnecting ? (
+                            <><Loader2 className="w-4 h-4 animate-spin" /> Starting...</>
+                          ) : (
+                            <><Sparkles className="w-4 h-4" /> Demo Mode</>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -2534,7 +2577,11 @@ export default function Dashboard() {
                             <CheckCircle2 className="w-4 h-4" />
                             <span className="font-medium">YouTube Connected Successfully</span>
                           </div>
-                          <p className="text-[10px] text-emerald-300/80">Videos can be uploaded, analytics will be collected, and autonomous publishing is available.</p>
+                          <p className="text-[10px] text-emerald-300/80">
+                            {ytDemoMode
+                              ? 'Demo mode — uploads and analytics are simulated.'
+                              : 'Videos can be uploaded, analytics will be collected, and autonomous publishing is available.'}
+                          </p>
                         </div>
                         <Button
                           onClick={disconnectYouTube}
@@ -2551,36 +2598,41 @@ export default function Dashboard() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {/* Setup info (from API if available) */}
-                        {ytSetupInfo ? (
-                          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
-                            <p className="font-medium mb-1.5">Setup Required:</p>
-                            <ol className="list-decimal list-inside space-y-1 text-[10px] text-amber-300/80">
-                              {ytSetupInfo.steps?.map((step: string, i: number) => (
-                                <li key={i}>{step}</li>
-                              ))}
-                            </ol>
-                          </div>
-                        ) : (
-                          <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/20 text-xs text-slate-300">
-                            <p className="font-medium mb-1">To connect YouTube, you need:</p>
-                            <ol className="list-decimal list-inside space-y-0.5 text-[10px] text-slate-400">
-                              <li>A Google Cloud project with YouTube Data API v3</li>
-                              <li>OAuth 2.0 credentials configured</li>
-                              <li>Redirect URI added to your credentials</li>
-                              <li>YOUTUBE_CLIENT_ID & YOUTUBE_CLIENT_SECRET in .env</li>
-                            </ol>
-                          </div>
-                        )}
+                        {/* Setup info */}
+                        <div className="p-3 rounded-lg bg-slate-800/30 border border-slate-700/20 text-xs text-slate-300">
+                          <p className="font-medium mb-1">Connect your YouTube channel to enable uploads & analytics</p>
+                          <p className="text-[10px] text-slate-400">Use the setup wizard for step-by-step guidance, or try demo mode to explore.</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            onClick={() => setYtWizardOpen(true)}
+                            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-1.5"
+                          >
+                            <Youtube className="w-3.5 h-3.5" /> Setup Wizard
+                          </Button>
+                          <Button
+                            onClick={enableDemoMode}
+                            disabled={ytConnecting}
+                            variant="outline"
+                            className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 gap-1.5"
+                          >
+                            {ytConnecting ? (
+                              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Starting...</>
+                            ) : (
+                              <><Sparkles className="w-3.5 h-3.5" /> Demo Mode</>
+                            )}
+                          </Button>
+                        </div>
                         <Button
                           onClick={connectYouTube}
                           disabled={ytConnecting}
-                          className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-2"
+                          variant="ghost"
+                          className="w-full text-slate-400 hover:text-slate-200 gap-1.5 text-xs"
                         >
                           {ytConnecting ? (
-                            <><Loader2 className="w-4 h-4 animate-spin" /> Connecting...</>
+                            <><Loader2 className="w-3 h-3 animate-spin" /> Connecting...</>
                           ) : (
-                            <><Youtube className="w-4 h-4" /> Connect YouTube</>
+                            <><Youtube className="w-3 h-3" /> Already have credentials? Connect directly</>
                           )}
                         </Button>
                       </div>
@@ -2728,6 +2780,14 @@ export default function Dashboard() {
           }}
           agentState={status?.state || 'idle'}
           loading={loading}
+        />
+
+        {/* ═══ YOUTUBE SETUP WIZARD ═══ */}
+        <YouTubeSetupWizard
+          open={ytWizardOpen}
+          onOpenChange={setYtWizardOpen}
+          onComplete={handleWizardComplete}
+          onDemoMode={enableDemoMode}
         />
 
         {/* ═══ KEYBOARD SHORTCUTS ═══ */}
