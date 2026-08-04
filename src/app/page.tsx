@@ -614,59 +614,9 @@ export default function Dashboard() {
 
   // ── YouTube Connect/Disconnect ────────────────────────────────────
   const connectYouTube = async () => {
-    setYtConnecting(true)
-    try {
-      const res = await fetch('/api/youtube/auth')
-      const data = await res.json()
-
-      if (!res.ok) {
-        if (data.setupRequired) {
-          setYtSetupInfo(data)
-          setYtWizardOpen(true) // Open the setup wizard instead of just showing a toast
-        } else {
-          toast({ type: 'error', title: 'Connection Failed', description: data.error || data.message || 'Unknown error', duration: 5000 })
-        }
-        return
-      }
-
-      if (data.connected) {
-        toast({ type: 'info', title: 'Already Connected', description: data.message, duration: 3000 })
-        await fetchChannel()
-        return
-      }
-
-      if (data.authUrl) {
-        // Open Google OAuth in a new window
-        const width = 600, height = 700
-        const left = window.screenX + (window.outerWidth - width) / 2
-        const top = window.screenY + (window.outerHeight - height) / 2
-        const popup = window.open(
-          data.authUrl,
-          'youtube-auth',
-          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
-        )
-
-        // Poll for popup closure (user completed or cancelled)
-        const pollPopup = setInterval(() => {
-          if (!popup || popup.closed) {
-            clearInterval(pollPopup)
-            setYtConnecting(false)
-            // Re-fetch channel to check if connected
-            setTimeout(() => fetchChannel(), 1000)
-          }
-        }, 500)
-
-        // Auto-timeout after 5 minutes
-        setTimeout(() => {
-          clearInterval(pollPopup)
-          setYtConnecting(false)
-        }, 300000)
-      }
-    } catch (e: any) {
-      toast({ type: 'error', title: 'Connection Error', description: e.message, duration: 5000 })
-    } finally {
-      setYtConnecting(false)
-    }
+    // Open the setup wizard — it handles the full OAuth flow internally
+    // including manual code exchange for sandboxed environments
+    setYtWizardOpen(true)
   }
 
   const enableDemoMode = async () => {
@@ -689,13 +639,10 @@ export default function Dashboard() {
     }
   }
 
-  const handleWizardComplete = async (clientId: string, clientSecret: string) => {
+  const handleWizardComplete = async () => {
     setYtWizardOpen(false)
-    toast({ type: 'success', title: 'Credentials Saved!', description: 'Now click "Connect YouTube" to authorize with Google.', duration: 7000 })
-    // Small delay for the env to be picked up
-    await new Promise(r => setTimeout(r, 2000))
-    // Now try the actual OAuth flow
-    await connectYouTube()
+    toast({ type: 'success', title: 'YouTube Connected!', description: 'Your YouTube account is now connected.', duration: 5000 })
+    await fetchChannel()
   }
 
   const disconnectYouTube = async () => {
