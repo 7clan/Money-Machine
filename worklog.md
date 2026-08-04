@@ -1995,3 +1995,29 @@ Stage Summary:
 - User workflow: Click Setup Wizard → Connect with Google OAuth → Open Google link → Sign in → Copy code from URL → Paste code → Connected!
 - This works in ANY environment (sandboxed, localhost, production)
 - Key files: `youtube-setup-wizard.tsx` (rewritten), `/api/youtube/exchange-code/route.ts` (new'  ')
+
+---
+Task ID: oauth-fix
+Agent: Lead Developer
+Task: Fix YouTube OAuth connection failure in sandboxed environment
+
+Work Log:
+- Identified root cause: OAuth redirect to localhost:3000 fails because sandboxed environment can't be reached from user's browser
+- Identified secondary issue: Google "hasn't verified this app" warning confuses users
+- User provided real Google OAuth credentials: Client ID 992007302192-...apps.googleusercontent.com
+- Confirmed credentials already saved in .env file
+- Completely rewrote YouTubeSetupWizard component with:
+  - 3-step clear manual code flow (Open Google → Copy code from URL → Paste code)
+  - Smart URL/code parser that auto-extracts code from pasted redirect URL
+  - Collapsible "Google hasn't verified this app" help section with step-by-step bypass instructions
+  - Clear explanation that "This site can't be reached" is expected after authorization
+  - Visual URL breakdown showing where to find the code parameter
+  - Better error messages with tips (e.g. codes expire in ~10 min)
+- Verified all flows work via browser testing (agent-browser)
+- Demo Mode verified working as alternative
+
+Stage Summary:
+- YouTube OAuth connection now works via manual code exchange flow
+- Users can connect by: 1) Opening Google auth URL → 2) Authorizing (bypassing unverified warning) → 3) Copying code from failed redirect URL → 4) Pasting into app
+- Smart parser handles both raw codes and full URLs
+- All three connection methods verified: Google OAuth, GCP Setup, Demo Mode
