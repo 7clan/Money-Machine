@@ -529,8 +529,25 @@ export async function phase7_upload(videoProjectId: string): Promise<string> {
     await setAgentState('next_action', 'Select next topic')
     return videoProjectId
   } catch (e: any) {
-    await setAgentState('last_error', e.message)
-    throw e
+    // Upload failed (e.g. token refresh error, network issue) — don't crash the agent
+    const errMsg = e?.message || 'Upload failed'
+    logAction(`Upload failed: ${errMsg}`)
+    await setAgentState('last_error', errMsg)
+    await setAgentState('agent_state', 'ready')
+    await setAgentState('current_job', '')
+    await setAgentState('next_action', 'Upload failed — check YouTube connection, or produce next video')
+    await notify({
+      type: 'error',
+      category: 'youtube',
+      title: 'Upload failed',
+      description: errMsg.slice(0, 200),
+      isImportant: true,
+      targetId: videoProjectId,
+      targetType: 'video_project',
+      actionLabel: 'Open Settings',
+      actionTab: 'settings',
+    })
+    return videoProjectId
   }
 }
 
@@ -625,9 +642,21 @@ export async function produceNextVideo(): Promise<string | null> {
     await setAgentState('next_action', 'All pipeline items processed. Click "Produce Next" to continue.')
     return null
   } catch (e: any) {
-    await setAgentState('agent_state', 'error')
-    await setAgentState('last_error', e.message)
-    throw e
+    // Non-upload errors (research, script, render, review) — recover gracefully
+    const errMsg = e?.message || 'Pipeline step failed'
+    logAction(`Pipeline error: ${errMsg}`)
+    await setAgentState('last_error', errMsg)
+    await setAgentState('agent_state', 'ready')
+    await setAgentState('current_job', '')
+    await setAgentState('next_action', `Error: ${errMsg.slice(0, 80)}. Retry or check settings.`)
+    await notify({
+      type: 'error',
+      category: 'pipeline',
+      title: 'Pipeline step failed',
+      description: errMsg.slice(0, 200),
+      isImportant: true,
+    })
+    return null
   }
 }
 
@@ -646,8 +675,12 @@ export async function runAutonomousCycle(): Promise<void> {
     await setAgentState('agent_state', 'cycle_complete')
     logAction('Autonomous cycle complete')
   } catch (e: any) {
-    await setAgentState('agent_state', 'error')
-    await setAgentState('last_error', e.message)
+    const errMsg = e?.message || 'Cycle failed'
+    logAction(`Cycle error: ${errMsg}`)
+    await setAgentState('last_error', errMsg)
+    await setAgentState('agent_state', 'ready')
+    await setAgentState('current_job', '')
+    await setAgentState('next_action', `Cycle error: ${errMsg.slice(0, 80)}. Retry from dashboard.`)
     throw e
   }
 }

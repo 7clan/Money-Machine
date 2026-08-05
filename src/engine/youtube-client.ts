@@ -334,10 +334,16 @@ export async function revokeTokens(): Promise<void> {
   })
 }
 
-/** Check if YouTube is connected */
+/** Check if YouTube is connected and credentials are valid */
 export async function isYouTubeConnected(): Promise<boolean> {
   const conn = await db.oAuthConnection.findFirst({
     where: { provider: 'google', isConnected: true },
   })
-  return !!conn && !!conn.refreshToken
+  if (!conn || !conn.refreshToken) return false
+
+  // Check that OAuth config is present (client ID/secret)
+  const config = getYouTubeConfig()
+  if (!config.clientId || !config.clientSecret) return false
+
+  return true
 }
