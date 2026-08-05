@@ -117,6 +117,16 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Clear stale agent state (e.g. "YouTube not connected" error)
+    const staleError = await db.agentState.findUnique({ where: { key: 'last_error' } })
+    if (staleError?.value?.includes('YouTube not connected')) {
+      await db.agentState.delete({ where: { key: 'last_error' } })
+    }
+    const staleNext = await db.agentState.findUnique({ where: { key: 'next_action' } })
+    if (staleNext?.value?.includes('Connect YouTube')) {
+      await db.agentState.delete({ where: { key: 'next_action' } })
+    }
+
     return NextResponse.json({
       ok: true,
       message: 'YouTube connected successfully!',

@@ -1,0 +1,1649 @@
+- main
+  - tablist [ref=e8] focusable [tabindex]
+    - tab "Overview" [selected, ref=e12]
+      - StaticText "Overview"
+    - tab "Pipeline" [ref=e13]
+      - StaticText "Pipeline"
+    - tab "Strategy" [ref=e14]
+      - StaticText "Strategy"
+    - tab "Calendar" [ref=e15]
+      - StaticText "Calendar"
+    - tab "Scheduler" [ref=e16]
+      - StaticText "Scheduler"
+    - tab "Revenue" [ref=e17]
+      - StaticText "Revenue"
+    - tab "Analytics" [ref=e18]
+      - StaticText "Analytics"
+    - tab "Opportunities" [ref=e19]
+      - StaticText "Opportunities"
+    - tab "Experiments" [ref=e20]
+      - StaticText "Experiments"
+    - tab "Logs" [ref=e21]
+      - StaticText "Logs"
+    - tab "Decisions" [ref=e22]
+      - StaticText "Decisions"
+    - tab "Settings" [ref=e23]
+      - StaticText "Settings"
+    - button "Keyboard Shortcuts (Ctrl+/)" [ref=e24]
+  - tabpanel "Overview" [ref=e9] focusable [tabindex]
+    - generic
+      - generic
+        - generic
+          - paragraph
+            - StaticText "71"
+          - paragraph
+            - StaticText "Pipeline Items"
+          - paragraph
+            - StaticText "66 ideas · 1 approved"
+          - image
+    - generic
+      - generic
+        - generic
+          - paragraph
+            - StaticText "0"
+          - paragraph
+            - StaticText "Videos Produced"
+          - paragraph
+            - StaticText "1 approved"
+          - image
+    - generic
+      - generic
+        - generic
+          - paragraph
+            - StaticText "8.5"
+          - StaticText "/10"
+          - paragraph
+            - StaticText "Niche Score"
+          - paragraph
+            - StaticText "AI tools practical"
+          - image
+    - generic
+      - generic
+        - generic
+          - paragraph
+            - StaticText "0"
+          - paragraph
+            - StaticText "Jobs Queued"
+          - paragraph
+            - StaticText "0 done"
+          - image
+    - generic
+      - heading "Smart Recommendations" [level=3, ref=e31]
+      - StaticText "2"
+      - StaticText " tips"
+      - button "Upload Approved Videos Suggested 1 approved video(s) ready to upload." [ref=e35]
+        - StaticText "Upload Approved Videos"
+        - StaticText "Suggested"
+        - paragraph
+          - StaticText "1 approved video(s) ready to upload."
+      - button "Review Strategy Analyze your content pillars and optimization opportunities." [ref=e36]
+        - StaticText "Review Strategy"
+        - paragraph
+          - StaticText "Analyze your content pillars and optimization opportunities."
+    - generic
+      - generic
+        - heading "Channel Strategy Score" [level=3, ref=e37]
+        - StaticText "Composite"
+        - generic
+          - image
+          - generic
+            - StaticText "B"
+            - StaticText "63"
+            - StaticText "%"
+        - StaticText "Niche Fit"
+        - StaticText " "
+        - StaticText "("
+        - StaticText "30%"
+        - StaticText ")"
+        - StaticText "85"
+        - StaticText "%"
+        - StaticText "Pipeline Efficiency"
+        - StaticText " "
+        - StaticText "("
+        - StaticText "30%"
+        - StaticText ")"
+        - StaticText "4"
+        - StaticText "%"
+        - StaticText "Content Pillars"
+        - StaticText " "
+        - StaticText "("
+        - StaticText "20%"
+        - StaticText ")"
+        - StaticText "80"
+        - StaticText "%"
+        - StaticText "Monetization"
+        - StaticText " "
+        - StaticText "("
+        - StaticText "20%"
+        - StaticText ")"
+        - StaticText "100"
+        - StaticText "%"
+        - paragraph
+          - StaticText "Composite score combining niche fit (30%), pipeline throughput (30%), content pillar coverage (20%), and monetization readiness (20%). Good foundation — increase pipeline throughput and pillar coverage."
+    - paragraph
+      - StaticText "66"
+    - paragraph
+      - StaticText "Ideas"
+    - paragraph
+      - StaticText "0"
+    - paragraph
+      - StaticText "Researched"
+    - paragraph
+      - StaticText "2"
+    - paragraph
+      - StaticText "Scripted"
+    - paragraph
+      - StaticText "0"
+    - paragraph
+      - StaticText "Producing"
+    - paragraph
+      - StaticText "1"
+    - paragraph
+      - StaticText "Approved"
+    - paragraph
+      - StaticText "0"
+    - paragraph
+      - StaticText "Uploaded"
+    - generic
+      - generic
+        - heading "Production Pipeline" [level=3, ref=e38]
+        - StaticText "71"
+        - StaticText " total"
+        - StaticText "66"
+        - StaticText "Ideas"
+        - StaticText "93"
+        - StaticText "%"
+        - StaticText "+"
+        - StaticText "Research"
+        - StaticText "2"
+        - StaticText "Script"
+        - StaticText "3"
+        - StaticText "%"
+        - StaticText "+"
+        - StaticText "Produce"
+        - StaticText "2"
+        - StaticText "Review"
+        - StaticText "3"
+        - StaticText "%"
+        - StaticText "+"
+        - StaticText "Upload"
+    - generic
+      - generic
+        - heading "Autonomous Cycle" [level=3, ref=e39]
+        - StaticText "IDLE"
+        - generic
+          - SvgRoot
+            - StaticText "IDLE"
+            - StaticText "Waiting"
+          - StaticText "Research"
+          - StaticText "Script"
+          - StaticText "Produce"
+          - StaticText "Review"
+          - StaticText "Upload"
+          - StaticText "Analyze"
+    - generic
+      - generic
+        - StaticText "QUICK:"
+        - button "Research Niche" [ref=e40]
+          - StaticText "Research Niche"
+        - button "Write Script" [ref=e41]
+          - StaticText "Write Script"
+        - button "Produce Video" [ref=e42]
+          - StaticText "Produce Video"
+        - button "Review Quality" [ref=e43]
+          - StaticText "Review Quality"
+        - button "Upload" [ref=e44]
+          - StaticText "Upload"
+        - button "Analytics" [ref=e45]
+          - StaticText "Analytics"
+    - generic
+      - generic
+        - heading "AI Insights" [level=3, ref=e46]
+        - paragraph
+          - StaticText "Best upload time: 2-4 PM EST for maximum engagement"
+        - paragraph
+          - StaticText "AI tools practical content shows 2.3× higher engagement — produce more"
+        - paragraph
+          - StaticText "Quality pass rate improved 12% this week with refined prompts"
+    - generic
+      - generic
+        - heading "Weekly Summary" [level=3, ref=e47]
+        - StaticText "This week"
+        - generic
+          - StaticText "7Decisions"
+        - generic
+          - StaticText "0Ideas"
+        - generic
+          - StaticText "0Produced"
+        - generic
+          - StaticText "0Reviews"
+        - paragraph
+          - StaticText "Steady progress. Keep the momentum going!"
+    - generic
+      - generic
+        - heading "Agent Intelligence" [level=3, ref=e48]
+        - StaticText "Current State"
+        - paragraph
+          - StaticText "Idle"
+        - paragraph
+          - StaticText "Ready"
+        - StaticText "Next Action"
+        - paragraph
+          - StaticText "Produce next video"
+        - StaticText "Pipeline Efficiency"
+        - StaticText "1"
+        - StaticText "% throughput"
+    - generic
+      - generic
+        - heading "Command Center" [level=3, ref=e49]
+        - generic [ref=e50] focusable [tabindex]
+          - button "Produce Next Video" [ref=e57]
+        - generic [ref=e51] focusable [tabindex]
+          - button "Full Cycle" [ref=e58]
+        - button "Setup" [ref=e52]
+        - button "Pause" [ref=e53]
+        - button "Resume" [ref=e54]
+        - button "Process Job" [ref=e55]
+        - StaticText "Next: "
+        - StaticText "Produce next video"
+    - generic
+      - generic
+        - heading "Live Feed" [level=3, ref=e56]
+          - StaticText "Live Feed"
+        - StaticText "12:32 AM"
+        - StaticText "token_refresh"
+        - StaticText "11:43 PM"
+        - StaticText "token_revoke"
+        - StaticText "11:43 PM"
+        - StaticText "token_revoke"
+    - heading "Performance Metrics" [level=3, ref=e25]
+    - paragraph
+      - StaticText "KPIs, production trends, and efficiency overview"
+    - generic
+      - StaticText "0 / 5"
+      - paragraph
+        - StaticText "Pipeline Velocity"
+      - StaticText "videos this week"
+      - StaticText "0"
+      - StaticText "%"
+      - image
+    - generic
+      - StaticText "12"
+      - StaticText "%"
+      - StaticText "9m"
+      - paragraph
+        - StaticText "Avg Production Time"
+      - image
+    - generic
+      - StaticText "5"
+      - StaticText "%"
+      - StaticText "33%"
+      - paragraph
+        - StaticText "Quality Pass Rate"
+      - image
+    - generic
+      - StaticText "124 MB"
+      - StaticText "/ 1.00 GB"
+      - paragraph
+        - StaticText "Storage Used"
+      - progressbar
+      - StaticText "12"
+      - StaticText "% of cap"
+      - StaticText "900 MB"
+      - StaticText " free"
+      - image
+    - StaticText "Production Trend"
+    - StaticText "Videos produced per day, stacked by review outcome"
+    - StaticText "Last 30 days"
+    - StaticText "Approved"
+    - StaticText "In Review"
+    - StaticText "Failed"
+    - SvgRoot
+      - StaticText "Jul 7"
+      - StaticText "Jul 12"
+      - StaticText "Jul 17"
+      - StaticText "Jul 22"
+      - StaticText "Jul 27"
+      - StaticText "Aug 1"
+      - StaticText "0"
+      - StaticText "3"
+      - StaticText "5"
+    - StaticText "Niche Performance"
+    - generic
+      - StaticText "Top 5 niches ranked by composite score"
+    - table
+      - rowgroup
+        - row
+          - columnheader "NICHE" [ref=e84]
+            - button "NICHE" [ref=e89]
+          - columnheader "SCORE" [ref=e85]
+            - button "SCORE" [ref=e90]
+          - columnheader "VIDEOS" [ref=e86]
+            - button "VIDEOS" [ref=e91]
+          - columnheader "QUALITY" [ref=e87]
+            - button "QUALITY" [ref=e92]
+          - columnheader "REVENUE" [ref=e88]
+            - button "REVENUE" [ref=e93]
+      - row
+        - cell "AI tools practical" [ref=e59]
+          - StaticText "AI tools practical"
+        - cell "8.5" [ref=e60]
+          - StaticText "8.5"
+        - cell "3" [ref=e61]
+        - cell "65%" [ref=e62]
+          - StaticText "65%"
+        - cell "55" [ref=e63]
+          - StaticText "55"
+      - row
+        - cell "Spreadsheet mastery" [ref=e64]
+          - StaticText "Spreadsheet mastery"
+        - cell "8.3" [ref=e65]
+          - StaticText "8.3"
+        - cell "10" [ref=e66]
+        - cell "78%" [ref=e67]
+          - StaticText "78%"
+        - cell "72" [ref=e68]
+          - StaticText "72"
+      - row
+        - cell "Web development" [ref=e69]
+          - StaticText "Web development"
+        - cell "8.2" [ref=e70]
+          - StaticText "8.2"
+        - cell "6" [ref=e71]
+        - cell "91%" [ref=e72]
+          - StaticText "91%"
+        - cell "89" [ref=e73]
+          - StaticText "89"
+      - row
+        - cell "JavaScript tutorials" [ref=e74]
+          - StaticText "JavaScript tutorials"
+        - cell "8.2" [ref=e75]
+          - StaticText "8.2"
+        - cell "13" [ref=e76]
+        - cell "74%" [ref=e77]
+          - StaticText "74%"
+        - cell "66" [ref=e78]
+          - StaticText "66"
+      - row
+        - cell "Smart home tech" [ref=e79]
+          - StaticText "Smart home tech"
+        - cell "8.2" [ref=e80]
+          - StaticText "8.2"
+        - cell "9" [ref=e81]
+        - cell "87%" [ref=e82]
+          - StaticText "87%"
+        - cell "83" [ref=e83]
+          - StaticText "83"
+    - StaticText "Agent Efficiency"
+    - StaticText "Approved videos / total produced"
+    - generic
+      - image "Efficiency 100%"
+        - StaticText "0"
+        - StaticText "50"
+        - StaticText "100"
+      - generic
+        - StaticText "100"
+        - StaticText "%"
+        - StaticText "EFFICIENCY"
+    - StaticText "Target: "
+    - StaticText "80"
+    - StaticText "%"
+    - StaticText "+"
+    - StaticText "20"
+    - StaticText "%"
+    - progressbar
+    - StaticText "0%"
+    - StaticText "1"
+    - StaticText " of "
+    - StaticText "1"
+    - StaticText " approved"
+    - StaticText "80"
+    - StaticText "%"
+    - StaticText "Time-of-Day Production"
+    - StaticText "Historical avg videos per 4-hour bucket"
+    - StaticText "0-4"
+    - StaticText "4-8"
+    - StaticText "8-12"
+    - StaticText "12-16"
+    - StaticText "16-20"
+    - StaticText "20-24"
+    - StaticText "Sun"
+    - StaticText "0.3"
+    - StaticText "1.2"
+    - StaticText "0.4"
+    - StaticText "1.3"
+    - StaticText "0.5"
+    - StaticText "1.3"
+    - StaticText "Mon"
+    - StaticText "0.7"
+    - StaticText "1.6"
+    - StaticText "0.8"
+    - StaticText "1.6"
+    - StaticText "0.8"
+    - StaticText "1.7"
+    - StaticText "Tue"
+    - StaticText "1.0"
+    - StaticText "1.9"
+    - StaticText "1.1"
+    - StaticText "0.3"
+    - StaticText "1.2"
+    - StaticText "0.4"
+    - StaticText "Wed"
+    - StaticText "1.4"
+    - StaticText "0.6"
+    - StaticText "1.5"
+    - StaticText "0.7"
+    - StaticText "1.6"
+    - StaticText "0.8"
+    - StaticText "Thu"
+    - StaticText "1.8"
+    - StaticText "1.0"
+    - StaticText "1.9"
+    - StaticText "1.1"
+    - StaticText "1.9"
+    - StaticText "1.1"
+    - StaticText "Fri"
+    - StaticText "0.5"
+    - StaticText "1.3"
+    - StaticText "0.5"
+    - StaticText "1.4"
+    - StaticText "0.6"
+    - StaticText "1.5"
+    - StaticText "Sat"
+    - StaticText "0.8"
+    - StaticText "1.7"
+    - StaticText "0.9"
+    - StaticText "1.8"
+    - StaticText "1.0"
+    - StaticText "1.9"
+    - StaticText "Hover a cell for details"
+    - StaticText "Less"
+    - StaticText "More"
+  - button [ref=e26]
+  - button [ref=e27]
+  - button [ref=e28]
+  - button [ref=e29]
+  - button [ref=e30]
+- tablist [ref=e8] focusable [tabindex]
+  - tab "Overview" [selected, ref=e12]
+    - StaticText "Overview"
+  - tab "Pipeline" [ref=e13]
+    - StaticText "Pipeline"
+  - tab "Strategy" [ref=e14]
+    - StaticText "Strategy"
+  - tab "Calendar" [ref=e15]
+    - StaticText "Calendar"
+  - tab "Scheduler" [ref=e16]
+    - StaticText "Scheduler"
+  - tab "Revenue" [ref=e17]
+    - StaticText "Revenue"
+  - tab "Analytics" [ref=e18]
+    - StaticText "Analytics"
+  - tab "Opportunities" [ref=e19]
+    - StaticText "Opportunities"
+  - tab "Experiments" [ref=e20]
+    - StaticText "Experiments"
+  - tab "Logs" [ref=e21]
+    - StaticText "Logs"
+  - tab "Decisions" [ref=e22]
+    - StaticText "Decisions"
+  - tab "Settings" [ref=e23]
+    - StaticText "Settings"
+  - button "Keyboard Shortcuts (Ctrl+/)" [ref=e24]
+- tabpanel "Overview" [ref=e9] focusable [tabindex]
+  - generic
+    - generic
+      - generic
+        - paragraph
+          - StaticText "71"
+        - paragraph
+          - StaticText "Pipeline Items"
+        - paragraph
+          - StaticText "66 ideas · 1 approved"
+        - image
+  - generic
+    - generic
+      - generic
+        - paragraph
+          - StaticText "0"
+        - paragraph
+          - StaticText "Videos Produced"
+        - paragraph
+          - StaticText "1 approved"
+        - image
+  - generic
+    - generic
+      - generic
+        - paragraph
+          - StaticText "8.5"
+        - StaticText "/10"
+        - paragraph
+          - StaticText "Niche Score"
+        - paragraph
+          - StaticText "AI tools practical"
+        - image
+  - generic
+    - generic
+      - generic
+        - paragraph
+          - StaticText "0"
+        - paragraph
+          - StaticText "Jobs Queued"
+        - paragraph
+          - StaticText "0 done"
+        - image
+  - generic
+    - heading "Smart Recommendations" [level=3, ref=e31]
+    - StaticText "2"
+    - StaticText " tips"
+    - button "Upload Approved Videos Suggested 1 approved video(s) ready to upload." [ref=e35]
+      - StaticText "Upload Approved Videos"
+      - StaticText "Suggested"
+      - paragraph
+        - StaticText "1 approved video(s) ready to upload."
+    - button "Review Strategy Analyze your content pillars and optimization opportunities." [ref=e36]
+      - StaticText "Review Strategy"
+      - paragraph
+        - StaticText "Analyze your content pillars and optimization opportunities."
+  - generic
+    - generic
+      - heading "Channel Strategy Score" [level=3, ref=e37]
+      - StaticText "Composite"
+      - generic
+        - image
+        - generic
+          - StaticText "B"
+          - StaticText "63"
+          - StaticText "%"
+      - StaticText "Niche Fit"
+      - StaticText " "
+      - StaticText "("
+      - StaticText "30%"
+      - StaticText ")"
+      - StaticText "85"
+      - StaticText "%"
+      - StaticText "Pipeline Efficiency"
+      - StaticText " "
+      - StaticText "("
+      - StaticText "30%"
+      - StaticText ")"
+      - StaticText "4"
+      - StaticText "%"
+      - StaticText "Content Pillars"
+      - StaticText " "
+      - StaticText "("
+      - StaticText "20%"
+      - StaticText ")"
+      - StaticText "80"
+      - StaticText "%"
+      - StaticText "Monetization"
+      - StaticText " "
+      - StaticText "("
+      - StaticText "20%"
+      - StaticText ")"
+      - StaticText "100"
+      - StaticText "%"
+      - paragraph
+        - StaticText "Composite score combining niche fit (30%), pipeline throughput (30%), content pillar coverage (20%), and monetization readiness (20%). Good foundation — increase pipeline throughput and pillar coverage."
+  - paragraph
+    - StaticText "66"
+  - paragraph
+    - StaticText "Ideas"
+  - paragraph
+    - StaticText "0"
+  - paragraph
+    - StaticText "Researched"
+  - paragraph
+    - StaticText "2"
+  - paragraph
+    - StaticText "Scripted"
+  - paragraph
+    - StaticText "0"
+  - paragraph
+    - StaticText "Producing"
+  - paragraph
+    - StaticText "1"
+  - paragraph
+    - StaticText "Approved"
+  - paragraph
+    - StaticText "0"
+  - paragraph
+    - StaticText "Uploaded"
+  - generic
+    - generic
+      - heading "Production Pipeline" [level=3, ref=e38]
+      - StaticText "71"
+      - StaticText " total"
+      - StaticText "66"
+      - StaticText "Ideas"
+      - StaticText "93"
+      - StaticText "%"
+      - StaticText "+"
+      - StaticText "Research"
+      - StaticText "2"
+      - StaticText "Script"
+      - StaticText "3"
+      - StaticText "%"
+      - StaticText "+"
+      - StaticText "Produce"
+      - StaticText "2"
+      - StaticText "Review"
+      - StaticText "3"
+      - StaticText "%"
+      - StaticText "+"
+      - StaticText "Upload"
+  - generic
+    - generic
+      - heading "Autonomous Cycle" [level=3, ref=e39]
+      - StaticText "IDLE"
+      - generic
+        - SvgRoot
+          - StaticText "IDLE"
+          - StaticText "Waiting"
+        - StaticText "Research"
+        - StaticText "Script"
+        - StaticText "Produce"
+        - StaticText "Review"
+        - StaticText "Upload"
+        - StaticText "Analyze"
+  - generic
+    - generic
+      - StaticText "QUICK:"
+      - button "Research Niche" [ref=e40]
+        - StaticText "Research Niche"
+      - button "Write Script" [ref=e41]
+        - StaticText "Write Script"
+      - button "Produce Video" [ref=e42]
+        - StaticText "Produce Video"
+      - button "Review Quality" [ref=e43]
+        - StaticText "Review Quality"
+      - button "Upload" [ref=e44]
+        - StaticText "Upload"
+      - button "Analytics" [ref=e45]
+        - StaticText "Analytics"
+  - generic
+    - generic
+      - heading "AI Insights" [level=3, ref=e46]
+      - paragraph
+        - StaticText "Best upload time: 2-4 PM EST for maximum engagement"
+      - paragraph
+        - StaticText "AI tools practical content shows 2.3× higher engagement — produce more"
+      - paragraph
+        - StaticText "Quality pass rate improved 12% this week with refined prompts"
+  - generic
+    - generic
+      - heading "Weekly Summary" [level=3, ref=e47]
+      - StaticText "This week"
+      - generic
+        - StaticText "7Decisions"
+      - generic
+        - StaticText "0Ideas"
+      - generic
+        - StaticText "0Produced"
+      - generic
+        - StaticText "0Reviews"
+      - paragraph
+        - StaticText "Steady progress. Keep the momentum going!"
+  - generic
+    - generic
+      - heading "Agent Intelligence" [level=3, ref=e48]
+      - StaticText "Current State"
+      - paragraph
+        - StaticText "Idle"
+      - paragraph
+        - StaticText "Ready"
+      - StaticText "Next Action"
+      - paragraph
+        - StaticText "Produce next video"
+      - StaticText "Pipeline Efficiency"
+      - StaticText "1"
+      - StaticText "% throughput"
+  - generic
+    - generic
+      - heading "Command Center" [level=3, ref=e49]
+      - generic [ref=e50] focusable [tabindex]
+        - button "Produce Next Video" [ref=e57]
+      - generic [ref=e51] focusable [tabindex]
+        - button "Full Cycle" [ref=e58]
+      - button "Setup" [ref=e52]
+      - button "Pause" [ref=e53]
+      - button "Resume" [ref=e54]
+      - button "Process Job" [ref=e55]
+      - StaticText "Next: "
+      - StaticText "Produce next video"
+  - generic
+    - generic
+      - heading "Live Feed" [level=3, ref=e56]
+        - StaticText "Live Feed"
+      - StaticText "12:32 AM"
+      - StaticText "token_refresh"
+      - StaticText "11:43 PM"
+      - StaticText "token_revoke"
+      - StaticText "11:43 PM"
+      - StaticText "token_revoke"
+  - heading "Performance Metrics" [level=3, ref=e25]
+  - paragraph
+    - StaticText "KPIs, production trends, and efficiency overview"
+  - generic
+    - StaticText "0 / 5"
+    - paragraph
+      - StaticText "Pipeline Velocity"
+    - StaticText "videos this week"
+    - StaticText "0"
+    - StaticText "%"
+    - image
+  - generic
+    - StaticText "12"
+    - StaticText "%"
+    - StaticText "9m"
+    - paragraph
+      - StaticText "Avg Production Time"
+    - image
+  - generic
+    - StaticText "5"
+    - StaticText "%"
+    - StaticText "33%"
+    - paragraph
+      - StaticText "Quality Pass Rate"
+    - image
+  - generic
+    - StaticText "124 MB"
+    - StaticText "/ 1.00 GB"
+    - paragraph
+      - StaticText "Storage Used"
+    - progressbar
+    - StaticText "12"
+    - StaticText "% of cap"
+    - StaticText "900 MB"
+    - StaticText " free"
+    - image
+  - StaticText "Production Trend"
+  - StaticText "Videos produced per day, stacked by review outcome"
+  - StaticText "Last 30 days"
+  - StaticText "Approved"
+  - StaticText "In Review"
+  - StaticText "Failed"
+  - SvgRoot
+    - StaticText "Jul 7"
+    - StaticText "Jul 12"
+    - StaticText "Jul 17"
+    - StaticText "Jul 22"
+    - StaticText "Jul 27"
+    - StaticText "Aug 1"
+    - StaticText "0"
+    - StaticText "3"
+    - StaticText "5"
+  - StaticText "Niche Performance"
+  - generic
+    - StaticText "Top 5 niches ranked by composite score"
+  - table
+    - rowgroup
+      - row
+        - columnheader "NICHE" [ref=e84]
+          - button "NICHE" [ref=e89]
+        - columnheader "SCORE" [ref=e85]
+          - button "SCORE" [ref=e90]
+        - columnheader "VIDEOS" [ref=e86]
+          - button "VIDEOS" [ref=e91]
+        - columnheader "QUALITY" [ref=e87]
+          - button "QUALITY" [ref=e92]
+        - columnheader "REVENUE" [ref=e88]
+          - button "REVENUE" [ref=e93]
+    - row
+      - cell "AI tools practical" [ref=e59]
+        - StaticText "AI tools practical"
+      - cell "8.5" [ref=e60]
+        - StaticText "8.5"
+      - cell "3" [ref=e61]
+      - cell "65%" [ref=e62]
+        - StaticText "65%"
+      - cell "55" [ref=e63]
+        - StaticText "55"
+    - row
+      - cell "Spreadsheet mastery" [ref=e64]
+        - StaticText "Spreadsheet mastery"
+      - cell "8.3" [ref=e65]
+        - StaticText "8.3"
+      - cell "10" [ref=e66]
+      - cell "78%" [ref=e67]
+        - StaticText "78%"
+      - cell "72" [ref=e68]
+        - StaticText "72"
+    - row
+      - cell "Web development" [ref=e69]
+        - StaticText "Web development"
+      - cell "8.2" [ref=e70]
+        - StaticText "8.2"
+      - cell "6" [ref=e71]
+      - cell "91%" [ref=e72]
+        - StaticText "91%"
+      - cell "89" [ref=e73]
+        - StaticText "89"
+    - row
+      - cell "JavaScript tutorials" [ref=e74]
+        - StaticText "JavaScript tutorials"
+      - cell "8.2" [ref=e75]
+        - StaticText "8.2"
+      - cell "13" [ref=e76]
+      - cell "74%" [ref=e77]
+        - StaticText "74%"
+      - cell "66" [ref=e78]
+        - StaticText "66"
+    - row
+      - cell "Smart home tech" [ref=e79]
+        - StaticText "Smart home tech"
+      - cell "8.2" [ref=e80]
+        - StaticText "8.2"
+      - cell "9" [ref=e81]
+      - cell "87%" [ref=e82]
+        - StaticText "87%"
+      - cell "83" [ref=e83]
+        - StaticText "83"
+  - StaticText "Agent Efficiency"
+  - StaticText "Approved videos / total produced"
+  - generic
+    - image "Efficiency 100%"
+      - StaticText "0"
+      - StaticText "50"
+      - StaticText "100"
+    - generic
+      - StaticText "100"
+      - StaticText "%"
+      - StaticText "EFFICIENCY"
+  - StaticText "Target: "
+  - StaticText "80"
+  - StaticText "%"
+  - StaticText "+"
+  - StaticText "20"
+  - StaticText "%"
+  - progressbar
+  - StaticText "0%"
+  - StaticText "1"
+  - StaticText " of "
+  - StaticText "1"
+  - StaticText " approved"
+  - StaticText "80"
+  - StaticText "%"
+  - StaticText "Time-of-Day Production"
+  - StaticText "Historical avg videos per 4-hour bucket"
+  - StaticText "0-4"
+  - StaticText "4-8"
+  - StaticText "8-12"
+  - StaticText "12-16"
+  - StaticText "16-20"
+  - StaticText "20-24"
+  - StaticText "Sun"
+  - StaticText "0.3"
+  - StaticText "1.2"
+  - StaticText "0.4"
+  - StaticText "1.3"
+  - StaticText "0.5"
+  - StaticText "1.3"
+  - StaticText "Mon"
+  - StaticText "0.7"
+  - StaticText "1.6"
+  - StaticText "0.8"
+  - StaticText "1.6"
+  - StaticText "0.8"
+  - StaticText "1.7"
+  - StaticText "Tue"
+  - StaticText "1.0"
+  - StaticText "1.9"
+  - StaticText "1.1"
+  - StaticText "0.3"
+  - StaticText "1.2"
+  - StaticText "0.4"
+  - StaticText "Wed"
+  - StaticText "1.4"
+  - StaticText "0.6"
+  - StaticText "1.5"
+  - StaticText "0.7"
+  - StaticText "1.6"
+  - StaticText "0.8"
+  - StaticText "Thu"
+  - StaticText "1.8"
+  - StaticText "1.0"
+  - StaticText "1.9"
+  - StaticText "1.1"
+  - StaticText "1.9"
+  - StaticText "1.1"
+  - StaticText "Fri"
+  - StaticText "0.5"
+  - StaticText "1.3"
+  - StaticText "0.5"
+  - StaticText "1.4"
+  - StaticText "0.6"
+  - StaticText "1.5"
+  - StaticText "Sat"
+  - StaticText "0.8"
+  - StaticText "1.7"
+  - StaticText "0.9"
+  - StaticText "1.8"
+  - StaticText "1.0"
+  - StaticText "1.9"
+  - StaticText "Hover a cell for details"
+  - StaticText "Less"
+  - StaticText "More"
+- generic
+  - generic
+    - generic
+      - paragraph
+        - StaticText "71"
+      - paragraph
+        - StaticText "Pipeline Items"
+      - paragraph
+        - StaticText "66 ideas · 1 approved"
+      - image
+- generic
+  - generic
+    - generic
+      - paragraph
+        - StaticText "0"
+      - paragraph
+        - StaticText "Videos Produced"
+      - paragraph
+        - StaticText "1 approved"
+      - image
+- generic
+  - generic
+    - generic
+      - paragraph
+        - StaticText "8.5"
+      - StaticText "/10"
+      - paragraph
+        - StaticText "Niche Score"
+      - paragraph
+        - StaticText "AI tools practical"
+      - image
+- generic
+  - generic
+    - generic
+      - paragraph
+        - StaticText "0"
+      - paragraph
+        - StaticText "Jobs Queued"
+      - paragraph
+        - StaticText "0 done"
+      - image
+- generic
+  - heading "Smart Recommendations" [level=3, ref=e31]
+  - StaticText "2"
+  - StaticText " tips"
+  - button "Upload Approved Videos Suggested 1 approved video(s) ready to upload." [ref=e35]
+    - StaticText "Upload Approved Videos"
+    - StaticText "Suggested"
+    - paragraph
+      - StaticText "1 approved video(s) ready to upload."
+  - button "Review Strategy Analyze your content pillars and optimization opportunities." [ref=e36]
+    - StaticText "Review Strategy"
+    - paragraph
+      - StaticText "Analyze your content pillars and optimization opportunities."
+- generic
+  - generic
+    - heading "Channel Strategy Score" [level=3, ref=e37]
+    - StaticText "Composite"
+    - generic
+      - image
+      - generic
+        - StaticText "B"
+        - StaticText "63"
+        - StaticText "%"
+    - StaticText "Niche Fit"
+    - StaticText " "
+    - StaticText "("
+    - StaticText "30%"
+    - StaticText ")"
+    - StaticText "85"
+    - StaticText "%"
+    - StaticText "Pipeline Efficiency"
+    - StaticText " "
+    - StaticText "("
+    - StaticText "30%"
+    - StaticText ")"
+    - StaticText "4"
+    - StaticText "%"
+    - StaticText "Content Pillars"
+    - StaticText " "
+    - StaticText "("
+    - StaticText "20%"
+    - StaticText ")"
+    - StaticText "80"
+    - StaticText "%"
+    - StaticText "Monetization"
+    - StaticText " "
+    - StaticText "("
+    - StaticText "20%"
+    - StaticText ")"
+    - StaticText "100"
+    - StaticText "%"
+    - paragraph
+      - StaticText "Composite score combining niche fit (30%), pipeline throughput (30%), content pillar coverage (20%), and monetization readiness (20%). Good foundation — increase pipeline throughput and pillar coverage."
+- paragraph
+  - StaticText "66"
+- paragraph
+  - StaticText "Ideas"
+- paragraph
+  - StaticText "0"
+- paragraph
+  - StaticText "Researched"
+- paragraph
+  - StaticText "2"
+- paragraph
+  - StaticText "Scripted"
+- paragraph
+  - StaticText "0"
+- paragraph
+  - StaticText "Producing"
+- paragraph
+  - StaticText "1"
+- paragraph
+  - StaticText "Approved"
+- paragraph
+  - StaticText "0"
+- paragraph
+  - StaticText "Uploaded"
+- generic
+  - generic
+    - heading "Production Pipeline" [level=3, ref=e38]
+    - StaticText "71"
+    - StaticText " total"
+    - StaticText "66"
+    - StaticText "Ideas"
+    - StaticText "93"
+    - StaticText "%"
+    - StaticText "+"
+    - StaticText "Research"
+    - StaticText "2"
+    - StaticText "Script"
+    - StaticText "3"
+    - StaticText "%"
+    - StaticText "+"
+    - StaticText "Produce"
+    - StaticText "2"
+    - StaticText "Review"
+    - StaticText "3"
+    - StaticText "%"
+    - StaticText "+"
+    - StaticText "Upload"
+- generic
+  - generic
+    - heading "Autonomous Cycle" [level=3, ref=e39]
+    - StaticText "IDLE"
+    - generic
+      - SvgRoot
+        - StaticText "IDLE"
+        - StaticText "Waiting"
+      - StaticText "Research"
+      - StaticText "Script"
+      - StaticText "Produce"
+      - StaticText "Review"
+      - StaticText "Upload"
+      - StaticText "Analyze"
+- generic
+  - generic
+    - StaticText "QUICK:"
+    - button "Research Niche" [ref=e40]
+      - StaticText "Research Niche"
+    - button "Write Script" [ref=e41]
+      - StaticText "Write Script"
+    - button "Produce Video" [ref=e42]
+      - StaticText "Produce Video"
+    - button "Review Quality" [ref=e43]
+      - StaticText "Review Quality"
+    - button "Upload" [ref=e44]
+      - StaticText "Upload"
+    - button "Analytics" [ref=e45]
+      - StaticText "Analytics"
+- generic
+  - generic
+    - heading "AI Insights" [level=3, ref=e46]
+    - paragraph
+      - StaticText "Best upload time: 2-4 PM EST for maximum engagement"
+    - paragraph
+      - StaticText "AI tools practical content shows 2.3× higher engagement — produce more"
+    - paragraph
+      - StaticText "Quality pass rate improved 12% this week with refined prompts"
+- generic
+  - generic
+    - heading "Weekly Summary" [level=3, ref=e47]
+    - StaticText "This week"
+    - generic
+      - StaticText "7Decisions"
+    - generic
+      - StaticText "0Ideas"
+    - generic
+      - StaticText "0Produced"
+    - generic
+      - StaticText "0Reviews"
+    - paragraph
+      - StaticText "Steady progress. Keep the momentum going!"
+- generic
+  - generic
+    - heading "Agent Intelligence" [level=3, ref=e48]
+    - StaticText "Current State"
+    - paragraph
+      - StaticText "Idle"
+    - paragraph
+      - StaticText "Ready"
+    - StaticText "Next Action"
+    - paragraph
+      - StaticText "Produce next video"
+    - StaticText "Pipeline Efficiency"
+    - StaticText "1"
+    - StaticText "% throughput"
+- generic
+  - generic
+    - heading "Command Center" [level=3, ref=e49]
+    - generic [ref=e50] focusable [tabindex]
+      - button "Produce Next Video" [ref=e57]
+    - generic [ref=e51] focusable [tabindex]
+      - button "Full Cycle" [ref=e58]
+    - button "Setup" [ref=e52]
+    - button "Pause" [ref=e53]
+    - button "Resume" [ref=e54]
+    - button "Process Job" [ref=e55]
+    - StaticText "Next: "
+    - StaticText "Produce next video"
+- generic
+  - generic
+    - heading "Live Feed" [level=3, ref=e56]
+      - StaticText "Live Feed"
+    - StaticText "12:32 AM"
+    - StaticText "token_refresh"
+    - StaticText "11:43 PM"
+    - StaticText "token_revoke"
+    - StaticText "11:43 PM"
+    - StaticText "token_revoke"
+- heading "Performance Metrics" [level=3, ref=e25]
+- paragraph
+  - StaticText "KPIs, production trends, and efficiency overview"
+- generic
+  - StaticText "0 / 5"
+  - paragraph
+    - StaticText "Pipeline Velocity"
+  - StaticText "videos this week"
+  - StaticText "0"
+  - StaticText "%"
+  - image
+- generic
+  - StaticText "12"
+  - StaticText "%"
+  - StaticText "9m"
+  - paragraph
+    - StaticText "Avg Production Time"
+  - image
+- generic
+  - StaticText "5"
+  - StaticText "%"
+  - StaticText "33%"
+  - paragraph
+    - StaticText "Quality Pass Rate"
+  - image
+- generic
+  - StaticText "124 MB"
+  - StaticText "/ 1.00 GB"
+  - paragraph
+    - StaticText "Storage Used"
+  - progressbar
+  - StaticText "12"
+  - StaticText "% of cap"
+  - StaticText "900 MB"
+  - StaticText " free"
+  - image
+- StaticText "Production Trend"
+- StaticText "Videos produced per day, stacked by review outcome"
+- StaticText "Last 30 days"
+- StaticText "Approved"
+- StaticText "In Review"
+- StaticText "Failed"
+- SvgRoot
+  - StaticText "Jul 7"
+  - StaticText "Jul 12"
+  - StaticText "Jul 17"
+  - StaticText "Jul 22"
+  - StaticText "Jul 27"
+  - StaticText "Aug 1"
+  - StaticText "0"
+  - StaticText "3"
+  - StaticText "5"
+- StaticText "Niche Performance"
+- generic
+  - StaticText "Top 5 niches ranked by composite score"
+- table
+  - rowgroup
+    - row
+      - columnheader "NICHE" [ref=e84]
+        - button "NICHE" [ref=e89]
+      - columnheader "SCORE" [ref=e85]
+        - button "SCORE" [ref=e90]
+      - columnheader "VIDEOS" [ref=e86]
+        - button "VIDEOS" [ref=e91]
+      - columnheader "QUALITY" [ref=e87]
+        - button "QUALITY" [ref=e92]
+      - columnheader "REVENUE" [ref=e88]
+        - button "REVENUE" [ref=e93]
+  - row
+    - cell "AI tools practical" [ref=e59]
+      - StaticText "AI tools practical"
+    - cell "8.5" [ref=e60]
+      - StaticText "8.5"
+    - cell "3" [ref=e61]
+    - cell "65%" [ref=e62]
+      - StaticText "65%"
+    - cell "55" [ref=e63]
+      - StaticText "55"
+  - row
+    - cell "Spreadsheet mastery" [ref=e64]
+      - StaticText "Spreadsheet mastery"
+    - cell "8.3" [ref=e65]
+      - StaticText "8.3"
+    - cell "10" [ref=e66]
+    - cell "78%" [ref=e67]
+      - StaticText "78%"
+    - cell "72" [ref=e68]
+      - StaticText "72"
+  - row
+    - cell "Web development" [ref=e69]
+      - StaticText "Web development"
+    - cell "8.2" [ref=e70]
+      - StaticText "8.2"
+    - cell "6" [ref=e71]
+    - cell "91%" [ref=e72]
+      - StaticText "91%"
+    - cell "89" [ref=e73]
+      - StaticText "89"
+  - row
+    - cell "JavaScript tutorials" [ref=e74]
+      - StaticText "JavaScript tutorials"
+    - cell "8.2" [ref=e75]
+      - StaticText "8.2"
+    - cell "13" [ref=e76]
+    - cell "74%" [ref=e77]
+      - StaticText "74%"
+    - cell "66" [ref=e78]
+      - StaticText "66"
+  - row
+    - cell "Smart home tech" [ref=e79]
+      - StaticText "Smart home tech"
+    - cell "8.2" [ref=e80]
+      - StaticText "8.2"
+    - cell "9" [ref=e81]
+    - cell "87%" [ref=e82]
+      - StaticText "87%"
+    - cell "83" [ref=e83]
+      - StaticText "83"
+- StaticText "Agent Efficiency"
+- StaticText "Approved videos / total produced"
+- generic
+  - image "Efficiency 100%"
+    - StaticText "0"
+    - StaticText "50"
+    - StaticText "100"
+  - generic
+    - StaticText "100"
+    - StaticText "%"
+    - StaticText "EFFICIENCY"
+- StaticText "Target: "
+- StaticText "80"
+- StaticText "%"
+- StaticText "+"
+- StaticText "20"
+- StaticText "%"
+- progressbar
+- StaticText "0%"
+- StaticText "1"
+- StaticText " of "
+- StaticText "1"
+- StaticText " approved"
+- StaticText "80"
+- StaticText "%"
+- StaticText "Time-of-Day Production"
+- StaticText "Historical avg videos per 4-hour bucket"
+- StaticText "0-4"
+- StaticText "4-8"
+- StaticText "8-12"
+- StaticText "12-16"
+- StaticText "16-20"
+- StaticText "20-24"
+- StaticText "Sun"
+- StaticText "0.3"
+- StaticText "1.2"
+- StaticText "0.4"
+- StaticText "1.3"
+- StaticText "0.5"
+- StaticText "1.3"
+- StaticText "Mon"
+- StaticText "0.7"
+- StaticText "1.6"
+- StaticText "0.8"
+- StaticText "1.6"
+- StaticText "0.8"
+- StaticText "1.7"
+- StaticText "Tue"
+- StaticText "1.0"
+- StaticText "1.9"
+- StaticText "1.1"
+- StaticText "0.3"
+- StaticText "1.2"
+- StaticText "0.4"
+- StaticText "Wed"
+- StaticText "1.4"
+- StaticText "0.6"
+- StaticText "1.5"
+- StaticText "0.7"
+- StaticText "1.6"
+- StaticText "0.8"
+- StaticText "Thu"
+- StaticText "1.8"
+- StaticText "1.0"
+- StaticText "1.9"
+- StaticText "1.1"
+- StaticText "1.9"
+- StaticText "1.1"
+- StaticText "Fri"
+- StaticText "0.5"
+- StaticText "1.3"
+- StaticText "0.5"
+- StaticText "1.4"
+- StaticText "0.6"
+- StaticText "1.5"
+- StaticText "Sat"
+- StaticText "0.8"
+- StaticText "1.7"
+- StaticText "0.9"
+- StaticText "1.8"
+- StaticText "1.0"
+- StaticText "1.9"
+- StaticText "Hover a cell for details"
+- StaticText "Less"
+- StaticText "More"
+- button [ref=e26]
+- button [ref=e27]
+- button [ref=e28]
+- button [ref=e29]
+- button [ref=e30]
+- heading "Smart Recommendations" [level=3, ref=e31]
+- StaticText "2"
+- StaticText " tips"
+- button "Upload Approved Videos Suggested 1 approved video(s) ready to upload." [ref=e35]
+  - StaticText "Upload Approved Videos"
+  - StaticText "Suggested"
+  - paragraph
+    - StaticText "1 approved video(s) ready to upload."
+- button "Review Strategy Analyze your content pillars and optimization opportunities." [ref=e36]
+  - StaticText "Review Strategy"
+  - paragraph
+    - StaticText "Analyze your content pillars and optimization opportunities."
+- StaticText "0 / 5"
+- StaticText "videos this week"
+- StaticText "0"
+- StaticText "%"
+- image
+- StaticText "12"
+- StaticText "%"
+- StaticText "9m"
+- image
+- StaticText "5"
+- StaticText "%"
+- StaticText "33%"
+- image
+- StaticText "124 MB"
+- StaticText "/ 1.00 GB"
+- progressbar
+- StaticText "12"
+- StaticText "% of cap"
+- StaticText "900 MB"
+- StaticText " free"
+- image
+- heading "Channel Strategy Score" [level=3, ref=e37]
+- StaticText "Composite"
+- generic
+  - image
+  - generic
+    - StaticText "B"
+    - StaticText "63"
+    - StaticText "%"
+- StaticText "Niche Fit"
+- StaticText "("
+- StaticText "30%"
+- StaticText ")"
+- StaticText "85"
+- StaticText "%"
+- StaticText "Pipeline Efficiency"
+- StaticText "("
+- StaticText "30%"
+- StaticText ")"
+- StaticText "4"
+- StaticText "%"
+- StaticText "Content Pillars"
+- StaticText "("
+- StaticText "20%"
+- StaticText ")"
+- StaticText "80"
+- StaticText "%"
+- StaticText "Monetization"
+- StaticText "("
+- StaticText "20%"
+- StaticText ")"
+- StaticText "100"
+- StaticText "%"
+- paragraph
+  - StaticText "Composite score combining niche fit (30%), pipeline throughput (30%), content pillar coverage (20%), and monetization readiness (20%). Good foundation — increase pipeline throughput and pillar coverage."
+- heading "Production Pipeline" [level=3, ref=e38]
+- StaticText "71"
+- StaticText " total"
+- StaticText "66"
+- StaticText "Ideas"
+- StaticText "93"
+- StaticText "%"
+- StaticText "+"
+- StaticText "Research"
+- StaticText "2"
+- StaticText "Script"
+- StaticText "3"
+- StaticText "%"
+- StaticText "+"
+- StaticText "Produce"
+- StaticText "2"
+- StaticText "Review"
+- StaticText "3"
+- StaticText "%"
+- StaticText "+"
+- StaticText "Upload"
+- heading "Autonomous Cycle" [level=3, ref=e39]
+- StaticText "IDLE"
+- generic
+  - SvgRoot
+    - StaticText "IDLE"
+    - StaticText "Waiting"
+  - StaticText "Research"
+  - StaticText "Script"
+  - StaticText "Produce"
+  - StaticText "Review"
+  - StaticText "Upload"
+  - StaticText "Analyze"
+- StaticText "QUICK:"
+- button "Research Niche" [ref=e40]
+  - StaticText "Research Niche"
+- button "Write Script" [ref=e41]
+  - StaticText "Write Script"
+- button "Produce Video" [ref=e42]
+  - StaticText "Produce Video"
+- button "Review Quality" [ref=e43]
+  - StaticText "Review Quality"
+- button "Upload" [ref=e44]
+  - StaticText "Upload"
+- button "Analytics" [ref=e45]
+  - StaticText "Analytics"
+- heading "AI Insights" [level=3, ref=e46]
+- paragraph
+  - StaticText "Best upload time: 2-4 PM EST for maximum engagement"
+- paragraph
+  - StaticText "AI tools practical content shows 2.3× higher engagement — produce more"
+- paragraph
+  - StaticText "Quality pass rate improved 12% this week with refined prompts"
+- heading "Weekly Summary" [level=3, ref=e47]
+- StaticText "This week"
+- generic
+  - StaticText "7Decisions"
+- generic
+  - StaticText "0Ideas"
+- generic
+  - StaticText "0Produced"
+- generic
+  - StaticText "0Reviews"
+- paragraph
+  - StaticText "Steady progress. Keep the momentum going!"
+- heading "Agent Intelligence" [level=3, ref=e48]
+- StaticText "Current State"
+- paragraph
+  - StaticText "Idle"
+- paragraph
+  - StaticText "Ready"
+- StaticText "Next Action"
+- paragraph
+  - StaticText "Produce next video"
+- StaticText "Pipeline Efficiency"
+- StaticText "1"
+- StaticText "% throughput"
+- heading "Command Center" [level=3, ref=e49]
+- generic [ref=e50] focusable [tabindex]
+  - button "Produce Next Video" [ref=e57]
+- generic [ref=e51] focusable [tabindex]
+  - button "Full Cycle" [ref=e58]
+- button "Setup" [ref=e52]
+- button "Pause" [ref=e53]
+- button "Resume" [ref=e54]
+- button "Process Job" [ref=e55]
+- StaticText "Next: "
+- StaticText "Produce next video"
+- heading "Live Feed" [level=3, ref=e56]
+  - StaticText "Live Feed"
+- StaticText "12:32 AM"
+- StaticText "token_refresh"
+- StaticText "11:43 PM"
+- StaticText "token_revoke"
+- StaticText "11:43 PM"
+- StaticText "token_revoke"
+- row
+  - cell "AI tools practical" [ref=e59]
+    - StaticText "AI tools practical"
+  - cell "8.5" [ref=e60]
+    - StaticText "8.5"
+  - cell "3" [ref=e61]
+  - cell "65%" [ref=e62]
+    - StaticText "65%"
+  - cell "55" [ref=e63]
+    - StaticText "55"
+- row
+  - cell "Spreadsheet mastery" [ref=e64]
+    - StaticText "Spreadsheet mastery"
+  - cell "8.3" [ref=e65]
+    - StaticText "8.3"
+  - cell "10" [ref=e66]
+  - cell "78%" [ref=e67]
+    - StaticText "78%"
+  - cell "72" [ref=e68]
+    - StaticText "72"
+- row
+  - cell "Web development" [ref=e69]
+    - StaticText "Web development"
+  - cell "8.2" [ref=e70]
+    - StaticText "8.2"
+  - cell "6" [ref=e71]
+  - cell "91%" [ref=e72]
+    - StaticText "91%"
+  - cell "89" [ref=e73]
+    - StaticText "89"
+- row
+  - cell "JavaScript tutorials" [ref=e74]
+    - StaticText "JavaScript tutorials"
+  - cell "8.2" [ref=e75]
+    - StaticText "8.2"
+  - cell "13" [ref=e76]
+  - cell "74%" [ref=e77]
+    - StaticText "74%"
+  - cell "66" [ref=e78]
+    - StaticText "66"
+- row
+  - cell "Smart home tech" [ref=e79]
+    - StaticText "Smart home tech"
+  - cell "8.2" [ref=e80]
+    - StaticText "8.2"
+  - cell "9" [ref=e81]
+  - cell "87%" [ref=e82]
+    - StaticText "87%"
+  - cell "83" [ref=e83]
+    - StaticText "83"
+- StaticText "100"
+- StaticText "%"
+- StaticText "EFFICIENCY"
+- paragraph
+  - StaticText "71"
+- paragraph
+  - StaticText "Pipeline Items"
+- paragraph
+  - StaticText "66 ideas · 1 approved"
+- image
+- paragraph
+  - StaticText "0"
+- paragraph
+  - StaticText "Videos Produced"
+- paragraph
+  - StaticText "1 approved"
+- image
+- paragraph
+  - StaticText "8.5"
+- StaticText "/10"
+- paragraph
+  - StaticText "Niche Score"
+- paragraph
+  - StaticText "AI tools practical"
+- image
+- paragraph
+  - StaticText "0"
+- paragraph
+  - StaticText "Jobs Queued"
+- paragraph
+  - StaticText "0 done"
+- image
+- StaticText "Upload Approved Videos"
+- StaticText "Suggested"
+- paragraph
+  - StaticText "1 approved video(s) ready to upload."
+- StaticText "Review Strategy"
+- paragraph
+  - StaticText "Analyze your content pillars and optimization opportunities."
+- SvgRoot
+  - StaticText "IDLE"
+  - StaticText "Waiting"
+- StaticText "Research"
+- StaticText "Script"
+- StaticText "Produce"
+- StaticText "Review"
+- StaticText "Upload"
+- StaticText "Analyze"
+- StaticText "Research Niche"
+- StaticText "Write Script"
+- StaticText "Produce Video"
+- StaticText "Review Quality"
+- StaticText "Upload"
+- StaticText "Analytics"
+- StaticText "B"
+- StaticText "63"
+- StaticText "%"
+- StaticText "AI tools practical"
+- StaticText "8.5"
+- StaticText "55"
+- StaticText "Spreadsheet mastery"
+- StaticText "8.3"
+- StaticText "72"
+- StaticText "Web development"
+- StaticText "8.2"
+- StaticText "89"
+- StaticText "JavaScript tutorials"
+- StaticText "8.2"
+- StaticText "66"
+- StaticText "Smart home tech"
+- StaticText "8.2"
+- StaticText "83"

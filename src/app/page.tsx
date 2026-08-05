@@ -1586,9 +1586,12 @@ export default function Dashboard() {
                   productionTrend={Array.from({ length: 30 }, (_, i) => {
                     // Deterministic pseudo-data using sine waves (no Math.random/Date.now to avoid SSR hydration mismatch)
                     const phase = i / 5
-                    const dayNum = i - 29
+                    const dayOffset = i - 29
+                    const d = new Date()
+                    d.setDate(d.getDate() + dayOffset)
+                    const dateStr = d.toISOString().slice(0, 10)
                     return {
-                      date: `D${dayNum}`,
+                      date: dateStr,
                       approved: Math.max(0, Math.round(1.5 + Math.sin(phase) * 1.2)),
                       failed: Math.max(0, Math.round(0.5 + Math.sin(phase + 1) * 0.7)),
                       inReview: Math.max(0, Math.round(0.8 + Math.cos(phase) * 0.6)),
