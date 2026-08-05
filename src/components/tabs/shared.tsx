@@ -103,10 +103,11 @@ export const cardHover = {
 
 // ─── Helper Functions ───────────────────────────────────────────────
 export function stateColor(state: string) {
-  const activeStates = ['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete']
+  const activeStates = ['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading']
   if (activeStates.includes(state)) return { dot: 'bg-emerald-500', ring: 'ring-emerald-500/30', shadow: 'shadow-emerald-500/20', text: 'text-emerald-400', label: 'Running' }
   if (state === 'error') return { dot: 'bg-red-500', ring: 'ring-red-500/30', shadow: 'shadow-red-500/20', text: 'text-red-400', label: 'Error' }
   if (state === 'paused') return { dot: 'bg-amber-500', ring: 'ring-amber-500/30', shadow: 'shadow-amber-500/20', text: 'text-amber-400', label: 'Paused' }
+  if (state === 'ready') return { dot: 'bg-emerald-400', ring: 'ring-emerald-400/30', shadow: 'shadow-emerald-400/20', text: 'text-emerald-300', label: 'Ready' }
   return { dot: 'bg-slate-400', ring: 'ring-slate-400/30', shadow: 'shadow-slate-400/20', text: 'text-slate-400', label: 'Idle' }
 }
 
@@ -346,7 +347,7 @@ export function QuickStatItem({ label, value, icon: Icon, color, bg, delay }: { 
 
 export function AgentStateIndicator({ state }: { state: string }) {
   const colors = stateColor(state)
-  const isActive = ['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete'].includes(state)
+  const isActive = ['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading'].includes(state)
   return (
     <div className="flex items-center gap-3">
       <div className="relative">

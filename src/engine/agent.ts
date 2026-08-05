@@ -472,7 +472,7 @@ export async function phase7_upload(videoProjectId: string): Promise<string> {
       actionLabel: 'Open Settings',
       actionTab: 'settings',
     })
-    await setAgentState('last_error', 'YouTube not connected. Complete OAuth setup to upload.')
+    // Not an error — just a setup step. Don't set last_error.
     await setAgentState('next_action', 'Connect YouTube account, or produce next video')
     await setAgentState('agent_state', 'ready')
     await setAgentState('current_job', '')
@@ -672,7 +672,8 @@ export async function runAutonomousCycle(): Promise<void> {
     // Phase 2: Produce first video
     await produceNextVideo()
     
-    await setAgentState('agent_state', 'cycle_complete')
+    await setAgentState('agent_state', 'idle')
+    await setAgentState('current_job', '')
     logAction('Autonomous cycle complete')
   } catch (e: any) {
     const errMsg = e?.message || 'Cycle failed'

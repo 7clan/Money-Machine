@@ -594,8 +594,12 @@ export function OverviewTab({
                 </Button>
               </div>
               {status?.lastError && (
-                <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-300 flex items-center gap-2">
-                  <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className={`mt-3 p-2 rounded-lg text-xs flex items-center gap-2 ${
+                  status.lastError.includes('YouTube')
+                    ? 'bg-amber-500/10 border border-amber-500/30 text-amber-300'
+                    : 'bg-red-500/10 border border-red-500/30 text-red-300'
+                }`}>
+                  <AlertTriangle className={`w-3.5 h-3.5 shrink-0 ${status.lastError.includes('YouTube') ? 'text-amber-400' : 'text-red-400'}`} />
                   {status.lastError.replace(/Token refresh failed:.*$/i, 'YouTube token expired — reconnect in Settings')}
                 </motion.div>
               )}
