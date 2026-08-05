@@ -57,25 +57,48 @@ export function OverviewTab({
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-xl border border-red-500/30 bg-gradient-to-r from-red-500/10 via-slate-900/80 to-amber-500/10 p-4"
+            className={`relative overflow-hidden rounded-xl border p-4 ${
+              (channel as any)?.youtubeStatus?.reason === 'missing_credentials'
+                ? 'border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-slate-900/80 to-amber-500/10'
+                : 'border-red-500/30 bg-gradient-to-r from-red-500/10 via-slate-900/80 to-amber-500/10'
+            }`}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-amber-500/5 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-amber-500/5 animate-pulse" />
             <div className="relative flex flex-col gap-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
-                    <Youtube className="w-6 h-6 text-red-400" />
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    (channel as any)?.youtubeStatus?.reason === 'missing_credentials' ? 'bg-amber-500/20' : 'bg-red-500/20'
+                  }`}>
+                    <Youtube className={`w-6 h-6 ${
+                      (channel as any)?.youtubeStatus?.reason === 'missing_credentials' ? 'text-amber-400' : 'text-red-400'
+                    }`} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-100">YouTube Not Connected</p>
-                    <p className="text-xs text-slate-400">Connect your channel to enable uploads, analytics, and autonomous publishing.</p>
+                    {(channel as any)?.youtubeStatus?.reason === 'missing_credentials' ? (
+                      <>
+                        <p className="text-sm font-semibold text-slate-100">YouTube Credentials Needed</p>
+                        <p className="text-xs text-slate-400">
+                          Your channel <span className="text-amber-300 font-medium">{(channel as any)?.youtubeStatus?.channelTitle || 'Alan Grill'}</span> is linked but OAuth credentials are missing. Use the Setup Wizard to re-enter your Client ID &amp; Secret.
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-semibold text-slate-100">YouTube Not Connected</p>
+                        <p className="text-xs text-slate-400">Connect your channel to enable uploads, analytics, and autonomous publishing.</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   onClick={() => setYtWizardOpen(true)}
-                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-2"
+                  className={`gap-2 shadow-lg ${
+                    (channel as any)?.youtubeStatus?.reason === 'missing_credentials'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white shadow-amber-500/20'
+                      : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-red-500/20'
+                  }`}
                 >
                   <Youtube className="w-4 h-4" /> Setup Wizard
                 </Button>

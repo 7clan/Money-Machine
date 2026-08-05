@@ -347,3 +347,40 @@ export async function isYouTubeConnected(): Promise<boolean> {
 
   return true
 }
+
+/** Detailed YouTube connection status — tells you WHY it's not connected */
+export interface YouTubeConnectionStatus {
+  connected: boolean
+  reason?: 'no_oauth_record' | 'missing_credentials' | 'token_expired'
+  hasTokens: boolean
+  channelTitle?: string
+  channelId?: string
+}
+
+export async function getYouTubeConnectionStatus(): Promise<YouTubeConnectionStatus> {
+  const conn = await db.oAuthConnection.findFirst({
+    where: { provider: 'google', isConnected: true },
+  })
+
+  if (!conn || !conn.refreshToken) {
+    return { connected: false, reason: 'no_oauth_record', hasTokens: false }
+  }
+
+  const config = getYouTubeConfig()
+  if (!config.clientId || !config.clientSecret) {
+    return {
+      connected: false,
+      reason: 'missing_credentials',
+      hasTokens: true,
+      channelTitle: conn.channelTitle || undefined,
+      channelId: conn.channelId || undefined,
+    }
+  }
+
+  return {
+    connected: true,
+    hasTokens: true,
+    channelTitle: conn.channelTitle || undefined,
+    channelId: conn.channelId || undefined,
+  }
+}

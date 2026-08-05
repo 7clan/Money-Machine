@@ -179,7 +179,7 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">Connect with Google OAuth</p>
-                      <p className="text-xs text-slate-400 mt-0.5">Your credentials are already configured. Authorize the app with your Google account.</p>
+                      <p className="text-xs text-slate-400 mt-0.5">Enter your Google Cloud Client ID &amp; Secret, then authorize the app with your YouTube account.</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-red-400 mt-1 transition-colors" />
                   </div>
