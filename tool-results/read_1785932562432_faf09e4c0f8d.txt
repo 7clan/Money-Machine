@@ -1,0 +1,685 @@
+     1→'use client'
+     2→
+     3→import React, { Suspense, useMemo } from 'react'
+     4→import { AnimatePresence, motion } from 'framer-motion'
+     5→import { Button } from '@/components/ui/button'
+     6→import { Badge } from '@/components/ui/badge'
+     7→import {
+     8→  Youtube, Zap, Video, Brain, Clock, Loader2,
+     9→  Sparkles, Target, Lightbulb, Search, PenTool,
+    10→  Clapperboard, CloudUpload, CheckCircle2,
+    11→  Flame, Radio, BarChart3, MessageSquare,
+    12→  Clock3, TrendingUp, ShieldCheck, CalendarDays,
+    13→  GitBranch, Film, AlertTriangle, MousePointerClick,
+    14→  ChevronRight, Play, Pause, Rocket, Activity,
+    15→} from 'lucide-react'
+    16→import { SmartRecommendations } from '@/components/agent/smart-recommendations'
+    17→import { PerformanceMetrics } from '@/components/agent/performance-metrics'
+    18→import { ChartSkeleton } from '@/components/agent/skeletons'
+    19→import {
+    20→  fadeVariants, GradientCard, StatusCard, PipelineFlow,
+    21→  LiveFeed, EmptyState, QuickStatItem, stateColor,
+    22→} from './shared'
+    23→import type { AgentStatus, PipelineData, ChannelData, AnalyticsData } from './shared'
+    24→
+    25→// Lazy-load PerformanceMetrics to reduce initial bundle
+    26→const LazyPerformanceMetrics = React.lazy(() =>
+    27→  Promise.resolve({ default: PerformanceMetrics })
+    28→)
+    29→
+    30→interface OverviewTabProps {
+    31→  status: AgentStatus | null
+    32→  pipeline: PipelineData | null
+    33→  channel: ChannelData | null
+    34→  analytics: AnalyticsData | null
+    35→  jobs: any[]
+    36→  logs: any[]
+    37→  loading: boolean
+    38→  totalPipeline: number
+    39→  selectedNicheScore: number | null
+    40→  sendCommand: (command: string, extra?: any) => Promise<any>
+    41→  setActiveTab: (tab: string) => void
+    42→  enableDemoMode: () => Promise<void>
+    43→  ytConnecting: boolean
+    44→  setYtWizardOpen: (open: boolean) => void
+    45→}
+    46→
+    47→export function OverviewTab({
+    48→  status, pipeline, channel, analytics, jobs, logs,
+    49→  loading, totalPipeline, selectedNicheScore,
+    50→  sendCommand, setActiveTab, enableDemoMode, ytConnecting, setYtWizardOpen,
+    51→}: OverviewTabProps) {
+    52→  return (
+    53→    <AnimatePresence mode="wait">
+    54→      <motion.div key="overview-content" variants={fadeVariants} initial="initial" animate="animate" exit="exit" className="space-y-4">
+    55→        {/* YouTube Not Connected Banner */}
+    56→        {!channel?.youtubeConnected && (
+    57→          <motion.div
+    58→            initial={{ opacity: 0, y: -20 }}
+    59→            animate={{ opacity: 1, y: 0 }}
+    60→            className="relative overflow-hidden rounded-xl border border-red-500/30 bg-gradient-to-r from-red-500/10 via-slate-900/80 to-amber-500/10 p-4"
+    61→          >
+    62→            <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-amber-500/5 animate-pulse" />
+    63→            <div className="relative flex flex-col gap-3">
+    64→              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+    65→                <div className="flex items-center gap-3 flex-1">
+    66→                  <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
+    67→                    <Youtube className="w-6 h-6 text-red-400" />
+    68→                  </div>
+    69→                  <div>
+    70→                    <p className="text-sm font-semibold text-slate-100">YouTube Not Connected</p>
+    71→                    <p className="text-xs text-slate-400">Connect your channel to enable uploads, analytics, and autonomous publishing.</p>
+    72→                  </div>
+    73→                </div>
+    74→              </div>
+    75→              <div className="flex flex-col sm:flex-row gap-2">
+    76→                <Button
+    77→                  onClick={() => setYtWizardOpen(true)}
+    78→                  className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white shadow-lg shadow-red-500/20 gap-2"
+    79→                >
+    80→                  <Youtube className="w-4 h-4" /> Setup Wizard
+    81→                </Button>
+    82→                <Button
+    83→                  onClick={enableDemoMode}
+    84→                  disabled={ytConnecting}
+    85→                  variant="outline"
+    86→                  className="border-amber-500/40 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 gap-2"
+    87→                >
+    88→                  {ytConnecting ? (
+    89→                    <><Loader2 className="w-4 h-4 animate-spin" /> Starting...</>
+    90→                  ) : (
+    91→                    <><Sparkles className="w-4 h-4" /> Demo Mode</>
+    92→                  )}
+    93→                </Button>
+    94→              </div>
+    95→            </div>
+    96→          </motion.div>
+    97→        )}
+    98→        {/* Top Stats Row */}
+    99→        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+   100→          <StatusCard
+   101→            icon={Zap}
+   102→            label="Pipeline Items"
+   103→            value={totalPipeline}
+   104→            sub={`${status?.pipeline?.ideas || 0} ideas · ${status?.pipeline?.approved || 0} approved`}
+   105→            color="text-emerald-400"
+   106→            trend="up"
+   107→            hint={`Total items across all pipeline stages:\n${status?.pipeline?.ideas || 0} ideas · ${status?.pipeline?.researched || 0} researched · ${status?.pipeline?.scripted || 0} scripted · ${status?.pipeline?.producing || 0} producing · ${status?.pipeline?.reviewing || 0} reviewing · ${status?.pipeline?.approved || 0} approved · ${status?.pipeline?.uploaded || 0} uploaded`}
+   108→            sparklineData={[2, 5, 3, 8, 6, 12, 9, totalPipeline]}
+   109→          />
+   110→          <StatusCard
+   111→            icon={Video}
+   112→            label="Videos Produced"
+   113→            value={status?.pipeline?.producing || 0}
+   114→            sub={`${status?.pipeline?.approved || 0} approved`}
+   115→            color="text-cyan-400"
+   116→            hint="Videos currently being rendered or in production queue"
+   117→            sparklineData={[0, 1, 1, 2, 1, 3, 2, status?.pipeline?.producing || 0]}
+   118→          />
+   119→          <StatusCard
+   120→            icon={Brain}
+   121→            label="Niche Score"
+   122→            value={selectedNicheScore != null ? selectedNicheScore.toFixed(1) : '—'}
+   123→            valueSuffix={selectedNicheScore != null ? '/10' : undefined}
+   124→            sub={status?.niche || 'No niche'}
+   125→            color="text-violet-400"
+   126→            trend={selectedNicheScore && selectedNicheScore >= 8 ? 'up' : undefined}
+   127→            hint={`Selected niche: ${status?.niche || 'None'}\nComposite score from 18 weighted criteria (demand, audience, monetization, risk, etc.)`}
+   128→            sparklineData={[3, 4.5, 5.2, 6.1, 7, 7.8, 8.2, selectedNicheScore ?? 0]}
+   129→          />
+   130→          <StatusCard
+   131→            icon={Clock}
+   132→            label="Jobs Queued"
+   133→            value={jobs.filter(j => j.status === 'pending' || j.status === 'running').length}
+   134→            sub={`${jobs.filter(j => j.status === 'completed').length} done`}
+   135→            color="text-amber-400"
+   136→            hint="Background jobs waiting or running (production, uploads, analytics collection)"
+   137→            sparklineData={[0, 1, 2, 1, 3, 2, 4, jobs.filter(j => j.status === 'pending' || j.status === 'running').length]}
+   138→          />
+   139→        </div>
+   140→
+   141→        {/* Smart Recommendations */}
+   142→        <SmartRecommendations
+   143→          agentState={status?.state || 'idle'}
+   144→          niche={status?.niche ?? null}
+   145→          youtubeConnected={channel?.youtubeConnected ?? false}
+   146→          pipeline={{
+   147→            ideas: status?.pipeline?.ideas || 0,
+   148→            approved: status?.pipeline?.approved || 0,
+   149→            uploaded: status?.pipeline?.uploaded || 0,
+   150→          }}
+   151→          onAction={(action) => {
+   152→            if (action === 'pause') sendCommand('pause')
+   153→            else if (action === 'initial-setup') sendCommand('initial-setup')
+   154→            else if (action === 'niche-research') sendCommand('niche-research')
+   155→            else if (action === 'produce-next') sendCommand('produce-next')
+   156→            else if (action === 'upload') sendCommand('upload')
+   157→            else if (action === 'monitor') setActiveTab('pipeline')
+   158→            else if (action === 'strategy-review') setActiveTab('strategy')
+   159→            else sendCommand(action)
+   160→          }}
+   161→        />
+   162→
+   163→        {/* Channel Strategy Score */}
+   164→        <GradientCard glow="from-violet-500/5 to-emerald-500/5">
+   165→          <div className="p-4">
+   166→            <div className="flex items-center justify-between mb-3">
+   167→              <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
+   168→                <Target className="w-4 h-4 text-violet-400" /> Channel Strategy Score
+   169→              </h3>
+   170→              <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">Composite</Badge>
+   171→            </div>
+   172→            {(() => {
+   173→              const nicheScore = selectedNicheScore ?? 0
+   174→              const pipelineEfficiency = totalPipeline > 0
+   175→                ? ((status?.pipeline?.approved || 0) + (status?.pipeline?.uploaded || 0) + (status?.pipeline?.scripted || 0) + (status?.pipeline?.researched || 0)) / totalPipeline * 100
+   176→                : 0
+   177→              const pillarCount = channel?.pillars?.length || 0
+   178→              const pillarScore = Math.min(100, pillarCount * 20)
+   179→              const monetizationReady = channel?.youtubeConnected ? 100 : 0
+   180→              const composite = Math.round(nicheScore * 10 * 0.3 + pipelineEfficiency * 0.3 + pillarScore * 0.2 + monetizationReady * 0.2)
+   181→              const grade = composite >= 80 ? 'A' : composite >= 60 ? 'B' : composite >= 40 ? 'C' : composite >= 20 ? 'D' : 'F'
+   182→              const gradeColor = composite >= 80 ? 'text-emerald-400' : composite >= 60 ? 'text-cyan-400' : composite >= 40 ? 'text-amber-400' : 'text-rose-400'
+   183→              const metrics = [
+   184→                { label: 'Niche Fit', value: Math.round(nicheScore * 10), max: 100, color: 'bg-violet-500', weight: '30%' },
+   185→                { label: 'Pipeline Efficiency', value: Math.round(pipelineEfficiency), max: 100, color: 'bg-cyan-500', weight: '30%' },
+   186→                { label: 'Content Pillars', value: pillarScore, max: 100, color: 'bg-emerald-500', weight: '20%' },
+   187→                { label: 'Monetization', value: monetizationReady, max: 100, color: 'bg-amber-500', weight: '20%' },
+   188→              ]
+   189→              return (
+   190→                <div className="space-y-3">
+   191→                  <div className="flex items-center gap-4">
+   192→                    <motion.div
+   193→                      initial={{ scale: 0.5, opacity: 0 }}
+   194→                      animate={{ scale: 1, opacity: 1 }}
+   195→                      transition={{ type: 'spring', stiffness: 150, delay: 0.2 }}
+   196→                      className="relative w-20 h-20 flex items-center justify-center"
+   197→                    >
+   198→                      <svg viewBox="0 0 80 80" className="w-full h-full -rotate-90">
+   199→                        <circle cx="40" cy="40" r="34" fill="none" stroke="#1e293b" strokeWidth="6" />
+   200→                        <circle cx="40" cy="40" r="34" fill="none" stroke={composite >= 80 ? '#10b981' : composite >= 60 ? '#06b6d4' : composite >= 40 ? '#f59e0b' : '#f43f5e'} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${composite * 2.14} 214`} className="transition-all duration-1000" />
+   201→                      </svg>
+   202→                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+   203→                        <span className={`text-xl font-bold font-tabular-nums ${gradeColor}`}>{grade}</span>
+   204→                        <span className="text-[10px] text-slate-400">{composite}%</span>
+   205→                      </div>
+   206→                    </motion.div>
+   207→                    <div className="flex-1 space-y-1.5">
+   208→                      {metrics.map((m, i) => (
+   209→                        <div key={i} className="space-y-0.5">
+   210→                          <div className="flex items-center justify-between text-[10px]">
+   211→                            <span className="text-slate-400">{m.label} <span className="text-slate-600">({m.weight})</span></span>
+   212→                            <span className="text-slate-300 font-mono">{m.value}%</span>
+   213→                          </div>
+   214→                          <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+   215→                            <motion.div
+   216→                              initial={{ width: 0 }}
+   217→                              animate={{ width: `${m.value}%` }}
+   218→                              transition={{ delay: i * 0.1 + 0.3, duration: 0.6 }}
+   219→                              className={`h-full rounded-full ${m.color}`}
+   220→                            />
+   221→                          </div>
+   222→                        </div>
+   223→                      ))}
+   224→                    </div>
+   225→                  </div>
+   226→                  <p className="text-[11px] text-slate-400 leading-relaxed">
+   227→                    Composite score combining niche fit (30%), pipeline throughput (30%), content pillar coverage (20%), and monetization readiness (20%).
+   228→                    {composite < 40 && ' Focus on connecting YouTube and producing content to improve.'}
+   229→                    {composite >= 40 && composite < 70 && ' Good foundation — increase pipeline throughput and pillar coverage.'}
+   230→                    {composite >= 70 && ' Strong position — optimize for maximum throughput.'}
+   231→                  </p>
+   232→                </div>
+   233→              )
+   234→            })()}
+   235→          </div>
+   236→        </GradientCard>
+   237→
+   238→        {/* Quick Stats Summary Bar */}
+   239→        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+   240→          <QuickStatItem label="Ideas" value={status?.pipeline?.ideas || 0} icon={Lightbulb} color="text-violet-400" bg="bg-violet-500/10" delay={0} />
+   241→          <QuickStatItem label="Researched" value={status?.pipeline?.researched || 0} icon={Search} color="text-blue-400" bg="bg-blue-500/10" delay={0.05} />
+   242→          <QuickStatItem label="Scripted" value={status?.pipeline?.scripted || 0} icon={PenTool} color="text-amber-400" bg="bg-amber-500/10" delay={0.1} />
+   243→          <QuickStatItem label="Producing" value={status?.pipeline?.producing || 0} icon={Clapperboard} color="text-emerald-400" bg="bg-emerald-500/10" delay={0.15} />
+   244→          <QuickStatItem label="Approved" value={status?.pipeline?.approved || 0} icon={CheckCircle2} color="text-cyan-400" bg="bg-cyan-500/10" delay={0.2} />
+   245→          <QuickStatItem label="Uploaded" value={status?.pipeline?.uploaded || 0} icon={CloudUpload} color="text-rose-400" bg="bg-rose-500/10" delay={0.25} />
+   246→        </div>
+   247→
+   248→        {/* Pipeline Flow Visualization */}
+   249→        <GradientCard glow="from-violet-500/5 to-cyan-500/5">
+   250→          <div className="p-4">
+   251→            <div className="flex items-center justify-between mb-3">
+   252→              <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
+   253→                <Flame className="w-4 h-4 text-orange-400" /> Production Pipeline
+   254→              </h3>
+   255→              <Badge variant="outline" className="text-[10px] border-slate-600 text-slate-400">
+   256→                {totalPipeline} total
+   257→              </Badge>
+   258→            </div>
+   259→            <PipelineFlow pipeline={status?.pipeline || null} />
+   260→          </div>
+   261→        </GradientCard>
+   262→
+   263→        {/* Agent Cycle Visualization */}
+   264→        <GradientCard glow="from-cyan-500/5 to-violet-500/5">
+   265→          <div className="p-4">
+   266→            <div className="flex items-center justify-between mb-4">
+   267→              <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
+   268→                <Radio className="w-4 h-4 text-cyan-400" /> Autonomous Cycle
+   269→              </h3>
+   270→              <Badge variant="outline" className={`text-[10px] ${
+   271→                ['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete'].includes(status?.state || '')
+   272→                  ? 'border-emerald-500/50 text-emerald-400'
+   273→                  : 'border-slate-600 text-slate-400'
+   274→              }`}>
+   275→                {['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete'].includes(status?.state || '') ? 'ACTIVE' : 'IDLE'}
+   276→              </Badge>
+   277→            </div>
+   278→            {(() => {
+   279→              const cycleStages = [
+   280→                { key: 'research', label: 'Research', icon: Search, color: 'text-blue-400', ring: 'ring-blue-500/40', bg: 'bg-blue-500/10', states: ['researching_niches', 'researching_topic', 'creating_strategy'] },
+   281→                { key: 'script', label: 'Script', icon: PenTool, color: 'text-amber-400', ring: 'ring-amber-500/40', bg: 'bg-amber-500/10', states: ['writing_script'] },
+   282→                { key: 'produce', label: 'Produce', icon: Clapperboard, color: 'text-emerald-400', ring: 'ring-emerald-500/40', bg: 'bg-emerald-500/10', states: ['producing_video'] },
+   283→                { key: 'review', label: 'Review', icon: MessageSquare, color: 'text-rose-400', ring: 'ring-rose-500/40', bg: 'bg-rose-500/10', states: ['reviewing'] },
+   284→                { key: 'upload', label: 'Upload', icon: CloudUpload, color: 'text-cyan-400', ring: 'ring-cyan-500/40', bg: 'bg-cyan-500/10', states: ['uploading'] },
+   285→                { key: 'analyze', label: 'Analyze', icon: BarChart3, color: 'text-violet-400', ring: 'ring-violet-500/40', bg: 'bg-violet-500/10', states: ['cycle_complete'] },
+   286→              ]
+   287→              const currentState = status?.state || 'idle'
+   288→              const activeIndex = cycleStages.findIndex(s => s.states.includes(currentState))
+   289→              const isActive = activeIndex !== -1
+   290→              return (
+   291→                <div className="relative">
+   292→                  <div className="flex items-center justify-center py-2">
+   293→                    <svg width="180" height="180" viewBox="0 0 180 180" className="opacity-90">
+   294→                      {cycleStages.map((stage, i) => {
+   295→                        const startAngle = (i * 60 - 90) * (Math.PI / 180)
+   296→                        const endAngle = ((i + 1) * 60 - 90) * (Math.PI / 180)
+   297→                        const isStageActive = stage.states.includes(currentState)
+   298→                        const isPast = isActive && i < activeIndex
+   299→                        const midAngle = ((i * 60 + 30) - 90) * (Math.PI / 180)
+   300→                        const labelX = 90 + 65 * Math.cos(midAngle)
+   301→                        const labelY = 90 + 65 * Math.sin(midAngle)
+   302→                        const x1 = 90 + 50 * Math.cos(startAngle)
+   303→                        const y1 = 90 + 50 * Math.sin(startAngle)
+   304→                        const x2 = 90 + 50 * Math.cos(endAngle)
+   305→                        const y2 = 90 + 50 * Math.sin(endAngle)
+   306→                        const ix1 = 90 + 30 * Math.cos(startAngle)
+   307→                        const iy1 = 90 + 30 * Math.sin(startAngle)
+   308→                        const ix2 = 90 + 30 * Math.cos(endAngle)
+   309→                        const iy2 = 90 + 30 * Math.sin(endAngle)
+   310→                        const segmentColors = ['#3b82f6', '#f59e0b', '#10b981', '#f43f5e', '#06b6d4', '#8b5cf6']
+   311→                        return (
+   312→                          <g key={stage.key}>
+   313→                            <path
+   314→                              d={`M ${ix1} ${iy1} A 30 30 0 0 1 ${ix2} ${iy2} L ${x2} ${y2} A 50 50 0 0 0 ${x1} ${y1} Z`}
+   315→                              fill={isStageActive ? segmentColors[i] : isPast ? segmentColors[i] + '80' : '#1e293b'}
+   316→                              stroke={isStageActive ? segmentColors[i] : '#334155'}
+   317→                              strokeWidth={isStageActive ? 2 : 1}
+   318→                              opacity={isStageActive ? 1 : isPast ? 0.7 : 0.4}
+   319→                            />
+   320→                            {isStageActive && (
+   321→                              <circle cx={labelX} cy={labelY} r="3" fill={segmentColors[i]} opacity={0.8}>
+   322→                                <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite" />
+   323→                                <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite" />
+   324→                              </circle>
+   325→                            )}
+   326→                          </g>
+   327→                        )
+   328→                      })}
+   329→                      <circle cx="90" cy="90" r="26" fill="#0f172a" stroke="#334155" strokeWidth="1" />
+   330→                      <text x="90" y="86" textAnchor="middle" fill={isActive ? '#e2e8f0' : '#64748b'} fontSize="9" fontWeight="bold">
+   331→                        {isActive ? cycleStages[activeIndex]?.label.toUpperCase() : 'IDLE'}
+   332→                      </text>
+   333→                      <text x="90" y="98" textAnchor="middle" fill="#64748b" fontSize="7">
+   334→                        {isActive ? 'In Progress' : 'Waiting'}
+   335→                      </text>
+   336→                    </svg>
+   337→                  </div>
+   338→                  <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+   339→                    {cycleStages.map((stage, i) => {
+   340→                      const Icon = stage.icon
+   341→                      const isStageActive = stage.states.includes(currentState)
+   342→                      const isPast = isActive && i < activeIndex
+   343→                      return (
+   344→                        <motion.div
+   345→                          key={stage.key}
+   346→                          initial={{ opacity: 0, scale: 0.9 }}
+   347→                          animate={{ opacity: 1, scale: 1 }}
+   348→                          transition={{ delay: i * 0.05, duration: 0.2 }}
+   349→                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[10px] font-medium border transition-all duration-300 ${
+   350→                            isStageActive
+   351→                              ? `${stage.bg} ${stage.ring} ${stage.color} border-current shadow-sm`
+   352→                              : isPast
+   353→                                ? 'bg-slate-800/40 border-slate-600/30 text-slate-400'
+   354→                                : 'bg-slate-800/20 border-slate-700/30 text-slate-500'
+   355→                          }`}
+   356→                        >
+   357→                          <Icon className="w-3 h-3" />
+   358→                          {stage.label}
+   359→                          {isStageActive && (
+   360→                            <motion.div
+   361→                              animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+   362→                              transition={{ duration: 1.5, repeat: Infinity }}
+   363→                              className="w-1.5 h-1.5 rounded-full bg-current"
+   364→                            />
+   365→                          )}
+   366→                          {isPast && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+   367→                        </motion.div>
+   368→                      )
+   369→                    })}
+   370→                  </div>
+   371→                </div>
+   372→              )
+   373→            })()}
+   374→          </div>
+   375→        </GradientCard>
+   376→
+   377→        {/* Quick Actions Bar */}
+   378→        <GradientCard glow="from-emerald-500/5 to-violet-500/5">
+   379→          <div className="p-3">
+   380→            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+   381→              <span className="text-[11px] text-slate-400 uppercase tracking-wider shrink-0 mr-1">Quick:</span>
+   382→              {[
+   383→                { cmd: 'research-niche', label: 'Research Niche', icon: Search, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/30' },
+   384→                { cmd: 'write-script', label: 'Write Script', icon: PenTool, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30' },
+   385→                { cmd: 'produce-video', label: 'Produce Video', icon: Clapperboard, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30' },
+   386→                { cmd: 'review-quality', label: 'Review Quality', icon: MessageSquare, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/30' },
+   387→                { cmd: 'upload-youtube', label: 'Upload', icon: CloudUpload, color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/30' },
+   388→                { cmd: 'collect-analytics', label: 'Analytics', icon: BarChart3, color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/30' },
+   389→              ].map((action, i) => (
+   390→                <motion.button
+   391→                  key={action.cmd}
+   392→                  whileHover={{ scale: 1.05 }}
+   393→                  whileTap={{ scale: 0.95 }}
+   394→                  onClick={() => sendCommand(action.cmd)}
+   395→                  disabled={loading || !!status?.emergencyStop}
+   396→                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-medium ${action.bg} ${action.color} shrink-0 transition-all duration-200 hover:shadow-sm disabled:opacity-40 disabled:pointer-events-none`}
+   397→                >
+   398→                  <action.icon className="w-3 h-3" />
+   399→                  <span className="hidden sm:inline">{action.label}</span>
+   400→                </motion.button>
+   401→              ))}
+   402→            </div>
+   403→          </div>
+   404→        </GradientCard>
+   405→
+   406→        {/* AI Insights Card */}
+   407→        <GradientCard glow="from-amber-500/5 to-emerald-500/5">
+   408→          <div className="p-4">
+   409→            <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
+   410→              <Lightbulb className="w-4 h-4 text-amber-400" /> AI Insights
+   411→            </h3>
+   412→            <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+   413→              {[
+   414→                { icon: Clock3, text: 'Best upload time: 2-4 PM EST for maximum engagement', color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+   415→                { icon: TrendingUp, text: `${status?.niche || 'Tech'} content shows 2.3× higher engagement — produce more`, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+   416→                { icon: ShieldCheck, text: 'Quality pass rate improved 12% this week with refined prompts', color: 'text-violet-400', bg: 'bg-violet-500/10' },
+   417→              ].map((insight, i) => (
+   418→                <motion.div
+   419→                  key={i}
+   420→                  initial={{ opacity: 0, y: 5 }}
+   421→                  animate={{ opacity: 1, y: 0 }}
+   422→                  transition={{ delay: i * 0.1, duration: 0.3 }}
+   423→                  className={`flex items-start gap-2.5 p-3 rounded-lg ${insight.bg} border border-slate-700/30`}
+   424→                >
+   425→                  <insight.icon className={`w-4 h-4 ${insight.color} shrink-0 mt-0.5`} />
+   426→                  <p className="text-xs text-slate-300 leading-relaxed">{insight.text}</p>
+   427→                </motion.div>
+   428→              ))}
+   429→            </div>
+   430→          </div>
+   431→        </GradientCard>
+   432→
+   433→        {/* Weekly Summary */}
+   434→        <GradientCard glow="from-amber-500/5 to-violet-500/5">
+   435→          <div className="p-4">
+   436→            <div className="flex items-center justify-between mb-3">
+   437→              <h3 className="text-sm font-semibold tracking-tight text-slate-200 flex items-center gap-2">
+   438→                <CalendarDays className="w-4 h-4 text-amber-400" /> Weekly Summary
+   439→              </h3>
+   440→              <span className="text-[11px] text-slate-400">This week</span>
+   441→            </div>
+   442→            {(() => {
+   443→              const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+   444→              const weekLogs = logs.filter((l: any) => new Date(l.createdAt) >= sevenDaysAgo)
+   445→              const decisions = weekLogs.filter((l: any) => /^(niche_|strategy_|mode_)/.test(l.action)).length
+   446→              const ideasGenerated = weekLogs.filter((l: any) => l.action === 'metadata_update' && /idea/i.test(l.details || '')).length
+   447→              const videosProduced = weekLogs.filter((l: any) => l.action === 'metadata_update' && /produced|producing/i.test(l.details || '')).length
+   448→              const reviewsCompleted = weekLogs.filter((l: any) => l.action === 'metadata_update' && /review|approved|failed/i.test(l.details || '')).length
+   449→              const totalActivity = decisions + ideasGenerated + videosProduced + reviewsCompleted
+   450→              const message = totalActivity === 0
+   451→                ? 'No activity this week. Start the autonomous cycle to begin producing content.'
+   452→                : totalActivity <= 5
+   453→                ? 'Slow week — consider increasing upload frequency or running niche research.'
+   454→                : totalActivity <= 15
+   455→                ? 'Steady progress. Keep the momentum going!'
+   456→                : 'Excellent output this week! The autonomous agent is running at full capacity.'
+   457→              const chips = [
+   458→                { icon: GitBranch, count: decisions, label: 'Decisions', color: 'text-violet-400', bg: 'bg-violet-500/10', ring: 'ring-violet-500/20' },
+   459→                { icon: Lightbulb, count: ideasGenerated, label: 'Ideas', color: 'text-amber-400', bg: 'bg-amber-500/10', ring: 'ring-amber-500/20' },
+   460→                { icon: Film, count: videosProduced, label: 'Produced', color: 'text-emerald-400', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500/20' },
+   461→                { icon: ShieldCheck, count: reviewsCompleted, label: 'Reviews', color: 'text-rose-400', bg: 'bg-rose-500/10', ring: 'ring-rose-500/20' },
+   462→              ]
+   463→              return (
+   464→                <>
+   465→                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+   466→                    {chips.map((chip, i) => (
+   467→                      <motion.div
+   468→                        key={chip.label}
+   469→                        initial={{ opacity: 0, y: 6 }}
+   470→                        animate={{ opacity: 1, y: 0 }}
+   471→                        transition={{ delay: i * 0.08, duration: 0.3 }}
+   472→                        className={`flex items-center gap-2 p-2 rounded-lg ${chip.bg} ring-1 ${chip.ring}`}
+   473→                      >
+   474→                        <chip.icon className={`w-3.5 h-3.5 ${chip.color} shrink-0`} />
+   475→                        <div className="min-w-0">
+   476→                          <span className={`text-sm font-bold font-tabular-nums ${chip.color}`}>{chip.count}</span>
+   477→                          <span className="text-[10px] text-slate-400 ml-1">{chip.label}</span>
+   478→                        </div>
+   479→                      </motion.div>
+   480→                    ))}
+   481→                  </div>
+   482→                  <div className="w-full h-1.5 rounded-full bg-slate-800/60 mb-2 overflow-hidden">
+   483→                    <motion.div
+   484→                      initial={{ width: 0 }}
+   485→                      animate={{ width: `${Math.min(totalActivity / 20 * 100, 100)}%` }}
+   486→                      transition={{ duration: 0.8, ease: 'easeOut' }}
+   487→                      className="h-full rounded-full bg-gradient-to-r from-amber-500/60 to-violet-500/60"
+   488→                    />
+   489→                  </div>
+   490→                  <p className="text-[11px] text-slate-400 leading-relaxed">{message}</p>
+   491→                </>
+   492→              )
+   493→            })()}
+   494→          </div>
+   495→        </GradientCard>
+   496→
+   497→        {/* Agent Thinking & Next Steps */}
+   498→        <GradientCard glow="from-violet-500/5 to-cyan-500/5">
+   499→          <div className="p-4">
+   500→            <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
+   501→              <Brain className="w-4 h-4 text-violet-400" /> Agent Intelligence
+   502→            </h3>
+   503→            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   504→              <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 space-y-2">
+   505→                <div className="flex items-center gap-2">
+   506→                  <div className={`w-2.5 h-2.5 rounded-full ${stateColor(status?.state || 'idle').dot} ${['running', 'researching_niches', 'creating_strategy', 'researching_topic', 'writing_script', 'producing_video', 'reviewing', 'uploading', 'cycle_complete'].includes(status?.state || '') ? 'animate-pulse' : ''}`} />
+   507→                  <span className="text-xs font-medium text-slate-300">Current State</span>
+   508→                </div>
+   509→                <p className={`text-sm font-bold font-tabular-nums ${stateColor(status?.state || 'idle').text}`}>
+   510→                  {stateColor(status?.state || 'idle').label}
+   511→                </p>
+   512→                <p className="text-[11px] text-slate-400 capitalize">{status?.state?.replace(/_/g, ' ') || 'idle'}</p>
+   513→                {status?.currentJob && (
+   514→                  <div className="flex items-center gap-1.5 pt-1">
+   515→                    <Loader2 className="w-3 h-3 text-violet-400 animate-spin" />
+   516→                    <span className="text-[10px] text-violet-300 font-mono truncate">{status.currentJob}</span>
+   517→                  </div>
+   518→                )}
+   519→              </div>
+   520→              <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/30 space-y-2">
+   521→                <div className="flex items-center gap-2">
+   522→                  <ChevronRight className="w-3 h-3 text-emerald-400" />
+   523→                  <span className="text-xs font-medium text-slate-300">Next Action</span>
+   524→                </div>
+   525→                <p className="text-sm font-medium text-emerald-300">
+   526→                  {status?.nextAction || 'Awaiting command'}
+   527→                </p>
+   528→                {status?.lastError && (
+   529→                  <div className="flex items-start gap-1.5 pt-1">
+   530→                    <AlertTriangle className="w-3 h-3 text-red-400 shrink-0 mt-0.5" />
+   531→                    <span className="text-[10px] text-red-300 line-clamp-2">{status.lastError.replace(/Token refresh failed:.*$/i, 'YouTube token expired — reconnect in Settings')}</span>
+   532→                  </div>
+   533→                )}
+   534→              </div>
+   535→            </div>
+   536→            <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-slate-800/40 to-slate-800/20 border border-slate-700/20">
+   537→              <div className="flex items-center justify-between text-[10px]">
+   538→                <span className="text-slate-400">Pipeline Efficiency</span>
+   539→                <span className="text-emerald-400 font-medium">
+   540→                  {totalPipeline > 0 ? Math.round(((status?.pipeline?.approved || 0) + (status?.pipeline?.uploaded || 0)) / totalPipeline * 100) : 0}% throughput
+   541→                </span>
+   542→              </div>
+   543→              <div className="mt-1.5 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+   544→                <motion.div
+   545→                  initial={{ width: 0 }}
+   546→                  animate={{ width: `${totalPipeline > 0 ? Math.round(((status?.pipeline?.approved || 0) + (status?.pipeline?.uploaded || 0)) / totalPipeline * 100) : 0}%` }}
+   547→                  transition={{ duration: 0.8, ease: 'easeOut' }}
+   548→                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+   549→                />
+   550→              </div>
+   551→            </div>
+   552→          </div>
+   553→        </GradientCard>
+   554→
+   555→        {/* Controls + Live Feed */}
+   556→        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+   557→          <GradientCard className="lg:col-span-2" glow="from-emerald-500/5 to-cyan-500/5">
+   558→            <div className="p-4">
+   559→              <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
+   560→                <MousePointerClick className="w-4 h-4 text-emerald-400" /> Command Center
+   561→              </h3>
+   562→              <div className="flex flex-wrap gap-2">
+   563→                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+   564→                  <Button
+   565→                    onClick={() => sendCommand('produce-next')}
+   566→                    disabled={loading || status?.emergencyStop || !!status?.emergencyStop}
+   567→                    className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 shadow-lg shadow-emerald-500/20 font-semibold"
+   568→                  >
+   569→                    {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Rocket className="w-4 h-4 mr-2" />}
+   570→                    Produce Next Video
+   571→                  </Button>
+   572→                </motion.div>
+   573→                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+   574→                  <Button
+   575→                    onClick={() => sendCommand('full-cycle')}
+   576→                    disabled={loading || !!status?.emergencyStop}
+   577→                    className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 shadow-md shadow-violet-500/15"
+   578→                  >
+   579→                    {loading ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Zap className="w-4 h-4 mr-1.5" />}
+   580→                    Full Cycle
+   581→                  </Button>
+   582→                </motion.div>
+   583→                <Button onClick={() => sendCommand('initial-setup')} disabled={loading || !!status?.emergencyStop} variant="secondary" size="sm">
+   584→                  <Brain className="w-3.5 h-3.5 mr-1.5" /> Setup
+   585→                </Button>
+   586→                <Button onClick={() => sendCommand('pause')} disabled={loading} variant="outline" size="sm" className="border-amber-500/30 text-amber-300 font-semibold hover:bg-amber-500/10 hover:text-amber-200">
+   587→                  <Pause className="w-3.5 h-3.5 mr-1.5" /> Pause
+   588→                </Button>
+   589→                <Button onClick={() => sendCommand('resume')} disabled={loading} variant="outline" size="sm" className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10">
+   590→                  <Play className="w-3.5 h-3.5 mr-1.5" /> Resume
+   591→                </Button>
+   592→                <Button onClick={() => sendCommand('process-job')} disabled={loading} variant="outline" size="sm">
+   593→                  <Activity className="w-3.5 h-3.5 mr-1.5" /> Process Job
+   594→                </Button>
+   595→              </div>
+   596→              {status?.lastError && (
+   597→                <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-300 flex items-center gap-2">
+   598→                  <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+   599→                  {status.lastError.replace(/Token refresh failed:.*$/i, 'YouTube token expired — reconnect in Settings')}
+   600→                </motion.div>
+   601→              )}
+   602→              {status?.nextAction && (
+   603→                <div className="mt-2 text-xs text-emerald-400/70 flex items-center gap-1.5">
+   604→                  <ChevronRight className="w-3 h-3" /> Next: {status.nextAction}
+   605→                </div>
+   606→              )}
+   607→            </div>
+   608→          </GradientCard>
+   609→
+   610→          <GradientCard glow="from-amber-500/5 to-emerald-500/5">
+   611→            <div className="p-4">
+   612→              <h3 className="text-sm font-semibold tracking-tight text-slate-200 mb-3 flex items-center gap-2">
+   613→                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+   614→                Live Feed
+   615→              </h3>
+   616→              <LiveFeed logs={logs} />
+   617→            </div>
+   618→          </GradientCard>
+   619→        </div>
+   620→
+   621→        {/* Performance Metrics dashboard — lazy loaded */}
+   622→        <Suspense fallback={<ChartSkeleton />}>
+   623→          <LazyPerformanceMetrics
+   624→            kpis={{
+   625→              pipelineVelocity: {
+   626→                current: status?.pipeline?.producing || 0,
+   627→                target: 5,
+   628→                sparkline: [1, 2, 1, 3, 2, 4, 3],
+   629→              },
+   630→              avgProductionTime: {
+   631→                minutes: 8.5,
+   632→                trend: -12,
+   633→                sparkline: [12, 10, 11, 9, 8, 9, 8.5],
+   634→              },
+   635→              qualityPassRate: {
+   636→                rate: pipeline?.reviews?.length
+   637→                  ? Math.round((pipeline.reviews.filter((r: any) => r.overallPassed).length / pipeline.reviews.length) * 100)
+   638→                  : 0,
+   639→                trend: 5,
+   640→                sparkline: [60, 65, 70, 68, 72, 75, 78],
+   641→              },
+   642→              storageUsed: {
+   643→                mb: 124,
+   644→                capMb: 1024,
+   645→                sparkline: [80, 90, 100, 110, 115, 120, 124],
+   646→              },
+   647→            }}
+   648→            productionTrend={Array.from({ length: 30 }, (_, i) => {
+   649→              const phase = i / 5
+   650→              const dayOffset = i - 29
+   651→              const d = new Date()
+   652→              d.setDate(d.getDate() + dayOffset)
+   653→              const dateStr = d.toISOString().slice(0, 10)
+   654→              return {
+   655→                date: dateStr,
+   656→                approved: Math.max(0, Math.round(1.5 + Math.sin(phase) * 1.2)),
+   657→                failed: Math.max(0, Math.round(0.5 + Math.sin(phase + 1) * 0.7)),
+   658→                inReview: Math.max(0, Math.round(0.8 + Math.cos(phase) * 0.6)),
+   659→              }
+   660→            })}
+   661→            nicheMetrics={(channel?.niches || []).slice(0, 5).map((n: any, i: number) => ({
+   662→              id: n.id,
+   663→              name: n.nicheName,
+   664→              compositeScore: n.compositeScore || 0,
+   665→              videosProduced: 3 + ((i * 7) % 11),
+   666→              avgQuality: 65 + ((i * 13) % 30),
+   667→              revenuePotential: 55 + ((i * 17) % 40),
+   668→            }))}
+   669→            efficiency={{
+   670→              approved: status?.pipeline?.approved || 0,
+   671→              total: (status?.pipeline?.approved || 0) + (status?.pipeline?.producing || 0),
+   672→              target: 80,
+   673→            }}
+   674→            heatmap={Array.from({ length: 42 }, (_, i) => ({
+   675→              day: i % 7,
+   676→              hourBucket: Math.floor(i / 7),
+   677→              avgVideos: 0.3 + ((i * 0.37) % 1.7),
+   678→            }))}
+   679→          />
+   680→        </Suspense>
+   681→      </motion.div>
+   682→    </AnimatePresence>
+   683→  )
+   684→}
+   685→

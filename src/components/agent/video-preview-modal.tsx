@@ -58,8 +58,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { RefreshCcw } from 'lucide-react'
+import { RefreshCcw, ThumbsUp, ThumbsDown, Upload } from 'lucide-react'
 import { useToast } from '@/components/agent/toast-provider'
+import { Textarea } from '@/components/ui/textarea'
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -167,6 +168,7 @@ interface VideoDetailResponse {
 interface Props {
   videoProjectId: string | null
   onClose: () => void
+  onStatusChange?: () => void  // refresh parent data after approve/reject
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -654,15 +656,19 @@ function LoadingState() {
 
 // ─── Main Component ─────────────────────────────────────────────────
 
-export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
+export function VideoPreviewModal({ videoProjectId, onClose, onStatusChange }: Props) {
   const open = videoProjectId !== null
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [data, setData] = React.useState<VideoDetailResponse | null>(null)
-  const { toast, update: updateToast } = useToast()
+  const { toast, update: updateToast, dismiss } = useToast()
   // Re-render flow state
   const [rerenderConfirmOpen, setRerenderConfirmOpen] = React.useState(false)
   const [rerendering, setRerendering] = React.useState(false)
+  // Approve/Reject state
+  const [actionBusy, setActionBusy] = React.useState(false)
+  const [rejectReason, setRejectReason] = React.useState('')
+  const [showRejectInput, setShowRejectInput] = React.useState(false)
 
   React.useEffect(() => {
     if (!videoProjectId) {
@@ -718,6 +724,67 @@ export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
   // Hidden while a re-render is already in-flight.
   const isFailed = vp?.status === 'failed' || vp?.status === 'rejected'
   const showRerender = !!vp && isFailed && !rerendering
+
+  // ── Approve handler ───────────────────────────────────
+  const handleApprove = React.useCallback(async () => {
+    if (!videoProjectId) return
+    setActionBusy(true)
+    const loadingId = toast({ type: 'loading', title: 'Approving video…', duration: 0 })
+    try {
+      const res = await fetch('/api/data/projects/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: videoProjectId }),
+      })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok || !result.ok) {
+        updateToast(loadingId, { type: 'error', title: 'Approval failed', description: result.error || `Failed (${res.status})`, duration: 5000 })
+        setActionBusy(false)
+        return
+      }
+      updateToast(loadingId, { type: 'success', title: 'Video approved', description: 'Ready for upload to YouTube.', duration: 3000 })
+      // Update local data
+      if (data?.videoProject) {
+        setData({ ...data, videoProject: { ...data.videoProject, status: 'approved', isApproved: true } })
+      }
+      onStatusChange?.()
+      setActionBusy(false)
+    } catch (err) {
+      updateToast(loadingId, { type: 'error', title: 'Network error', description: err instanceof Error ? err.message : 'Failed', duration: 5000 })
+      setActionBusy(false)
+    }
+  }, [videoProjectId, data, toast, updateToast, onStatusChange])
+
+  // ── Reject handler ───────────────────────────────────
+  const handleReject = React.useCallback(async () => {
+    if (!videoProjectId) return
+    setActionBusy(true)
+    const loadingId = toast({ type: 'loading', title: 'Rejecting video…', duration: 0 })
+    try {
+      const res = await fetch('/api/data/projects/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: videoProjectId, reason: rejectReason || undefined }),
+      })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok || !result.ok) {
+        updateToast(loadingId, { type: 'error', title: 'Reject failed', description: result.error || `Failed (${res.status})`, duration: 5000 })
+        setActionBusy(false)
+        return
+      }
+      updateToast(loadingId, { type: 'success', title: 'Video rejected', description: 'Sent back for revision.', duration: 3000 })
+      if (data?.videoProject) {
+        setData({ ...data, videoProject: { ...data.videoProject, status: 'failed', isApproved: false } })
+      }
+      setShowRejectInput(false)
+      setRejectReason('')
+      onStatusChange?.()
+      setActionBusy(false)
+    } catch (err) {
+      updateToast(loadingId, { type: 'error', title: 'Network error', description: err instanceof Error ? err.message : 'Failed', duration: 5000 })
+      setActionBusy(false)
+    }
+  }, [videoProjectId, data, rejectReason, toast, updateToast, onStatusChange])
 
   const handleRerender = React.useCallback(async () => {
     if (!videoProjectId) return
@@ -1003,7 +1070,51 @@ export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
               </>
             )}
           </div>
-          <div className="flex items-center gap-2 justify-end w-full sm:w-auto">
+          <div className="flex items-center gap-2 justify-end w-full sm:w-auto flex-wrap">
+            {/* ── Approve / Reject controls ─────────────── */}
+            {vp && (vp.status === 'review' || vp.status === 'approved' || vp.status === 'failed') && (
+              <>
+                {!showRejectInput ? (
+                  <>
+                    <Button
+                      size="sm"
+                      disabled={actionBusy || vp.isApproved}
+                      onClick={handleApprove}
+                      className="gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white border-0 shadow-lg shadow-emerald-500/20"
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      {vp.isApproved ? 'Approved' : 'Approve'}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={actionBusy}
+                      onClick={() => setShowRejectInput(true)}
+                      className="gap-1.5 border-rose-500/40 bg-rose-500/5 text-rose-300 hover:border-rose-400/60 hover:bg-rose-500/10 hover:text-rose-200"
+                    >
+                      <ThumbsDown className="w-3.5 h-3.5" />
+                      Reject
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <Textarea
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="Reason for rejection (optional)"
+                      className="h-8 min-w-[180px] text-xs bg-slate-900/60 border-slate-700/50 resize-none"
+                      rows={1}
+                    />
+                    <Button size="sm" disabled={actionBusy} onClick={handleReject} className="gap-1 bg-rose-600 hover:bg-rose-500 text-white border-0">
+                      Confirm
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setShowRejectInput(false); setRejectReason('') }} className="text-slate-400 hover:text-slate-200">
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
             <Button
               variant="outline"
               size="sm"

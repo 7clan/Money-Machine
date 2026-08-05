@@ -658,6 +658,7 @@ export default function Dashboard() {
         <VideoPreviewModal
           videoProjectId={previewVideoId}
           onClose={() => setPreviewVideoId(null)}
+          onStatusChange={pollAll}
         />
 
         {/* ═══ COMMAND PALETTE ═══ */}

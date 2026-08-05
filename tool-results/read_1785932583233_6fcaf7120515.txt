@@ -1,0 +1,1301 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useMemo, useEffect, useCallback } from 'react'
+     4→import { motion, AnimatePresence } from 'framer-motion'
+     5→import { Input } from '@/components/ui/input'
+     6→import {
+     7→  Select,
+     8→  SelectContent,
+     9→  SelectItem,
+    10→  SelectTrigger,
+    11→  SelectValue,
+    12→} from '@/components/ui/select'
+    13→import { Badge } from '@/components/ui/badge'
+    14→import { Button } from '@/components/ui/button'
+    15→import { ScrollArea } from '@/components/ui/scroll-area'
+    16→import { Separator } from '@/components/ui/separator'
+    17→import { Skeleton } from '@/components/ui/skeleton'
+    18→import { Checkbox } from '@/components/ui/checkbox'
+    19→import {
+    20→  Tooltip,
+    21→  TooltipContent,
+    22→  TooltipTrigger,
+    23→} from '@/components/ui/tooltip'
+    24→import {
+    25→  AlertDialog,
+    26→  AlertDialogAction,
+    27→  AlertDialogCancel,
+    28→  AlertDialogContent,
+    29→  AlertDialogDescription,
+    30→  AlertDialogFooter,
+    31→  AlertDialogHeader,
+    32→  AlertDialogTitle,
+    33→} from '@/components/ui/alert-dialog'
+    34→import {
+    35→  DropdownMenu,
+    36→  DropdownMenuContent,
+    37→  DropdownMenuItem,
+    38→  DropdownMenuLabel,
+    39→  DropdownMenuSeparator,
+    40→  DropdownMenuTrigger,
+    41→} from '@/components/ui/dropdown-menu'
+    42→import {
+    43→  Search,
+    44→  X,
+    45→  CheckSquare,
+    46→  Square,
+    47→  Trash2,
+    48→  RefreshCcw,
+    49→  CheckCircle,
+    50→  Loader2,
+    51→  Film,
+    52→  Play,
+    53→  XCircle,
+    54→  ListChecks,
+    55→  Tag,
+    56→  Settings2,
+    57→} from 'lucide-react'
+    58→import { cn } from '@/lib/utils'
+    59→import { useToast } from '@/components/agent/toast-provider'
+    60→
+    61→// ─── Types ───────────────────────────────────────────────────────────
+    62→
+    63→export type VideoProjectStatus =
+    64→  | 'producing'
+    65→  | 'approved'
+    66→  | 'failed'
+    67→  | 'uploaded'
+    68→  | 'rejected'
+    69→
+    70→// The pipeline endpoint serialises Prisma `VideoProject` rows with `any`
+    71→// typing on the dashboard side — accept a permissive shape so the
+    72→// component can consume `pipeline.projects` directly without bespoke
+    73→// mapping at every call site.
+    74→export interface VideoProject {
+    75→  id: string
+    76→  videoIdeaId?: string
+    77→  title?: string
+    78→  status?: string
+    79→  videoFilePath?: string | null
+    80→  thumbnailPath?: string | null
+    81→  resolution?: string | null
+    82→  duration?: number | null
+    83→  fileSize?: number | null
+    84→  renderProgress?: number | null
+    85→  isApproved?: boolean | null
+    86→  reviewResult?: string | null
+    87→  editorNotes?: string | null
+    88→  createdAt?: string | Date | null
+    89→  updatedAt?: string | Date | null
+    90→}
+    91→
+    92→interface VideoProjectExplorerProps {
+    93→  projects: VideoProject[]
+    94→  onPreview?: (id: string) => void
+    95→  /** Notified after a bulk action completes so the parent can refresh. */
+    96→  onBulkAction?: () => void
+    97→  className?: string
+    98→}
+    99→
+   100→type SortKey = 'updated_desc' | 'updated_asc' | 'duration_desc' | 'duration_asc' | 'status'
+   101→
+   102→// ─── Status Config ───────────────────────────────────────────────────
+   103→
+   104→const STATUS_CONFIG: Record<
+   105→  VideoProjectStatus,
+   106→  { label: string; badgeClass: string; dotClass: string }
+   107→> = {
+   108→  producing: {
+   109→    label: 'Producing',
+   110→    badgeClass: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+   111→    dotClass: 'bg-cyan-400',
+   112→  },
+   113→  approved: {
+   114→    label: 'Approved',
+   115→    badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+   116→    dotClass: 'bg-emerald-400',
+   117→  },
+   118→  failed: {
+   119→    label: 'Failed',
+   120→    badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+   121→    dotClass: 'bg-rose-400',
+   122→  },
+   123→  uploaded: {
+   124→    label: 'Uploaded',
+   125→    badgeClass: 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+   126→    dotClass: 'bg-violet-400',
+   127→  },
+   128→  rejected: {
+   129→    label: 'Rejected',
+   130→    badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+   131→    dotClass: 'bg-amber-400',
+   132→  },
+   133→}
+   134→
+   135→// Map any unknown string status into one of our 5 known buckets so the
+   136→// UI never throws on legacy rows (e.g. status='planning' or 'reviewing').
+   137→function coerceStatus(raw?: string | null): VideoProjectStatus {
+   138→  if (!raw) return 'producing'
+   139→  if (raw in STATUS_CONFIG) return raw as VideoProjectStatus
+   140→  // Reasonable fallbacks for legacy / pipeline-internal statuses.
+   141→  if (raw === 'planning' || raw === 'storyboarding' || raw === 'rendering' || raw === 'review' || raw === 'reviewing' || raw === 'editing' || raw === 'recording' || raw === 'collecting_assets') {
+   142→    return 'producing'
+   143→  }
+   144→  if (raw === 'uploading') return 'uploaded'
+   145→  return 'producing'
+   146→}
+   147→
+   148→const STATUS_FILTER_PILLS: { value: 'all' | VideoProjectStatus; label: string }[] = [
+   149→  { value: 'all', label: 'All' },
+   150→  { value: 'producing', label: 'Producing' },
+   151→  { value: 'approved', label: 'Approved' },
+   152→  { value: 'failed', label: 'Failed' },
+   153→  { value: 'uploaded', label: 'Uploaded' },
+   154→]
+   155→
+   156→const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+   157→  { value: 'updated_desc', label: 'Updated (newest)' },
+   158→  { value: 'updated_asc', label: 'Updated (oldest)' },
+   159→  { value: 'duration_desc', label: 'Duration (long→short)' },
+   160→  { value: 'duration_asc', label: 'Duration (short→long)' },
+   161→  { value: 'status', label: 'Status' },
+   162→]
+   163→
+   164→const BULK_STATUS_OPTIONS: {
+   165→  value: VideoProjectStatus
+   166→  label: string
+   167→  dotClass: string
+   168→}[] = [
+   169→  { value: 'producing', label: 'Producing', dotClass: 'bg-cyan-400' },
+   170→  { value: 'approved', label: 'Approved', dotClass: 'bg-emerald-400' },
+   171→  { value: 'failed', label: 'Failed', dotClass: 'bg-rose-400' },
+   172→  { value: 'uploaded', label: 'Uploaded', dotClass: 'bg-violet-400' },
+   173→  { value: 'rejected', label: 'Rejected', dotClass: 'bg-amber-400' },
+   174→]
+   175→
+   176→type BulkActionType =
+   177→  | 'approve'
+   178→  | 'delete'
+   179→  | 'set-status'
+   180→  | 're-render'
+   181→  | 'unschedule'
+   182→
+   183→// ─── Helpers ─────────────────────────────────────────────────────────
+   184→
+   185→function toTimestamp(value?: string | Date | null): number {
+   186→  if (!value) return 0
+   187→  const d = value instanceof Date ? value : new Date(value)
+   188→  const t = d.getTime()
+   189→  return Number.isNaN(t) ? 0 : t
+   190→}
+   191→
+   192→function relativeTime(value?: string | Date | null): string {
+   193→  const t = toTimestamp(value)
+   194→  if (!t) return '—'
+   195→  const diff = Date.now() - t
+   196→  if (diff < 0) return 'just now'
+   197→  const sec = Math.floor(diff / 1000)
+   198→  if (sec < 60) return `${sec}s ago`
+   199→  const min = Math.floor(sec / 60)
+   200→  if (min < 60) return `${min}m ago`
+   201→  const hr = Math.floor(min / 60)
+   202→  if (hr < 24) return `${hr}h ago`
+   203→  const day = Math.floor(hr / 24)
+   204→  if (day < 7) return `${day}d ago`
+   205→  const week = Math.floor(day / 7)
+   206→  if (week < 4) return `${week}w ago`
+   207→  const month = Math.floor(day / 30)
+   208→  if (month < 12) return `${month}mo ago`
+   209→  const year = Math.floor(day / 365)
+   210→  return `${year}y ago`
+   211→}
+   212→
+   213→function formatDuration(seconds?: number | null): string {
+   214→  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) {
+   215→    return '—'
+   216→  }
+   217→  if (seconds < 60) return `${seconds.toFixed(0)}s`
+   218→  const m = Math.floor(seconds / 60)
+   219→  const s = Math.floor(seconds % 60)
+   220→  return `${m}:${s.toString().padStart(2, '0')}`
+   221→}
+   222→
+   223→function formatFileSize(bytes?: number | null): string {
+   224→  if (!bytes || bytes <= 0) return '—'
+   225→  if (bytes < 1024) return `${bytes} B`
+   226→  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+   227→  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+   228→  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
+   229→}
+   230→
+   231→function truncate(text: string, max: number): string {
+   232→  if (text.length <= max) return text
+   233→  return text.slice(0, max - 1).trimEnd() + '…'
+   234→}
+   235→
+   236→// ─── Component ───────────────────────────────────────────────────────
+   237→
+   238→export function VideoProjectExplorer({
+   239→  projects,
+   240→  onPreview,
+   241→  onBulkAction,
+   242→  className,
+   243→}: VideoProjectExplorerProps) {
+   244→  const { toast, update: updateToast } = useToast()
+   245→  const [searchInput, setSearchInput] = useState('')
+   246→  const [debouncedSearch, setDebouncedSearch] = useState('')
+   247→  const [statusFilter, setStatusFilter] = useState<'all' | VideoProjectStatus>(
+   248→    'all',
+   249→  )
+   250→  const [sortKey, setSortKey] = useState<SortKey>('updated_desc')
+   251→
+   252→  // ─── Per-card re-render flow (single project) ─────────────────────
+   253→  // The bulk "re-render" action lives below; this state powers the
+   254→  // per-card button that calls /api/agent/rerender for one project.
+   255→  const [rerenderConfirmId, setRerenderConfirmId] = useState<string | null>(null)
+   256→  const [rerenderingIds, setRerenderingIds] = useState<Set<string>>(new Set())
+   257→
+   258→  // ─── Bulk selection state ──────────────────────────────────────────
+   259→  const [selectMode, setSelectMode] = useState(false)
+   260→  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+   261→  const [bulkLoading, setBulkLoading] = useState<BulkActionType | null>(null)
+   262→  const [confirmDialog, setConfirmDialog] = useState<
+   263→    null | 'delete' | 're-render'
+   264→  >(null)
+   265→
+   266→  // Debounced search (200ms)
+   267→  useEffect(() => {
+   268→    const handle = setTimeout(() => {
+   269→      setDebouncedSearch(searchInput.trim().toLowerCase())
+   270→    }, 200)
+   271→    return () => clearTimeout(handle)
+   272→  }, [searchInput])
+   273→
+   274→  const filteredProjects = useMemo(() => {
+   275→    const out: VideoProject[] = []
+   276→    for (const project of projects) {
+   277→      const title = (project.title ?? '').toLowerCase()
+   278→      if (debouncedSearch && !title.includes(debouncedSearch)) continue
+   279→      if (statusFilter !== 'all') {
+   280→        const s = coerceStatus(project.status)
+   281→        if (s !== statusFilter) continue
+   282→      }
+   283→      out.push(project)
+   284→    }
+   285→
+   286→    out.sort((a, b) => {
+   287→      switch (sortKey) {
+   288→        case 'updated_asc':
+   289→          return toTimestamp(a.updatedAt) - toTimestamp(b.updatedAt)
+   290→        case 'updated_desc':
+   291→          return toTimestamp(b.updatedAt) - toTimestamp(a.updatedAt)
+   292→        case 'duration_asc': {
+   293→          const da = a.duration ?? 0
+   294→          const db = b.duration ?? 0
+   295→          return da - db
+   296→        }
+   297→        case 'duration_desc': {
+   298→          const da = a.duration ?? 0
+   299→          const db = b.duration ?? 0
+   300→          return db - da
+   301→        }
+   302→        case 'status': {
+   303→          const sa = coerceStatus(a.status)
+   304→          const sb = coerceStatus(b.status)
+   305→          return sa.localeCompare(sb)
+   306→        }
+   307→        default:
+   308→          return 0
+   309→      }
+   310→    })
+   311→    return out
+   312→  }, [projects, debouncedSearch, statusFilter, sortKey])
+   313→
+   314→  const activeFilterCount = useMemo(() => {
+   315→    let n = 0
+   316→    if (debouncedSearch) n++
+   317→    if (statusFilter !== 'all') n++
+   318→    return n
+   319→  }, [debouncedSearch, statusFilter])
+   320→
+   321→  // Prune stale IDs from selection when the projects list changes
+   322→  // (e.g. after a bulk delete or after the parent refetches).
+   323→  useEffect(() => {
+   324→    if (selectedIds.size === 0) return
+   325→    const validIds = new Set(projects.map((p) => p.id))
+   326→    let changed = false
+   327→    const next = new Set<string>()
+   328→    for (const id of selectedIds) {
+   329→      if (validIds.has(id)) {
+   330→        next.add(id)
+   331→      } else {
+   332→        changed = true
+   333→      }
+   334→    }
+   335→    if (changed) {
+   336→      setSelectedIds(next)
+   337→      if (next.size === 0) setSelectMode(false)
+   338→    }
+   339→  }, [projects, selectedIds])
+   340→
+   341→  const clearFilters = useCallback(() => {
+   342→    setSearchInput('')
+   343→    setDebouncedSearch('')
+   344→    setStatusFilter('all')
+   345→    setSortKey('updated_desc')
+   346→  }, [])
+   347→
+   348→  // ─── Bulk action handlers ──────────────────────────────────────────
+   349→  const toggleSelectMode = useCallback(() => {
+   350→    setSelectMode((prev) => {
+   351→      const next = !prev
+   352→      if (!next) setSelectedIds(new Set())
+   353→      return next
+   354→    })
+   355→  }, [])
+   356→
+   357→  const toggleSelect = useCallback((id: string) => {
+   358→    setSelectedIds((prev) => {
+   359→      const next = new Set(prev)
+   360→      if (next.has(id)) next.delete(id)
+   361→      else next.add(id)
+   362→      return next
+   363→    })
+   364→  }, [])
+   365→
+   366→  const selectAllFiltered = useCallback(() => {
+   367→    setSelectedIds(new Set(filteredProjects.map((p) => p.id)))
+   368→  }, [filteredProjects])
+   369→
+   370→  const clearSelection = useCallback(() => {
+   371→    setSelectedIds(new Set())
+   372→  }, [])
+   373→
+   374→  const executeBulkAction = useCallback(
+   375→    async (
+   376→      action: BulkActionType,
+   377→      payload?: Record<string, unknown>,
+   378→    ) => {
+   379→      if (selectedIds.size === 0) return
+   380→      setBulkLoading(action)
+   381→      const ids = Array.from(selectedIds)
+   382→      try {
+   383→        const res = await fetch('/api/data/projects/bulk', {
+   384→          method: 'POST',
+   385→          headers: { 'Content-Type': 'application/json' },
+   386→          body: JSON.stringify({ action, projectIds: ids, payload }),
+   387→        })
+   388→        const data = (await res.json().catch(() => ({}))) as {
+   389→          ok?: boolean
+   390→          affected?: number
+   391→          error?: string
+   392→        }
+   393→        if (!res.ok || !data.ok) {
+   394→          throw new Error(
+   395→            data.error || `Bulk ${action} failed (HTTP ${res.status})`,
+   396→          )
+   397→        }
+   398→        const affected = data.affected ?? 0
+   399→        toast({
+   400→          type: 'success',
+   401→          title: `Bulk ${action} complete`,
+   402→          description: `${affected} project${affected === 1 ? '' : 's'} affected.`,
+   403→        })
+   404→        // Clear local selection first, then notify parent so it can refresh.
+   405→        setSelectedIds(new Set())
+   406→        setSelectMode(false)
+   407→        setConfirmDialog(null)
+   408→        onBulkAction?.()
+   409→      } catch (err) {
+   410→        toast({
+   411→          type: 'error',
+   412→          title: `Bulk ${action} failed`,
+   413→          description: err instanceof Error ? err.message : 'Unknown error',
+   414→          duration: 5000,
+   415→        })
+   416→      } finally {
+   417→        setBulkLoading(null)
+   418→      }
+   419→    },
+   420→    [selectedIds, toast, onBulkAction],
+   421→  )
+   422→
+   423→  const handleCardClick = useCallback(
+   424→    (id: string) => {
+   425→      if (selectMode) {
+   426→        toggleSelect(id)
+   427→        return
+   428→      }
+   429→      onPreview?.(id)
+   430→    },
+   431→    [selectMode, toggleSelect, onPreview],
+   432→  )
+   433→
+   434→  // ─── Per-card re-render ──────────────────────────────────────────
+   435→  // Calls the single-project /api/agent/rerender endpoint, shows a
+   436→  // loading toast, marks the card as "rerendering" so its button hides,
+   437→  // and notifies the parent to refresh the pipeline.
+   438→  const handleCardRerender = useCallback(
+   439→    async (projectId: string) => {
+   440→      setRerenderConfirmId(null)
+   441→      setRerenderingIds((prev) => new Set(prev).add(projectId))
+   442→      const loadingId = toast({
+   443→        type: 'loading',
+   444→        title: 'Starting re-render…',
+   445→        description: 'Generating a revised script and re-rendering the video.',
+   446→        duration: 0,
+   447→      })
+   448→      try {
+   449→        const res = await fetch('/api/agent/rerender', {
+   450→          method: 'POST',
+   451→          headers: { 'Content-Type': 'application/json' },
+   452→          body: JSON.stringify({ projectId }),
+   453→        })
+   454→        const data = (await res.json().catch(() => ({}))) as {
+   455→          ok?: boolean
+   456→          message?: string
+   457→          error?: string
+   458→        }
+   459→        if (!res.ok || !data.ok) {
+   460→          const errMsg =
+   461→            data?.message || data?.error || `Re-render failed (${res.status})`
+   462→          updateToast(loadingId, {
+   463→            type: 'error',
+   464→            title: 'Re-render failed',
+   465→            description: errMsg,
+   466→            duration: 5000,
+   467→          })
+   468→          setRerenderingIds((prev) => {
+   469→            const next = new Set(prev)
+   470→            next.delete(projectId)
+   471→            return next
+   472→          })
+   473→          return
+   474→        }
+   475→        updateToast(loadingId, {
+   476→          type: 'success',
+   477→          title: 'Re-render started',
+   478→          description: data?.message || 'A new script version is being generated.',
+   479→          duration: 3500,
+   480→        })
+   481→        // Refresh the parent pipeline so the status flips to "producing".
+   482→        onBulkAction?.()
+   483→      } catch (err) {
+   484→        updateToast(loadingId, {
+   485→          type: 'error',
+   486→          title: 'Network error',
+   487→          description: err instanceof Error ? err.message : 'Failed to reach server',
+   488→          duration: 5000,
+   489→        })
+   490→        setRerenderingIds((prev) => {
+   491→          const next = new Set(prev)
+   492→          next.delete(projectId)
+   493→          return next
+   494→        })
+   495→      }
+   496→    },
+   497→    [toast, updateToast, onBulkAction],
+   498→  )
+   499→
+   500→  const isLoading = projects.length === 0
+   501→
+   502→  // ─── Render ────────────────────────────────────────────────────────
+   503→
+   504→  return (
+   505→    <div
+   506→      className={cn(
+   507→        'w-full rounded-xl bg-slate-950 p-3 sm:p-4',
+   508→        'border border-slate-800/50',
+   509→        className,
+   510→      )}
+   511→    >
+   512→      {/* ─── Header / Search ─── */}
+   513→      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+   514→        <div className="flex items-center gap-2">
+   515→          <div className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30">
+   516→            <Film className="size-4 text-emerald-300" />
+   517→          </div>
+   518→          <div>
+   519→            <h3 className="text-sm font-semibold text-slate-100">
+   520→              Video Project Explorer
+   521→            </h3>
+   522→            <p className="text-[11px] text-slate-400">
+   523→              Produce, approve &amp; manage rendered videos
+   524→            </p>
+   525→          </div>
+   526→        </div>
+   527→
+   528→        <div className="flex items-center gap-2">
+   529→          <div className="relative w-full sm:w-72">
+   530→            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
+   531→            <Input
+   532→              value={searchInput}
+   533→              onChange={(e) => setSearchInput(e.target.value)}
+   534→              placeholder="Search projects by title…"
+   535→              className="h-9 border-slate-700/60 bg-slate-900/60 pl-9 pr-8 text-sm text-slate-100 placeholder:text-slate-500 focus-visible:border-emerald-500/50 focus-visible:ring-emerald-500/20"
+   536→            />
+   537→            {searchInput && (
+   538→              <button
+   539→                type="button"
+   540→                onClick={() => setSearchInput('')}
+   541→                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+   542→                aria-label="Clear search"
+   543→              >
+   544→                <X className="size-3.5" />
+   545→              </button>
+   546→            )}
+   547→          </div>
+   548→
+   549→          {/* Select toggle */}
+   550→          <Tooltip>
+   551→            <TooltipTrigger asChild>
+   552→              <Button
+   553→                type="button"
+   554→                variant={selectMode ? 'default' : 'outline'}
+   555→                size="sm"
+   556→                onClick={toggleSelectMode}
+   557→                className={cn(
+   558→                  'h-9 shrink-0 gap-1.5 px-3 text-xs',
+   559→                  selectMode
+   560→                    ? 'border-transparent bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-600 hover:to-cyan-600'
+   561→                    : 'border-slate-700/60 bg-slate-900/60 text-slate-300 hover:bg-slate-800/60 hover:text-slate-100',
+   562→                )}
+   563→              >
+   564→                {selectMode ? (
+   565→                  <CheckSquare className="size-3.5" />
+   566→                ) : (
+   567→                  <Square className="size-3.5" />
+   568→                )}
+   569→                <span className="hidden sm:inline">Select</span>
+   570→              </Button>
+   571→            </TooltipTrigger>
+   572→            <TooltipContent className="bg-slate-800 text-slate-100">
+   573→              {selectMode ? 'Exit selection mode' : 'Enter selection mode'}
+   574→            </TooltipContent>
+   575→          </Tooltip>
+   576→        </div>
+   577→      </div>
+   578→
+   579→      {/* ─── Filter Row: status pills + sort ─── */}
+   580→      <div className="mb-3 flex flex-wrap items-center gap-2">
+   581→        {/* Status pills */}
+   582→        <div className="flex items-center rounded-lg border border-slate-700/60 bg-slate-900/40 p-0.5">
+   583→          {STATUS_FILTER_PILLS.map((p) => {
+   584→            const isActive = statusFilter === p.value
+   585→            return (
+   586→              <button
+   587→                key={p.value}
+   588→                type="button"
+   589→                onClick={() => setStatusFilter(p.value)}
+   590→                className={cn(
+   591→                  'relative rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors',
+   592→                  isActive
+   593→                    ? 'text-white'
+   594→                    : 'text-slate-400 hover:text-slate-200',
+   595→                )}
+   596→              >
+   597→                {isActive && (
+   598→                  <motion.span
+   599→                    layoutId="vpx-status-pill-bg"
+   600→                    className="absolute inset-0 rounded-md bg-gradient-to-r from-emerald-500/80 to-cyan-500/80"
+   601→                    transition={{ type: 'spring', duration: 0.3, bounce: 0.2 }}
+   602→                  />
+   603→                )}
+   604→                <span className="relative z-10">{p.label}</span>
+   605→              </button>
+   606→            )
+   607→          })}
+   608→        </div>
+   609→
+   610→        {/* Sort */}
+   611→        <Select
+   612→          value={sortKey}
+   613→          onValueChange={(v) => setSortKey(v as SortKey)}
+   614→        >
+   615→          <SelectTrigger
+   616→            size="sm"
+   617→            className="h-8 w-[180px] border-slate-700/60 bg-slate-900/60 text-xs text-slate-200 hover:bg-slate-800/60"
+   618→          >
+   619→            <Settings2 className="size-3.5 text-slate-500" />
+   620→            <SelectValue placeholder="Sort" />
+   621→          </SelectTrigger>
+   622→          <SelectContent className="border-slate-700/60 bg-slate-900 text-slate-200">
+   623→            {SORT_OPTIONS.map((opt) => (
+   624→              <SelectItem key={opt.value} value={opt.value}>
+   625→                {opt.label}
+   626→              </SelectItem>
+   627→            ))}
+   628→          </SelectContent>
+   629→        </Select>
+   630→
+   631→        {/* Active filter count */}
+   632→        {activeFilterCount > 0 && (
+   633→          <Badge className="border-emerald-500/30 bg-emerald-500/15 text-emerald-300">
+   634→            <Tag className="size-3" />
+   635→            {activeFilterCount} active
+   636→          </Badge>
+   637→        )}
+   638→
+   639→        <div className="ml-auto">
+   640→          {activeFilterCount > 0 && (
+   641→            <Button
+   642→              variant="ghost"
+   643→              size="sm"
+   644→              onClick={clearFilters}
+   645→              className="h-7 gap-1.5 px-2 text-xs text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+   646→            >
+   647→              <X className="size-3" />
+   648→              Clear filters
+   649→            </Button>
+   650→          )}
+   651→        </div>
+   652→      </div>
+   653→
+   654→      {/* ─── Result Count ─── */}
+   655→      <div className="mb-3 flex items-center justify-between gap-2">
+   656→        <p className="text-xs text-slate-400">
+   657→          <span className="font-semibold text-slate-200">
+   658→            {filteredProjects.length}
+   659→          </span>{' '}
+   660→          of {projects.length} projects
+   661→        </p>
+   662→      </div>
+   663→
+   664→      <Separator className="mb-3 bg-slate-800/60" />
+   665→
+   666→      {/* ─── Selection Toolbar (only in select mode) ─── */}
+   667→      <AnimatePresence>
+   668→        {selectMode && (
+   669→          <motion.div
+   670→            initial={{ opacity: 0, height: 0 }}
+   671→            animate={{ opacity: 1, height: 'auto' }}
+   672→            exit={{ opacity: 0, height: 0 }}
+   673→            transition={{ duration: 0.2 }}
+   674→            className="mb-3 overflow-hidden"
+   675→          >
+   676→            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2">
+   677→              <span className="text-xs text-slate-400">
+   678→                {selectedIds.size > 0 ? (
+   679→                  <>
+   680→                    <span className="font-semibold text-emerald-300">
+   681→                      {selectedIds.size}
+   682→                    </span>{' '}
+   683→                    selected
+   684→                  </>
+   685→                ) : (
+   686→                  'Selection mode — click cards to select'
+   687→                )}
+   688→              </span>
+   689→              <div className="ml-auto flex items-center gap-1.5">
+   690→                <Button
+   691→                  type="button"
+   692→                  variant="ghost"
+   693→                  size="sm"
+   694→                  onClick={selectAllFiltered}
+   695→                  className="h-7 gap-1.5 px-2 text-xs text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
+   696→                >
+   697→                  <ListChecks className="size-3" />
+   698→                  Select all ({filteredProjects.length})
+   699→                </Button>
+   700→                {selectedIds.size > 0 && (
+   701→                  <Button
+   702→                    type="button"
+   703→                    variant="ghost"
+   704→                    size="sm"
+   705→                    onClick={clearSelection}
+   706→                    className="h-7 gap-1.5 px-2 text-xs text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+   707→                  >
+   708→                    <X className="size-3" />
+   709→                    Clear
+   710→                  </Button>
+   711→                )}
+   712→              </div>
+   713→            </div>
+   714→          </motion.div>
+   715→        )}
+   716→      </AnimatePresence>
+   717→
+   718→      {/* ─── Bulk Action Bar ─── */}
+   719→      <AnimatePresence>
+   720→        {selectMode && selectedIds.size > 0 && (
+   721→          <BulkActionBar
+   722→            selectedCount={selectedIds.size}
+   723→            loadingAction={bulkLoading}
+   724→            confirmDialog={confirmDialog}
+   725→            onConfirmDialogChange={setConfirmDialog}
+   726→            onExecute={executeBulkAction}
+   727→          />
+   728→        )}
+   729→      </AnimatePresence>
+   730→
+   731→      {/* ─── Grid ─── */}
+   732→      <ScrollArea className="max-h-[60vh]">
+   733→        {isLoading ? (
+   734→          <LoadingSkeleton />
+   735→        ) : filteredProjects.length === 0 ? (
+   736→          <EmptyState hasFilters={activeFilterCount > 0} onClear={clearFilters} />
+   737→        ) : (
+   738→          <div className="grid grid-cols-1 gap-2 pr-2 lg:grid-cols-2">
+   739→            <AnimatePresence mode="popLayout" initial={false}>
+   740→              {filteredProjects.map((project, i) => (
+   741→                <motion.div
+   742→                  key={project.id}
+   743→                  layout
+   744→                  initial={{ opacity: 0, y: 6 }}
+   745→                  animate={{ opacity: 1, y: 0 }}
+   746→                  exit={{ opacity: 0, y: -6 }}
+   747→                  transition={{
+   748→                    duration: 0.25,
+   749→                    delay: Math.min(i * 0.03, 0.3),
+   750→                    ease: 'easeOut',
+   751→                  }}
+   752→                >
+   753→                  <ProjectCard
+   754→                    project={project}
+   755→                    onClick={() => handleCardClick(project.id)}
+   756→                    selectMode={selectMode}
+   757→                    isSelected={selectedIds.has(project.id)}
+   758→                    onToggleSelect={toggleSelect}
+   759→                    isRerendering={rerenderingIds.has(project.id)}
+   760→                    onRerender={(id) => setRerenderConfirmId(id)}
+   761→                  />
+   762→                </motion.div>
+   763→              ))}
+   764→            </AnimatePresence>
+   765→          </div>
+   766→        )}
+   767→      </ScrollArea>
+   768→
+   769→      {/* ─── Per-card Re-render confirmation dialog ─── */}
+   770→      <AlertDialog
+   771→        open={rerenderConfirmId !== null}
+   772→        onOpenChange={(o) => { if (!o) setRerenderConfirmId(null) }}
+   773→      >
+   774→        <AlertDialogContent className="border-slate-800 bg-slate-950 text-slate-100">
+   775→          <AlertDialogHeader>
+   776→            <AlertDialogTitle className="text-slate-100">
+   777→              Re-render this video?
+   778→            </AlertDialogTitle>
+   779→            <AlertDialogDescription className="text-slate-400">
+   780→              A new script version will be generated addressing the failed review
+   781→              issues, then the video will be re-rendered from scratch. This may
+   782→              take a few minutes.
+   783→            </AlertDialogDescription>
+   784→          </AlertDialogHeader>
+   785→          <AlertDialogFooter>
+   786→            <AlertDialogCancel className="border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-slate-100">
+   787→              Cancel
+   788→            </AlertDialogCancel>
+   789→            <AlertDialogAction
+   790→              onClick={() => {
+   791→                if (rerenderConfirmId) void handleCardRerender(rerenderConfirmId)
+   792→              }}
+   793→              className="border-0 bg-gradient-to-r from-rose-500 to-violet-500 text-white hover:from-rose-400 hover:to-violet-400"
+   794→            >
+   795→              <RefreshCcw className="mr-1.5 size-3.5" />
+   796→              Confirm Re-render
+   797→            </AlertDialogAction>
+   798→          </AlertDialogFooter>
+   799→        </AlertDialogContent>
+   800→      </AlertDialog>
+   801→    </div>
+   802→  )
+   803→}
+   804→
+   805→// ─── Project Card ────────────────────────────────────────────────────
+   806→
+   807→interface ProjectCardProps {
+   808→  project: VideoProject
+   809→  onClick: () => void
+   810→  selectMode: boolean
+   811→  isSelected: boolean
+   812→  onToggleSelect: (id: string) => void
+   813→  /** True while a re-render is in-flight for this project (hides the button). */
+   814→  isRerendering?: boolean
+   815→  /** Open the per-card re-render confirmation dialog. */
+   816→  onRerender?: (id: string) => void
+   817→}
+   818→
+   819→function ProjectCard({
+   820→  project,
+   821→  onClick,
+   822→  selectMode,
+   823→  isSelected,
+   824→  onToggleSelect,
+   825→  isRerendering,
+   826→  onRerender,
+   827→}: ProjectCardProps) {
+   828→  const status = coerceStatus(project.status)
+   829→  const statusCfg = STATUS_CONFIG[status]
+   830→  const duration = project.duration
+   831→  const renderPct =
+   832→    typeof project.renderProgress === 'number'
+   833→      ? Math.max(0, Math.min(100, project.renderProgress))
+   834→      : null
+   835→  const isProducing = status === 'producing'
+   836→  const isFailed = status === 'failed' || status === 'rejected'
+   837→  // Show the re-render button only when the project failed AND we're not
+   838→  // already re-rendering it AND we're not in select mode (select mode is
+   839→  // for bulk actions; per-card actions are hidden to avoid clutter).
+   840→  const showRerender = isFailed && !isProducing && !isRerendering && !selectMode
+   841→  const canPreview =
+   842→    status === 'approved' || status === 'uploaded' || status === 'rejected'
+   843→  const title = project.title || 'Untitled project'
+   844→
+   845→  return (
+   846→    <motion.button
+   847→      type="button"
+   848→      onClick={onClick}
+   849→      whileHover={{ scale: 1.01 }}
+   850→      whileTap={{ scale: 0.99 }}
+   851→      className={cn(
+   852→        'group relative w-full overflow-hidden rounded-lg',
+   853→        'bg-slate-900/60 border border-slate-800/50 backdrop-blur-sm',
+   854→        'p-3 sm:p-4 text-left transition-all duration-200',
+   855→        'hover:border-emerald-500/40 hover:bg-slate-900/80',
+   856→        'hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.35)]',
+   857→        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40',
+   858→        // Selected state — violet ring + slight elevation
+   859→        isSelected &&
+   860→          'border-violet-500/60 ring-2 ring-violet-500/50 shadow-[0_0_24px_-4px_rgba(139,92,246,0.55)] scale-[1.005]',
+   861→      )}
+   862→    >
+   863→      {/* Glow accent line */}
+   864→      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+   865→
+   866→      {/* Selection checkbox — top right corner */}
+   867→      {selectMode && (
+   868→        <div
+   869→          className="absolute right-2 top-2 z-10"
+   870→          onClick={(e) => e.stopPropagation()}
+   871→        >
+   872→          <Checkbox
+   873→            checked={isSelected}
+   874→            onCheckedChange={() => onToggleSelect(project.id)}
+   875→            className="size-4 border-violet-500/60 bg-slate-900/80 data-[state=checked]:bg-violet-500 data-[state=checked]:border-violet-500 data-[state=checked]:text-white"
+   876→            aria-label={`${isSelected ? 'Deselect' : 'Select'} ${title}`}
+   877→          />
+   878→        </div>
+   879→      )}
+   880→
+   881→      <div className="flex items-start gap-3">
+   882→        {/* Thumbnail / icon block */}
+   883→        <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-700/50 bg-slate-800/60">
+   884→          {project.thumbnailPath ? (
+   885→            // We can't reliably resolve arbitrary disk paths here, so we
+   886→            // surface a film icon — the preview modal handles real thumbs.
+   887→            <Film className="size-5 text-slate-400" />
+   888→          ) : (
+   889→            <Film className="size-5 text-slate-500" />
+   890→          )}
+   891→        </div>
+   892→
+   893→        <div className="flex flex-1 flex-col gap-1.5">
+   894→          {/* Top row: title */}
+   895→          <Tooltip>
+   896→            <TooltipTrigger asChild>
+   897→              <h4
+   898→                className={cn(
+   899→                  'cursor-help text-sm font-medium leading-snug text-slate-100',
+   900→                  selectMode && 'pr-6',
+   901→                )}
+   902→              >
+   903→                {truncate(title, 60)}
+   904→              </h4>
+   905→            </TooltipTrigger>
+   906→            {title.length > 60 && (
+   907→              <TooltipContent className="max-w-xs bg-slate-800 text-slate-100">
+   908→                {title}
+   909→              </TooltipContent>
+   910→            )}
+   911→          </Tooltip>
+   912→
+   913→          {/* Status badge row */}
+   914→          <div className="flex flex-wrap items-center gap-1.5">
+   915→            <Badge
+   916→              variant="outline"
+   917→              className={cn('gap-1 px-1.5 py-0 text-[10px]', statusCfg.badgeClass)}
+   918→            >
+   919→              <span className={cn('size-1.5 rounded-full', statusCfg.dotClass)} />
+   920→              {statusCfg.label}
+   921→            </Badge>
+   922→
+   923→            {project.resolution && (
+   924→              <Badge
+   925→                variant="outline"
+   926→                className="gap-1 border-slate-700/40 bg-slate-800/40 px-1.5 py-0 text-[10px] text-slate-300"
+   927→              >
+   928→                {project.resolution}
+   929→              </Badge>
+   930→            )}
+   931→
+   932→            {duration !== null && duration !== undefined && (
+   933→              <Badge
+   934→                variant="outline"
+   935→                className="gap-1 border-slate-700/40 bg-slate-800/40 px-1.5 py-0 text-[10px] font-mono text-slate-300"
+   936→              >
+   937→                {formatDuration(duration)}
+   938→              </Badge>
+   939→            )}
+   940→
+   941→            {project.fileSize ? (
+   942→              <Badge
+   943→                variant="outline"
+   944→                className="gap-1 border-slate-700/40 bg-slate-800/40 px-1.5 py-0 text-[10px] font-mono text-slate-400"
+   945→              >
+   946→                {formatFileSize(project.fileSize)}
+   947→              </Badge>
+   948→            ) : null}
+   949→          </div>
+   950→
+   951→          {/* Render progress bar (when producing) */}
+   952→          {isProducing && renderPct !== null && (
+   953→            <div className="flex items-center gap-2">
+   954→              <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800/80">
+   955→                <div
+   956→                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 transition-all duration-300"
+   957→                  style={{ width: `${renderPct}%` }}
+   958→                />
+   959→              </div>
+   960→              <span className="font-mono text-[10px] text-cyan-300">
+   961→                {renderPct.toFixed(0)}%
+   962→              </span>
+   963→            </div>
+   964→          )}
+   965→
+   966→          {/* Footer row: timestamps + preview hint + per-card Re-render */}
+   967→          <div className="flex items-center gap-x-3 gap-y-1 text-[11px] text-slate-400">
+   968→            {project.updatedAt && (
+   969→              <span className="flex items-center gap-1">
+   970→                <RefreshCcw className="size-3 text-slate-500" />
+   971→                {relativeTime(project.updatedAt)}
+   972→              </span>
+   973→            )}
+   974→
+   975→            {isRerendering && (
+   976→              <span className="ml-auto flex items-center gap-1 text-violet-300">
+   977→                <Loader2 className="size-3 animate-spin" />
+   978→                Re-rendering…
+   979→              </span>
+   980→            )}
+   981→
+   982→            {showRerender && onRerender && (
+   983→              <Tooltip>
+   984→                <TooltipTrigger asChild>
+   985→                  <Button
+   986→                    type="button"
+   987→                    size="sm"
+   988→                    variant="outline"
+   989→                    onClick={(e) => {
+   990→                      e.stopPropagation()
+   991→                      onRerender(project.id)
+   992→                    }}
+   993→                    className="ml-auto h-6 gap-1 border-rose-500/40 bg-rose-500/5 px-2 text-[10px] text-rose-300 hover:border-rose-400/60 hover:bg-rose-500/10 hover:text-rose-200"
+   994→                  >
+   995→                    <RefreshCcw className="size-3" />
+   996→                    Re-render
+   997→                  </Button>
+   998→                </TooltipTrigger>
+   999→                <TooltipContent side="top" className="border-slate-700 bg-slate-800 text-slate-200">
+  1000→                  Re-render with revised script
+  1001→                </TooltipContent>
+  1002→              </Tooltip>
+  1003→            )}
+  1004→
+  1005→            {canPreview && !selectMode && !showRerender && !isRerendering && (
+  1006→              <span className="ml-auto flex items-center gap-1 text-violet-300">
+  1007→                <Play className="size-3" />
+  1008→                Preview
+  1009→              </span>
+  1010→            )}
+  1011→          </div>
+  1012→        </div>
+  1013→
+  1014→        {/* Play icon — hidden in select mode (replaced by checkbox) */}
+  1015→        {!selectMode && canPreview && !showRerender && !isRerendering && (
+  1016→          <Play className="size-4 -rotate-0 shrink-0 self-center text-slate-600 transition-all group-hover:translate-x-0.5 group-hover:text-emerald-400" />
+  1017→        )}
+  1018→      </div>
+  1019→    </motion.button>
+  1020→  )
+  1021→}
+  1022→
+  1023→// ─── Empty State ─────────────────────────────────────────────────────
+  1024→
+  1025→function EmptyState({
+  1026→  hasFilters,
+  1027→  onClear,
+  1028→}: {
+  1029→  hasFilters: boolean
+  1030→  onClear: () => void
+  1031→}) {
+  1032→  return (
+  1033→    <motion.div
+  1034→      initial={{ opacity: 0, scale: 0.97 }}
+  1035→      animate={{ opacity: 1, scale: 1 }}
+  1036→      transition={{ duration: 0.3 }}
+  1037→      className="flex flex-col items-center justify-center px-6 py-12 text-center"
+  1038→    >
+  1039→      <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-slate-900/60 border border-slate-800/60">
+  1040→        <Film className="size-7 text-slate-500" />
+  1041→      </div>
+  1042→      <h4 className="mb-1 text-sm font-semibold text-slate-200">
+  1043→        {hasFilters ? 'No projects match your filters' : 'No projects yet'}
+  1044→      </h4>
+  1045→      <p className="mb-4 max-w-xs text-xs text-slate-400">
+  1046→        {hasFilters
+  1047→          ? 'Try adjusting your search or clearing active filters to see more projects.'
+  1048→          : 'Produce a video to see it appear here.'}
+  1049→      </p>
+  1050→      {hasFilters && (
+  1051→        <Button
+  1052→          variant="outline"
+  1053→          size="sm"
+  1054→          onClick={onClear}
+  1055→          className="gap-1.5 border-slate-700/60 bg-slate-900/40 text-slate-300 hover:bg-slate-800/60 hover:text-slate-100"
+  1056→        >
+  1057→          <X className="size-3.5" />
+  1058→          Clear filters
+  1059→        </Button>
+  1060→      )}
+  1061→    </motion.div>
+  1062→  )
+  1063→}
+  1064→
+  1065→// ─── Loading Skeleton ────────────────────────────────────────────────
+  1066→
+  1067→function LoadingSkeleton() {
+  1068→  return (
+  1069→    <div className="grid grid-cols-1 gap-2 pr-2 lg:grid-cols-2">
+  1070→      {Array.from({ length: 4 }).map((_, i) => (
+  1071→        <div
+  1072→          key={i}
+  1073→          className="rounded-lg border border-slate-800/50 bg-slate-900/40 p-3 sm:p-4"
+  1074→        >
+  1075→          <div className="flex items-start gap-3">
+  1076→            <Skeleton className="size-12 rounded-md" />
+  1077→            <div className="flex flex-1 flex-col gap-2">
+  1078→              <Skeleton className="h-4 w-3/4 rounded" />
+  1079→              <div className="flex items-center gap-1.5">
+  1080→                <Skeleton className="h-4 w-16 rounded" />
+  1081→                <Skeleton className="h-4 w-12 rounded" />
+  1082→                <Skeleton className="h-4 w-14 rounded" />
+  1083→              </div>
+  1084→              <Skeleton className="h-3 w-2/3 rounded" />
+  1085→            </div>
+  1086→          </div>
+  1087→        </div>
+  1088→      ))}
+  1089→    </div>
+  1090→  )
+  1091→}
+  1092→
+  1093→// ─── Bulk Action Bar ────────────────────────────────────────────────
+  1094→
+  1095→interface BulkActionBarProps {
+  1096→  selectedCount: number
+  1097→  loadingAction: BulkActionType | null
+  1098→  confirmDialog: null | 'delete' | 're-render'
+  1099→  onConfirmDialogChange: (open: null | 'delete' | 're-render') => void
+  1100→  onExecute: (
+  1101→    action: BulkActionType,
+  1102→    payload?: Record<string, unknown>,
+  1103→  ) => Promise<void>
+  1104→}
+  1105→
+  1106→function BulkActionBar({
+  1107→  selectedCount,
+  1108→  loadingAction,
+  1109→  confirmDialog,
+  1110→  onConfirmDialogChange,
+  1111→  onExecute,
+  1112→}: BulkActionBarProps) {
+  1113→  const isLoading = (a: BulkActionType) => loadingAction === a
+  1114→  const anyLoading = loadingAction !== null
+  1115→
+  1116→  return (
+  1117→    <motion.div
+  1118→      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+  1119→      animate={{ opacity: 1, y: 0, scale: 1 }}
+  1120→      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+  1121→      transition={{ type: 'spring', stiffness: 320, damping: 28, mass: 0.7 }}
+  1122→      className="sticky top-0 z-30 mb-3"
+  1123→    >
+  1124→      <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-violet-500/40 bg-slate-900/95 px-3 py-2 shadow-[0_8px_30px_-12px_rgba(139,92,246,0.4)] backdrop-blur-md">
+  1125→        {/* Count badge */}
+  1126→        <div className="flex items-center gap-1.5 rounded-md border border-violet-500/30 bg-violet-500/10 px-2 py-1 text-xs">
+  1127→          <CheckSquare className="size-3.5 text-violet-300" />
+  1128→          <span className="font-semibold text-violet-200">{selectedCount}</span>
+  1129→          <span className="text-slate-400">selected</span>
+  1130→        </div>
+  1131→
+  1132→        <Separator
+  1133→          orientation="vertical"
+  1134→          className="mx-1 h-5 bg-slate-700/60"
+  1135→        />
+  1136→
+  1137→        {/* Approve (emerald) */}
+  1138→        <Button
+  1139→          type="button"
+  1140→          variant="outline"
+  1141→          size="sm"
+  1142→          disabled={anyLoading}
+  1143→          onClick={() => onExecute('approve')}
+  1144→          className="h-7 gap-1.5 border-emerald-500/40 bg-emerald-500/10 px-2 text-xs text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200"
+  1145→        >
+  1146→          {isLoading('approve') ? (
+  1147→            <Loader2 className="size-3 animate-spin" />
+  1148→          ) : (
+  1149→            <CheckCircle className="size-3" />
+  1150→          )}
+  1151→          Approve
+  1152→        </Button>
+  1153→
+  1154→        {/* Set Status (amber, dropdown) */}
+  1155→        <DropdownMenu>
+  1156→          <DropdownMenuTrigger asChild>
+  1157→            <Button
+  1158→              type="button"
+  1159→              variant="outline"
+  1160→              size="sm"
+  1161→              disabled={anyLoading}
+  1162→              className="h-7 gap-1.5 border-amber-500/40 bg-amber-500/10 px-2 text-xs text-amber-300 hover:bg-amber-500/20 hover:text-amber-200"
+  1163→            >
+  1164→              {isLoading('set-status') ? (
+  1165→                <Loader2 className="size-3 animate-spin" />
+  1166→              ) : (
+  1167→                <Tag className="size-3" />
+  1168→              )}
+  1169→              Set Status
+  1170→            </Button>
+  1171→          </DropdownMenuTrigger>
+  1172→          <DropdownMenuContent
+  1173→            align="start"
+  1174→            className="border-slate-700/60 bg-slate-900 text-slate-200"
+  1175→          >
+  1176→            <DropdownMenuLabel className="text-xs text-slate-400">
+  1177→              Set status for {selectedCount} project
+  1178→              {selectedCount === 1 ? '' : 's'}
+  1179→            </DropdownMenuLabel>
+  1180→            <DropdownMenuSeparator className="bg-slate-700/60" />
+  1181→            {BULK_STATUS_OPTIONS.map((opt) => (
+  1182→              <DropdownMenuItem
+  1183→                key={opt.value}
+  1184→                onSelect={() =>
+  1185→                  onExecute('set-status', { status: opt.value })
+  1186→                }
+  1187→                className="gap-2 text-xs focus:bg-slate-800/60"
+  1188→              >
+  1189→                <span
+  1190→                  className={cn('size-1.5 rounded-full', opt.dotClass)}
+  1191→                />
+  1192→                {opt.label}
+  1193→              </DropdownMenuItem>
+  1194→            ))}
+  1195→          </DropdownMenuContent>
+  1196→        </DropdownMenu>
+  1197→
+  1198→        {/* Re-render (violet) — with confirmation dialog */}
+  1199→        <Button
+  1200→          type="button"
+  1201→          variant="outline"
+  1202→          size="sm"
+  1203→          disabled={anyLoading}
+  1204→          onClick={() => onConfirmDialogChange('re-render')}
+  1205→          className="h-7 gap-1.5 border-violet-500/40 bg-violet-500/10 px-2 text-xs text-violet-300 hover:bg-violet-500/20 hover:text-violet-200"
+  1206→        >
+  1207→          {isLoading('re-render') ? (
+  1208→            <Loader2 className="size-3 animate-spin" />
+  1209→          ) : (
+  1210→            <RefreshCcw className="size-3" />
+  1211→          )}
+  1212→          Re-render
+  1213→        </Button>
+  1214→
+  1215→        {/* Delete (rose) — with confirmation dialog */}
+  1216→        <Button
+  1217→          type="button"
+  1218→          variant="outline"
+  1219→          size="sm"
+  1220→          disabled={anyLoading}
+  1221→          onClick={() => onConfirmDialogChange('delete')}
+  1222→          className="h-7 gap-1.5 border-rose-500/40 bg-rose-500/10 px-2 text-xs text-rose-300 hover:bg-rose-500/20 hover:text-rose-200"
+  1223→        >
+  1224→          {isLoading('delete') ? (
+  1225→            <Loader2 className="size-3 animate-spin" />
+  1226→          ) : (
+  1227→            <Trash2 className="size-3" />
+  1228→          )}
+  1229→          Delete
+  1230→        </Button>
+  1231→
+  1232→        {/* Confirmation dialog for delete / re-render */}
+  1233→        <AlertDialog
+  1234→          open={confirmDialog !== null}
+  1235→          onOpenChange={(open) => {
+  1236→            if (!open) onConfirmDialogChange(null)
+  1237→          }}
+  1238→        >
+  1239→          <AlertDialogContent className="border-slate-700/60 bg-slate-950 text-slate-100">
+  1240→            <AlertDialogHeader>
+  1241→              <AlertDialogTitle className="flex items-center gap-2 text-base">
+  1242→                {confirmDialog === 'delete' ? (
+  1243→                  <>
+  1244→                    <Trash2 className="size-4 text-rose-400" />
+  1245→                    Delete {selectedCount} project
+  1246→                    {selectedCount === 1 ? '' : 's'}?
+  1247→                  </>
+  1248→                ) : (
+  1249→                  <>
+  1250→                    <RefreshCcw className="size-4 text-violet-400" />
+  1251→                    Re-render {selectedCount} project
+  1252→                    {selectedCount === 1 ? '' : 's'}?
+  1253→                  </>
+  1254→                )}
+  1255→              </AlertDialogTitle>
+  1256→              <AlertDialogDescription className="text-sm text-slate-400">
+  1257→                {confirmDialog === 'delete'
+  1258→                  ? 'This will permanently delete the selected video projects along with their policy reviews and any associated uploads. The underlying scripts and video ideas will be preserved. This action cannot be undone.'
+  1259→                  : 'This will reset each selected project back to "producing" with render progress at 0%. The actual re-render will be triggered by the agent pipeline — your dashboard will refresh to show the new pending state.'}
+  1260→              </AlertDialogDescription>
+  1261→            </AlertDialogHeader>
+  1262→            <AlertDialogFooter>
+  1263→              <AlertDialogCancel className="border-slate-700/60 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-slate-100">
+  1264→                Cancel
+  1265→              </AlertDialogCancel>
+  1266→              <AlertDialogAction
+  1267→                onClick={() => {
+  1268→                  if (confirmDialog === 'delete') {
+  1269→                    onExecute('delete')
+  1270→                  } else if (confirmDialog === 're-render') {
+  1271→                    onExecute('re-render')
+  1272→                  }
+  1273→                }}
+  1274→                className={cn(
+  1275→                  confirmDialog === 'delete'
+  1276→                    ? 'border border-rose-500/50 bg-rose-500/20 text-rose-200 hover:bg-rose-500/30 hover:text-rose-100'
+  1277→                    : 'border border-violet-500/50 bg-violet-500/20 text-violet-200 hover:bg-violet-500/30 hover:text-violet-100',
+  1278→                )}
+  1279→              >
+  1280→                {confirmDialog === 'delete' ? (
+  1281→                  <>
+  1282→                    <XCircle className="size-3.5" />
+  1283→                    Delete
+  1284→                  </>
+  1285→                ) : (
+  1286→                  <>
+  1287→                    <RefreshCcw className="size-3.5" />
+  1288→                    Re-render
+  1289→                  </>
+  1290→                )}
+  1291→              </AlertDialogAction>
+  1292→            </AlertDialogFooter>
+  1293→          </AlertDialogContent>
+  1294→        </AlertDialog>
+  1295→      </div>
+  1296→    </motion.div>
+  1297→  )
+  1298→}
+  1299→
+  1300→export default VideoProjectExplorer
+  1301→

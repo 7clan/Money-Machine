@@ -1,0 +1,1090 @@
+     1→'use client'
+     2→
+     3→import * as React from 'react'
+     4→import { motion, AnimatePresence } from 'framer-motion'
+     5→import {
+     6→  Download,
+     7→  Film,
+     8→  Quote,
+     9→  ShieldCheck,
+    10→  ShieldAlert,
+    11→  FileText,
+    12→  Clapperboard,
+    13→  Gavel,
+    14→  Sparkles,
+    15→  Megaphone,
+    16→  Clock,
+    17→  HardDrive,
+    18→  CheckCircle2,
+    19→  XCircle,
+    20→  AlertTriangle,
+    21→  Hash,
+    22→  Type as TypeIcon,
+    23→  Layers,
+    24→} from 'lucide-react'
+    25→
+    26→import {
+    27→  Dialog,
+    28→  DialogContent,
+    29→  DialogHeader,
+    30→  DialogTitle,
+    31→  DialogDescription,
+    32→  DialogFooter,
+    33→} from '@/components/ui/dialog'
+    34→import {
+    35→  AlertDialog,
+    36→  AlertDialogAction,
+    37→  AlertDialogCancel,
+    38→  AlertDialogContent,
+    39→  AlertDialogDescription,
+    40→  AlertDialogFooter,
+    41→  AlertDialogHeader,
+    42→  AlertDialogTitle,
+    43→} from '@/components/ui/alert-dialog'
+    44→import {
+    45→  Tabs,
+    46→  TabsList,
+    47→  TabsTrigger,
+    48→  TabsContent,
+    49→} from '@/components/ui/tabs'
+    50→import { Badge } from '@/components/ui/badge'
+    51→import { Button } from '@/components/ui/button'
+    52→import { Progress } from '@/components/ui/progress'
+    53→import { ScrollArea } from '@/components/ui/scroll-area'
+    54→import { Separator } from '@/components/ui/separator'
+    55→import { Skeleton } from '@/components/ui/skeleton'
+    56→import {
+    57→  Tooltip,
+    58→  TooltipContent,
+    59→  TooltipTrigger,
+    60→} from '@/components/ui/tooltip'
+    61→import { RefreshCcw } from 'lucide-react'
+    62→import { useToast } from '@/components/agent/toast-provider'
+    63→
+    64→// ─── Types ──────────────────────────────────────────────────────────
+    65→
+    66→interface Pillar {
+    67→  id: string
+    68→  name: string
+    69→  color?: string | null
+    70→  icon?: string | null
+    71→}
+    72→
+    73→interface Idea {
+    74→  id: string
+    75→  title: string
+    76→  description?: string | null
+    77→  type: string // longform | short
+    78→  status: string
+    79→  pillar: Pillar | null
+    80→}
+    81→
+    82→interface SceneItem {
+    83→  id: string
+    84→  index: number
+    85→  title: string
+    86→  description?: string | null
+    87→  durationMs: number | null
+    88→  durationSec: number | null
+    89→  visualType: string
+    90→  visualNotes?: string | null
+    91→  narration?: string | null
+    92→  transitionType?: string | null
+    93→}
+    94→
+    95→interface ScriptItem {
+    96→  id: string
+    97→  content: string
+    98→  outline?: string | null
+    99→  hook?: string | null
+   100→  callToAction?: string | null
+   101→  wordCount: number
+   102→  estimatedMinutes?: number | null
+   103→  originalityScore?: number | null
+   104→  originalityReport?: string | null
+   105→  version: number
+   106→  status: string
+   107→  factCheckNotes?: string | null
+   108→}
+   109→
+   110→interface ClaimItem {
+   111→  id: string
+   112→  claim: string
+   113→  sourceIds: string // JSON string of source IDs
+   114→  isConflicting: boolean
+   115→  isUncertain: boolean
+   116→  isRejected: boolean
+   117→  conflictNotes?: string | null
+   118→  verified: boolean
+   119→  createdAt: string
+   120→}
+   121→
+   122→interface ReviewItem {
+   123→  id: string
+   124→  factCheckPassed: boolean
+   125→  originalityPassed: boolean
+   126→  copyrightPassed: boolean
+   127→  advertiserFriendly: boolean
+   128→  aiDisclosureSet: boolean
+   129→  thumbnailAccurate: boolean
+   130→  titleAccurate: boolean
+   131→  audioQualityOk: boolean
+   132→  videoQualityOk: boolean
+   133→  captionsAccurate: boolean
+   134→  noDeceptiveContent: boolean
+   135→  overallPassed: boolean
+   136→  issues?: string | null // JSON string array
+   137→  reviewedAt: string
+   138→}
+   139→
+   140→interface VideoProjectItem {
+   141→  id: string
+   142→  title: string
+   143→  status: string
+   144→  videoFilePath?: string | null
+   145→  thumbnailPath?: string | null
+   146→  captionPath?: string | null
+   147→  resolution: string
+   148→  duration?: number | null
+   149→  fileSize?: number | null
+   150→  renderProgress: number
+   151→  reviewResult?: string | null
+   152→  isApproved: boolean
+   153→  editorNotes?: string | null
+   154→  createdAt: string
+   155→  updatedAt: string
+   156→}
+   157→
+   158→interface VideoDetailResponse {
+   159→  videoProject: VideoProjectItem
+   160→  script: ScriptItem | null
+   161→  scenes: SceneItem[]
+   162→  idea: Idea | null
+   163→  claims: ClaimItem[]
+   164→  review: ReviewItem | null
+   165→}
+   166→
+   167→interface Props {
+   168→  videoProjectId: string | null
+   169→  onClose: () => void
+   170→}
+   171→
+   172→// ─── Helpers ────────────────────────────────────────────────────────
+   173→
+   174→function formatDuration(seconds?: number | null): string {
+   175→  if (seconds == null || Number.isNaN(seconds)) return '—'
+   176→  const s = Math.round(seconds)
+   177→  const m = Math.floor(s / 60)
+   178→  const r = s % 60
+   179→  return `${m}:${r.toString().padStart(2, '0')}`
+   180→}
+   181→
+   182→function formatFileSize(bytes?: number | null): string {
+   183→  if (!bytes) return '—'
+   184→  if (bytes < 1024) return `${bytes} B`
+   185→  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+   186→  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+   187→  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+   188→}
+   189→
+   190→// Map pillar.color (any CSS color) into a safe tailwind text/bg class set.
+   191→// Falls back to the violet→cyan brand gradient.
+   192→function pillarStyle(color?: string | null): { text: string; bg: string; border: string } {
+   193→  const c = (color || '').toLowerCase()
+   194→  switch (c) {
+   195→    case 'violet':
+   196→    case '#8b5cf6':
+   197→    case 'purple':
+   198→      return { text: 'text-violet-300', bg: 'bg-violet-500/10', border: 'border-violet-500/30' }
+   199→    case 'cyan':
+   200→    case '#06b6d4':
+   201→      return { text: 'text-cyan-300', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30' }
+   202→    case 'emerald':
+   203→    case '#10b981':
+   204→    case 'green':
+   205→      return { text: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' }
+   206→    case 'amber':
+   207→    case '#f59e0b':
+   208→    case 'yellow':
+   209→      return { text: 'text-amber-300', bg: 'bg-amber-500/10', border: 'border-amber-500/30' }
+   210→    case 'rose':
+   211→    case '#f43f5e':
+   212→    case 'red':
+   213→      return { text: 'text-rose-300', bg: 'bg-rose-500/10', border: 'border-rose-500/30' }
+   214→    default:
+   215→      return { text: 'text-violet-300', bg: 'bg-violet-500/10', border: 'border-violet-500/30' }
+   216→  }
+   217→}
+   218→
+   219→// Color-code VideoProject.status.
+   220→function statusStyle(status: string): { label: string; text: string; bg: string; border: string; dot: string } {
+   221→  const s = (status || '').toLowerCase()
+   222→  if (['approved', 'uploaded', 'published', 'completed'].includes(s)) {
+   223→    return { label: status, text: 'text-emerald-300', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', dot: 'bg-emerald-400' }
+   224→  }
+   225→  if (['failed', 'rejected', 'error'].includes(s)) {
+   226→    return { label: status, text: 'text-rose-300', bg: 'bg-rose-500/10', border: 'border-rose-500/30', dot: 'bg-rose-400' }
+   227→  }
+   228→  if (['rendering', 'editing', 'recording', 'collecting_assets', 'storyboarding', 'planning', 'uploading'].includes(s)) {
+   229→    return { label: status, text: 'text-cyan-300', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', dot: 'bg-cyan-400' }
+   230→  }
+   231→  if (['review', 'reviewing'].includes(s)) {
+   232→    return { label: status, text: 'text-amber-300', bg: 'bg-amber-500/10', border: 'border-amber-500/30', dot: 'bg-amber-400' }
+   233→  }
+   234→  return { label: status, text: 'text-slate-300', bg: 'bg-slate-500/10', border: 'border-slate-500/30', dot: 'bg-slate-400' }
+   235→}
+   236→
+   237→// Parse a JSON-string array (issues, etc.) safely.
+   238→function parseJsonArray(raw?: string | null): string[] {
+   239→  if (!raw) return []
+   240→  try {
+   241→    const v = JSON.parse(raw)
+   242→    if (Array.isArray(v)) return v.map((x) => String(x))
+   243→    return [String(v)]
+   244→  } catch {
+   245→    return raw.split('\n').map((s) => s.trim()).filter(Boolean)
+   246→  }
+   247→}
+   248→
+   249→// ─── Sub-renderers ──────────────────────────────────────────────────
+   250→
+   251→function ScriptTab({ script }: { script: ScriptItem | null }) {
+   252→  if (!script) {
+   253→    return (
+   254→      <div className="flex flex-col items-center justify-center py-12 text-center">
+   255→        <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
+   256→          <FileText className="w-8 h-8 text-slate-500" />
+   257→        </div>
+   258→        <p className="text-sm font-medium text-slate-300">No script</p>
+   259→        <p className="text-xs text-slate-500 mt-1 max-w-xs">This video project has no script attached.</p>
+   260→      </div>
+   261→    )
+   262→  }
+   263→  return (
+   264→    <div className="space-y-4">
+   265→      {/* Meta strip */}
+   266→      <div className="flex flex-wrap items-center gap-2">
+   267→        <Badge variant="outline" className="bg-slate-800/60 border-slate-700/50 text-slate-300 gap-1">
+   268→          <Hash className="w-3 h-3" />
+   269→          {script.wordCount.toLocaleString()} words
+   270→        </Badge>
+   271→        <Badge variant="outline" className="bg-slate-800/60 border-slate-700/50 text-slate-300 gap-1">
+   272→          <Clock className="w-3 h-3" />
+   273→          ~{script.estimatedMinutes ? script.estimatedMinutes.toFixed(1) : '—'} min
+   274→        </Badge>
+   275→        <Badge variant="outline" className="bg-slate-800/60 border-slate-700/50 text-slate-300 capitalize">
+   276→          v{script.version} · {script.status}
+   277→        </Badge>
+   278→        {script.originalityScore != null && (
+   279→          <Badge variant="outline" className="bg-violet-500/10 border-violet-500/30 text-violet-300 gap-1">
+   280→            <Sparkles className="w-3 h-3" />
+   281→            {(script.originalityScore * 100).toFixed(0)}% original
+   282→          </Badge>
+   283→        )}
+   284→      </div>
+   285→
+   286→      {/* Hook callout */}
+   287→      {script.hook && (
+   288→        <div className="relative overflow-hidden rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-cyan-500/5 p-4">
+   289→          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/60 to-transparent" />
+   290→          <div className="flex items-center gap-2 mb-2">
+   291→            <Megaphone className="w-4 h-4 text-violet-300" />
+   292→            <span className="text-xs font-semibold uppercase tracking-wider text-violet-300">Hook</span>
+   293→          </div>
+   294→          <p className="text-sm text-slate-100 leading-relaxed font-medium">{script.hook}</p>
+   295→        </div>
+   296→      )}
+   297→
+   298→      {/* Full script body */}
+   299→      <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 overflow-hidden">
+   300→        <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/60">
+   301→          <div className="flex items-center gap-2">
+   302→            <FileText className="w-4 h-4 text-slate-400" />
+   303→            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Full Script</span>
+   304→          </div>
+   305→          <span className="text-[10px] font-mono text-slate-500">{script.wordCount} words</span>
+   306→        </div>
+   307→        <ScrollArea className="max-h-96">
+   308→          <pre className="whitespace-pre-wrap break-words p-4 font-mono text-[13px] leading-relaxed text-slate-300">
+   309→            {script.content}
+   310→          </pre>
+   311→        </ScrollArea>
+   312→      </div>
+   313→
+   314→      {/* CTA box */}
+   315→      {script.callToAction && (
+   316→        <div className="relative overflow-hidden rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-cyan-500/5 p-4">
+   317→          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent" />
+   318→          <div className="flex items-center gap-2 mb-2">
+   319→            <Megaphone className="w-4 h-4 text-emerald-300" />
+   320→            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-300">Call to Action</span>
+   321→          </div>
+   322→          <p className="text-sm text-slate-100 leading-relaxed font-medium">{script.callToAction}</p>
+   323→        </div>
+   324→      )}
+   325→
+   326→      {script.factCheckNotes && (
+   327→        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+   328→          <div className="flex items-center gap-2 mb-2">
+   329→            <AlertTriangle className="w-4 h-4 text-amber-300" />
+   330→            <span className="text-xs font-semibold uppercase tracking-wider text-amber-300">Fact-check Notes</span>
+   331→          </div>
+   332→          <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-wrap">{script.factCheckNotes}</p>
+   333→        </div>
+   334→      )}
+   335→    </div>
+   336→  )
+   337→}
+   338→
+   339→function ScenesTab({ scenes }: { scenes: SceneItem[] }) {
+   340→  if (!scenes.length) {
+   341→    return (
+   342→      <div className="flex flex-col items-center justify-center py-12 text-center">
+   343→        <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
+   344→          <Clapperboard className="w-8 h-8 text-slate-500" />
+   345→        </div>
+   346→        <p className="text-sm font-medium text-slate-300">No scenes</p>
+   347→        <p className="text-xs text-slate-500 mt-1 max-w-xs">Scenes will appear here once the script is broken down.</p>
+   348→      </div>
+   349→    )
+   350→  }
+   351→  const totalSec = scenes.reduce((acc, s) => acc + (s.durationSec ?? 0), 0)
+   352→  return (
+   353→    <div className="space-y-3">
+   354→      <div className="flex items-center justify-between">
+   355→        <p className="text-xs text-slate-400">
+   356→          {scenes.length} scene{scenes.length === 1 ? '' : 's'} · total runtime{' '}
+   357→          <span className="text-slate-200 font-mono">{formatDuration(totalSec)}</span>
+   358→        </p>
+   359→      </div>
+   360→      <div className="relative">
+   361→        {/* vertical timeline rail */}
+   362→        <div className="absolute left-[19px] top-2 bottom-2 w-px bg-gradient-to-b from-violet-500/40 via-cyan-500/30 to-transparent" />
+   363→        <div className="space-y-3">
+   364→          {scenes.map((s, i) => (
+   365→            <motion.div
+   366→              key={s.id}
+   367→              initial={{ opacity: 0, x: -8 }}
+   368→              animate={{ opacity: 1, x: 0 }}
+   369→              transition={{ delay: Math.min(i * 0.04, 0.3) }}
+   370→              className="relative pl-12"
+   371→            >
+   372→              {/* index node */}
+   373→              <div className="absolute left-0 top-2 flex items-center justify-center w-10 h-10 rounded-full bg-slate-900 border-2 border-violet-500/40 text-violet-300 font-bold text-sm shadow-lg shadow-violet-500/10">
+   374→                {s.index + 1}
+   375→              </div>
+   376→              <div className="rounded-xl border border-slate-800/60 bg-slate-900/60 backdrop-blur-sm overflow-hidden">
+   377→                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/60 bg-slate-950/40">
+   378→                  <div className="flex items-center gap-2 min-w-0">
+   379→                    <Film className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
+   380→                    <span className="text-sm font-medium text-slate-100 truncate">{s.title || `Scene ${s.index + 1}`}</span>
+   381→                  </div>
+   382→                  {s.durationSec != null && (
+   383→                    <Badge variant="outline" className="bg-slate-800/60 border-slate-700/50 text-slate-300 gap-1 shrink-0">
+   384→                      <Clock className="w-3 h-3" />
+   385→                      {s.durationSec.toFixed(1)}s
+   386→                    </Badge>
+   387→                  )}
+   388→                </div>
+   389→                <div className="p-4 space-y-3">
+   390→                  {/* Visual */}
+   391→                  <div className="flex gap-2">
+   392→                    <TypeIcon className="w-3.5 h-3.5 text-slate-500 mt-0.5 shrink-0" />
+   393→                    <div className="min-w-0">
+   394→                      <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">
+   395→                        Visual · <span className="text-slate-400">{s.visualType}</span>
+   396→                      </p>
+   397→                      <p className="text-sm text-slate-300 leading-relaxed">
+   398→                        {s.description || s.visualNotes || '—'}
+   399→                      </p>
+   400→                    </div>
+   401→                  </div>
+   402→                  {/* Narration */}
+   403→                  {s.narration && (
+   404→                    <div className="flex gap-2">
+   405→                      <Quote className="w-3.5 h-3.5 text-violet-400 mt-0.5 shrink-0" />
+   406→                      <div className="min-w-0 flex-1">
+   407→                        <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Narration</p>
+   408→                        <blockquote className="border-l-2 border-violet-500/40 pl-3 text-sm text-slate-200 italic leading-relaxed">
+   409→                          {s.narration}
+   410→                        </blockquote>
+   411→                      </div>
+   412→                    </div>
+   413→                  )}
+   414→                  {s.transitionType && (
+   415→                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+   416→                      <Layers className="w-3 h-3" />
+   417→                      <span className="uppercase tracking-wider">Transition:</span>
+   418→                      <span className="text-slate-400">{s.transitionType}</span>
+   419→                    </div>
+   420→                  )}
+   421→                </div>
+   422→              </div>
+   423→            </motion.div>
+   424→          ))}
+   425→        </div>
+   426→      </div>
+   427→    </div>
+   428→  )
+   429→}
+   430→
+   431→function ClaimsTab({ claims }: { claims: ClaimItem[] }) {
+   432→  if (!claims.length) {
+   433→    return (
+   434→      <div className="flex flex-col items-center justify-center py-12 text-center">
+   435→        <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
+   436→          <Gavel className="w-8 h-8 text-slate-500" />
+   437→        </div>
+   438→        <p className="text-sm font-medium text-slate-300">No claims tracked</p>
+   439→        <p className="text-xs text-slate-500 mt-1 max-w-xs">Fact-checked claims will be listed here.</p>
+   440→      </div>
+   441→    )
+   442→  }
+   443→  return (
+   444→    <div className="space-y-2">
+   445→      <p className="text-xs text-slate-400 mb-2">
+   446→        {claims.length} claim{claims.length === 1 ? '' : 's'} on record
+   447→      </p>
+   448→      {claims.map((c, i) => {
+   449→        const verified = c.verified
+   450→        return (
+   451→          <motion.div
+   452→            key={c.id}
+   453→            initial={{ opacity: 0, y: 6 }}
+   454→            animate={{ opacity: 1, y: 0 }}
+   455→            transition={{ delay: Math.min(i * 0.04, 0.3) }}
+   456→            className={`rounded-xl border p-3 ${
+   457→              verified
+   458→                ? 'border-emerald-500/30 bg-emerald-500/5'
+   459→                : c.isRejected
+   460→                ? 'border-rose-500/30 bg-rose-500/5'
+   461→                : 'border-amber-500/30 bg-amber-500/5'
+   462→            }`}
+   463→          >
+   464→            <div className="flex items-start justify-between gap-3">
+   465→              <div className="flex items-start gap-2 min-w-0">
+   466→                {verified ? (
+   467→                  <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+   468→                ) : c.isRejected ? (
+   469→                  <XCircle className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
+   470→                ) : (
+   471→                  <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+   472→                )}
+   473→                <p className="text-sm text-slate-200 leading-relaxed">{c.claim}</p>
+   474→              </div>
+   475→              <Badge
+   476→                variant="outline"
+   477→                className={`shrink-0 ${
+   478→                  verified
+   479→                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+   480→                    : c.isRejected
+   481→                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+   482→                    : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+   483→                }`}
+   484→              >
+   485→                {verified ? 'Verified' : c.isRejected ? 'Rejected' : 'Uncertain'}
+   486→              </Badge>
+   487→            </div>
+   488→            {(c.isConflicting || c.conflictNotes) && (
+   489→              <div className="mt-2 pl-6 text-xs text-slate-400 space-y-0.5">
+   490→                {c.isConflicting && (
+   491→                  <p className="text-amber-300/80">⚠ Conflicting sources</p>
+   492→                )}
+   493→                {c.conflictNotes && <p className="italic">{c.conflictNotes}</p>}
+   494→              </div>
+   495→            )}
+   496→          </motion.div>
+   497→        )
+   498→      })}
+   499→    </div>
+   500→  )
+   501→}
+   502→
+   503→function ReviewTab({ review }: { review: ReviewItem | null }) {
+   504→  if (!review) {
+   505→    return (
+   506→      <div className="flex flex-col items-center justify-center py-12 text-center">
+   507→        <div className="p-4 rounded-2xl bg-slate-800/50 mb-4">
+   508→          <ShieldAlert className="w-8 h-8 text-slate-500" />
+   509→        </div>
+   510→        <p className="text-sm font-medium text-slate-300">No review yet</p>
+   511→        <p className="text-xs text-slate-500 mt-1 max-w-xs">A policy & quality review will appear here once completed.</p>
+   512→      </div>
+   513→    )
+   514→  }
+   515→  const issues = parseJsonArray(review.issues)
+   516→  const passed = [
+   517→    review.factCheckPassed,
+   518→    review.originalityPassed,
+   519→    review.copyrightPassed,
+   520→    review.advertiserFriendly,
+   521→    review.aiDisclosureSet,
+   522→    review.thumbnailAccurate,
+   523→    review.titleAccurate,
+   524→    review.audioQualityOk,
+   525→    review.videoQualityOk,
+   526→    review.captionsAccurate,
+   527→    review.noDeceptiveContent,
+   528→  ].filter(Boolean).length
+   529→  const totalChecks = 11
+   530→  const score = Math.round((passed / totalChecks) * 100)
+   531→  const overall = review.overallPassed
+   532→
+   533→  const checks: { label: string; ok: boolean }[] = [
+   534→    { label: 'Fact check', ok: review.factCheckPassed },
+   535→    { label: 'Originality', ok: review.originalityPassed },
+   536→    { label: 'Copyright', ok: review.copyrightPassed },
+   537→    { label: 'Advertiser-friendly', ok: review.advertiserFriendly },
+   538→    { label: 'AI disclosure', ok: review.aiDisclosureSet },
+   539→    { label: 'Thumbnail accurate', ok: review.thumbnailAccurate },
+   540→    { label: 'Title accurate', ok: review.titleAccurate },
+   541→    { label: 'Audio quality', ok: review.audioQualityOk },
+   542→    { label: 'Video quality', ok: review.videoQualityOk },
+   543→    { label: 'Captions accurate', ok: review.captionsAccurate },
+   544→    { label: 'No deceptive content', ok: review.noDeceptiveContent },
+   545→  ]
+   546→
+   547→  return (
+   548→    <div className="space-y-4">
+   549→      {/* Overall banner */}
+   550→      <div
+   551→        className={`relative overflow-hidden rounded-xl border p-4 ${
+   552→          overall
+   553→            ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-cyan-500/5'
+   554→            : 'border-rose-500/30 bg-gradient-to-br from-rose-500/10 to-amber-500/5'
+   555→        }`}
+   556→      >
+   557→        <div
+   558→          className={`absolute inset-x-0 top-0 h-px ${
+   559→            overall ? 'bg-gradient-to-r from-transparent via-emerald-400/60 to-transparent' : 'bg-gradient-to-r from-transparent via-rose-400/60 to-transparent'
+   560→          }`}
+   561→        />
+   562→        <div className="flex items-center justify-between gap-3">
+   563→          <div className="flex items-center gap-3">
+   564→            {overall ? (
+   565→              <ShieldCheck className="w-6 h-6 text-emerald-300" />
+   566→            ) : (
+   567→              <ShieldAlert className="w-6 h-6 text-rose-300" />
+   568→            )}
+   569→            <div>
+   570→              <p className={`text-sm font-semibold ${overall ? 'text-emerald-300' : 'text-rose-300'}`}>
+   571→                {overall ? 'All checks passed' : 'Review failed'}
+   572→              </p>
+   573→              <p className="text-xs text-slate-400">
+   574→                Reviewed {new Date(review.reviewedAt).toLocaleString()}
+   575→              </p>
+   576→            </div>
+   577→          </div>
+   578→          <div className="text-right">
+   579→            <p className={`text-2xl font-bold ${overall ? 'text-emerald-300' : 'text-rose-300'}`}>{score}%</p>
+   580→            <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+   581→              {passed}/{totalChecks} checks
+   582→            </p>
+   583→          </div>
+   584→        </div>
+   585→        <Progress
+   586→          value={score}
+   587→          className={`mt-3 h-1.5 ${overall ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}
+   588→        />
+   589→      </div>
+   590→
+   591→      {/* Checklist */}
+   592→      <div className="rounded-xl border border-slate-800/60 bg-slate-900/60 overflow-hidden">
+   593→        <div className="px-4 py-2 border-b border-slate-800/60 bg-slate-950/40">
+   594→          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Compliance Checklist</span>
+   595→        </div>
+   596→        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-800/60">
+   597→          {checks.map((c) => (
+   598→            <div key={c.label} className="flex items-center gap-2 px-4 py-2.5 bg-slate-900/60">
+   599→              {c.ok ? (
+   600→                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+   601→              ) : (
+   602→                <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+   603→              )}
+   604→              <span className={`text-sm ${c.ok ? 'text-slate-200' : 'text-slate-400'}`}>{c.label}</span>
+   605→            </div>
+   606→          ))}
+   607→        </div>
+   608→      </div>
+   609→
+   610→      {/* Issues */}
+   611→      {issues.length > 0 && (
+   612→        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+   613→          <div className="flex items-center gap-2 mb-2">
+   614→            <AlertTriangle className="w-4 h-4 text-amber-300" />
+   615→            <span className="text-xs font-semibold uppercase tracking-wider text-amber-300">
+   616→              Issues ({issues.length})
+   617→            </span>
+   618→          </div>
+   619→          <ul className="space-y-1.5">
+   620→            {issues.map((issue, i) => (
+   621→              <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+   622→                <span className="text-amber-400/60 mt-0.5">•</span>
+   623→                <span className="leading-relaxed">{issue}</span>
+   624→              </li>
+   625→            ))}
+   626→          </ul>
+   627→        </div>
+   628→      )}
+   629→    </div>
+   630→  )
+   631→}
+   632→
+   633→// ─── Loading skeleton ───────────────────────────────────────────────
+   634→
+   635→function LoadingState() {
+   636→  return (
+   637→    <div className="space-y-4 p-1">
+   638→      <Skeleton className="aspect-video w-full rounded-xl bg-slate-800/60" />
+   639→      <Skeleton className="h-7 w-3/4 bg-slate-800/60" />
+   640→      <div className="flex gap-2">
+   641→        <Skeleton className="h-6 w-20 bg-slate-800/60" />
+   642→        <Skeleton className="h-6 w-24 bg-slate-800/60" />
+   643→        <Skeleton className="h-6 w-20 bg-slate-800/60" />
+   644→      </div>
+   645→      <Skeleton className="h-9 w-full bg-slate-800/60" />
+   646→      <div className="space-y-2">
+   647→        <Skeleton className="h-4 w-full bg-slate-800/60" />
+   648→        <Skeleton className="h-4 w-5/6 bg-slate-800/60" />
+   649→        <Skeleton className="h-4 w-4/6 bg-slate-800/60" />
+   650→      </div>
+   651→    </div>
+   652→  )
+   653→}
+   654→
+   655→// ─── Main Component ─────────────────────────────────────────────────
+   656→
+   657→export function VideoPreviewModal({ videoProjectId, onClose }: Props) {
+   658→  const open = videoProjectId !== null
+   659→  const [loading, setLoading] = React.useState(false)
+   660→  const [error, setError] = React.useState<string | null>(null)
+   661→  const [data, setData] = React.useState<VideoDetailResponse | null>(null)
+   662→  const { toast, update: updateToast } = useToast()
+   663→  // Re-render flow state
+   664→  const [rerenderConfirmOpen, setRerenderConfirmOpen] = React.useState(false)
+   665→  const [rerendering, setRerendering] = React.useState(false)
+   666→
+   667→  React.useEffect(() => {
+   668→    if (!videoProjectId) {
+   669→      setData(null)
+   670→      setError(null)
+   671→      setLoading(false)
+   672→      return
+   673→    }
+   674→    let cancelled = false
+   675→    setLoading(true)
+   676→    setError(null)
+   677→    setData(null)
+   678→    fetch(`/api/data/video-detail?id=${encodeURIComponent(videoProjectId)}`)
+   679→      .then(async (res) => {
+   680→        if (!res.ok) {
+   681→          const body = await res.json().catch(() => ({}))
+   682→          throw new Error(body.error || `Failed to load (${res.status})`)
+   683→        }
+   684→        return res.json() as Promise<VideoDetailResponse>
+   685→      })
+   686→      .then((json) => {
+   687→        if (cancelled) return
+   688→        setData(json)
+   689→        setLoading(false)
+   690→      })
+   691→      .catch((e: unknown) => {
+   692→        if (cancelled) return
+   693→        const msg = e instanceof Error ? e.message : 'Failed to load video detail'
+   694→        setError(msg)
+   695→        setLoading(false)
+   696→      })
+   697→    return () => {
+   698→      cancelled = true
+   699→    }
+   700→  }, [videoProjectId])
+   701→
+   702→  // Build file URLs (these are served by sibling API routes).
+   703→  const videoUrl = videoProjectId ? `/api/data/video-file?id=${encodeURIComponent(videoProjectId)}` : null
+   704→  const thumbnailUrl = videoProjectId ? `/api/data/thumbnail-file?id=${encodeURIComponent(videoProjectId)}` : null
+   705→
+   706→  const vp = data?.videoProject
+   707→  const idea = data?.idea ?? null
+   708→  const script = data?.script ?? null
+   709→  const scenes = data?.scenes ?? []
+   710→  const claims = data?.claims ?? []
+   711→  const review = data?.review ?? null
+   712→
+   713→  const status = vp ? statusStyle(vp.status) : null
+   714→  const pillar = idea?.pillar
+   715→  const ps = pillar ? pillarStyle(pillar.color) : null
+   716→
+   717→  // Re-render is offered when the project failed review (or was rejected).
+   718→  // Hidden while a re-render is already in-flight.
+   719→  const isFailed = vp?.status === 'failed' || vp?.status === 'rejected'
+   720→  const showRerender = !!vp && isFailed && !rerendering
+   721→
+   722→  const handleRerender = React.useCallback(async () => {
+   723→    if (!videoProjectId) return
+   724→    setRerenderConfirmOpen(false)
+   725→    setRerendering(true)
+   726→    const loadingId = toast({
+   727→      type: 'loading',
+   728→      title: 'Starting re-render…',
+   729→      description: 'Generating a revised script and re-rendering the video.',
+   730→      duration: 0,
+   731→    })
+   732→    try {
+   733→      const res = await fetch('/api/agent/rerender', {
+   734→        method: 'POST',
+   735→        headers: { 'Content-Type': 'application/json' },
+   736→        body: JSON.stringify({ projectId: videoProjectId }),
+   737→      })
+   738→      const data = (await res.json().catch(() => ({}))) as {
+   739→        ok?: boolean
+   740→        message?: string
+   741→        error?: string
+   742→      }
+   743→      if (!res.ok || !data.ok) {
+   744→        const errMsg = data?.message || data?.error || `Re-render failed (${res.status})`
+   745→        updateToast(loadingId, { type: 'error', title: 'Re-render failed', description: errMsg, duration: 5000 })
+   746→        setRerendering(false)
+   747→        return
+   748→      }
+   749→      updateToast(loadingId, {
+   750→        type: 'success',
+   751→        title: 'Re-render started',
+   752→        description: data?.message || 'A new script version is being generated.',
+   753→        duration: 3500,
+   754→      })
+   755→      // Close the modal so the user is back on the dashboard where they
+   756→      // can watch the project status flip to "producing" → "review".
+   757→      onClose()
+   758→    } catch (err) {
+   759→      updateToast(loadingId, {
+   760→        type: 'error',
+   761→        title: 'Network error',
+   762→        description: err instanceof Error ? err.message : 'Failed to reach server',
+   763→        duration: 5000,
+   764→      })
+   765→      setRerendering(false)
+   766→    }
+   767→  }, [videoProjectId, toast, updateToast, onClose])
+   768→
+   769→  return (
+   770→    <>
+   771→    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+   772→      <DialogContent
+   773→        showCloseButton={false}
+   774→        className="
+   775→          bg-slate-950 border border-slate-800/60 text-slate-100
+   776→          p-0 gap-0 overflow-hidden
+   777→          max-w-[100vw] w-full sm:max-w-4xl
+   778→          h-[100dvh] sm:h-[90vh] sm:rounded-xl
+   779→          flex flex-col
+   780→        "
+   781→      >
+   782→        {/* Hidden title/description for accessibility (radix requires a title) */}
+   783→        <DialogHeader className="sr-only">
+   784→          <DialogTitle>{vp?.title ?? 'Video preview'}</DialogTitle>
+   785→          <DialogDescription>
+   786→            Inline player, script, scenes, claims, and review for this video project.
+   787→          </DialogDescription>
+   788→        </DialogHeader>
+   789→
+   790→        {/* Body — scrollable */}
+   791→        <div className="flex-1 min-h-0 overflow-y-auto">
+   792→          <AnimatePresence mode="wait">
+   793→            {loading && (
+   794→              <motion.div
+   795→                key="loading"
+   796→                initial={{ opacity: 0 }}
+   797→                animate={{ opacity: 1 }}
+   798→                exit={{ opacity: 0 }}
+   799→                className="p-4 sm:p-6"
+   800→              >
+   801→                <LoadingState />
+   802→              </motion.div>
+   803→            )}
+   804→
+   805→            {!loading && error && (
+   806→              <motion.div
+   807→                key="error"
+   808→                initial={{ opacity: 0, scale: 0.97 }}
+   809→                animate={{ opacity: 1, scale: 1 }}
+   810→                exit={{ opacity: 0 }}
+   811→                className="p-6"
+   812→              >
+   813→                <div className="flex flex-col items-center justify-center py-12 text-center">
+   814→                  <div className="p-4 rounded-2xl bg-rose-500/10 mb-4">
+   815→                    <ShieldAlert className="w-8 h-8 text-rose-400" />
+   816→                  </div>
+   817→                  <p className="text-sm font-medium text-slate-200">Couldn&apos;t load video</p>
+   818→                  <p className="text-xs text-slate-500 mt-1 max-w-sm break-words">{error}</p>
+   819→                  <Button
+   820→                    variant="outline"
+   821→                    size="sm"
+   822→                    onClick={onClose}
+   823→                    className="mt-4 bg-slate-900/60 border-slate-700/50 text-slate-300 hover:text-slate-100 hover:bg-slate-800/60"
+   824→                  >
+   825→                    Close
+   826→                  </Button>
+   827→                </div>
+   828→              </motion.div>
+   829→            )}
+   830→
+   831→            {!loading && !error && vp && (
+   832→              <motion.div
+   833→                key="content"
+   834→                initial={{ opacity: 0, scale: 0.97 }}
+   835→                animate={{ opacity: 1, scale: 1 }}
+   836→                exit={{ opacity: 0 }}
+   837→                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+   838→                className="p-4 sm:p-6 space-y-5"
+   839→              >
+   840→                {/* ── Video player ────────────────────────────────── */}
+   841→                <div className="relative rounded-xl overflow-hidden border border-slate-800/60 bg-slate-950 shadow-xl shadow-black/40">
+   842→                  {videoUrl ? (
+   843→                    <video
+   844→                      controls
+   845→                      playsInline
+   846→                      preload="metadata"
+   847→                      poster={thumbnailUrl ?? undefined}
+   848→                      src={videoUrl}
+   849→                      className="w-full aspect-video bg-black object-contain"
+   850→                    />
+   851→                  ) : (
+   852→                    <div className="aspect-video flex items-center justify-center text-slate-500">
+   853→                      <Film className="w-10 h-10" />
+   854→                    </div>
+   855→                  )}
+   856→                  {/* overlay badges on top-right of player */}
+   857→                  <div className="absolute top-2 right-2 flex flex-wrap gap-1.5 justify-end pointer-events-none">
+   858→                    {vp.duration != null && (
+   859→                      <Badge className="bg-black/70 border-white/10 text-slate-100 backdrop-blur-sm gap-1">
+   860→                        <Clock className="w-3 h-3" />
+   861→                        {formatDuration(vp.duration)}
+   862→                      </Badge>
+   863→                    )}
+   864→                    {vp.fileSize != null && (
+   865→                      <Badge className="bg-black/70 border-white/10 text-slate-100 backdrop-blur-sm gap-1">
+   866→                        <HardDrive className="w-3 h-3" />
+   867→                        {formatFileSize(vp.fileSize)}
+   868→                      </Badge>
+   869→                    )}
+   870→                    <Badge className="bg-black/70 border-white/10 text-slate-100 backdrop-blur-sm uppercase">
+   871→                      {vp.resolution}
+   872→                    </Badge>
+   873→                  </div>
+   874→                </div>
+   875→
+   876→                {/* ── Title + meta row ──────────────────────────── */}
+   877→                <div className="space-y-3">
+   878→                  <div className="flex flex-wrap items-start justify-between gap-3">
+   879→                    <div className="min-w-0 flex-1">
+   880→                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-100 leading-tight">
+   881→                        {vp.title}
+   882→                      </h2>
+   883→                      {idea && idea.title && idea.title !== vp.title && (
+   884→                        <p className="text-xs text-slate-500 mt-1 truncate">From idea: {idea.title}</p>
+   885→                      )}
+   886→                    </div>
+   887→                    {status && (
+   888→                      <Badge
+   889→                        className={`shrink-0 ${status.bg} ${status.border} ${status.text} gap-1.5`}
+   890→                      >
+   891→                        <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
+   892→                        <span className="capitalize">{status.label.replace(/_/g, ' ')}</span>
+   893→                      </Badge>
+   894→                    )}
+   895→                  </div>
+   896→
+   897→                  {/* Meta chips */}
+   898→                  <div className="flex flex-wrap items-center gap-1.5">
+   899→                    {idea && (
+   900→                      <Badge
+   901→                        variant="outline"
+   902→                        className={`bg-slate-800/60 border-slate-700/50 text-slate-300 capitalize gap-1`}
+   903→                      >
+   904→                        <Film className="w-3 h-3" />
+   905→                        {idea.type === 'short' ? 'Short' : 'Long-form'}
+   906→                      </Badge>
+   907→                    )}
+   908→                    {vp.isApproved && (
+   909→                      <Badge className="bg-emerald-500/10 border-emerald-500/30 text-emerald-300 gap-1">
+   910→                        <CheckCircle2 className="w-3 h-3" />
+   911→                        Approved
+   912→                      </Badge>
+   913→                    )}
+   914→                    {pillar && ps && (
+   915→                      <Badge className={`${ps.bg} ${ps.border} ${ps.text} gap-1`}>
+   916→                        <Layers className="w-3 h-3" />
+   917→                        {pillar.name}
+   918→                      </Badge>
+   919→                    )}
+   920→                    {vp.renderProgress < 100 && vp.renderProgress > 0 && (
+   921→                      <Badge variant="outline" className="bg-cyan-500/10 border-cyan-500/30 text-cyan-300 gap-1">
+   922→                        Rendering {vp.renderProgress.toFixed(0)}%
+   923→                      </Badge>
+   924→                    )}
+   925→                  </div>
+   926→
+   927→                  {vp.renderProgress < 100 && vp.renderProgress > 0 && (
+   928→                    <Progress value={vp.renderProgress} className="h-1 bg-cyan-500/10" />
+   929→                  )}
+   930→                </div>
+   931→
+   932→                <Separator className="bg-slate-800/60" />
+   933→
+   934→                {/* ── Tabs ──────────────────────────────────────── */}
+   935→                <Tabs defaultValue="script" className="w-full">
+   936→                  <TabsList className="bg-slate-900/60 border border-slate-800/60 p-1 h-auto w-full justify-start overflow-x-auto">
+   937→                    <TabsTrigger
+   938→                      value="script"
+   939→                      className="data-[state=active]:bg-violet-500/15 data-[state=active]:text-violet-200 text-slate-400 gap-1.5"
+   940→                    >
+   941→                      <FileText className="w-3.5 h-3.5" />
+   942→                      Script
+   943→                    </TabsTrigger>
+   944→                    <TabsTrigger
+   945→                      value="scenes"
+   946→                      className="data-[state=active]:bg-cyan-500/15 data-[state=active]:text-cyan-200 text-slate-400 gap-1.5"
+   947→                    >
+   948→                      <Clapperboard className="w-3.5 h-3.5" />
+   949→                      Scenes
+   950→                      {scenes.length > 0 && (
+   951→                        <span className="ml-1 text-[10px] bg-slate-800 text-slate-400 rounded-full px-1.5 py-0.5">
+   952→                          {scenes.length}
+   953→                        </span>
+   954→                      )}
+   955→                    </TabsTrigger>
+   956→                    <TabsTrigger
+   957→                      value="claims"
+   958→                      className="data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-200 text-slate-400 gap-1.5"
+   959→                    >
+   960→                      <Gavel className="w-3.5 h-3.5" />
+   961→                      Claims
+   962→                      {claims.length > 0 && (
+   963→                        <span className="ml-1 text-[10px] bg-slate-800 text-slate-400 rounded-full px-1.5 py-0.5">
+   964→                          {claims.length}
+   965→                        </span>
+   966→                      )}
+   967→                    </TabsTrigger>
+   968→                    <TabsTrigger
+   969→                      value="review"
+   970→                      className="data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-200 text-slate-400 gap-1.5"
+   971→                    >
+   972→                      <ShieldCheck className="w-3.5 h-3.5" />
+   973→                      Review
+   974→                    </TabsTrigger>
+   975→                  </TabsList>
+   976→
+   977→                  <TabsContent value="script" className="mt-4">
+   978→                    <ScriptTab script={script} />
+   979→                  </TabsContent>
+   980→                  <TabsContent value="scenes" className="mt-4">
+   981→                    <ScenesTab scenes={scenes} />
+   982→                  </TabsContent>
+   983→                  <TabsContent value="claims" className="mt-4">
+   984→                    <ClaimsTab claims={claims} />
+   985→                  </TabsContent>
+   986→                  <TabsContent value="review" className="mt-4">
+   987→                    <ReviewTab review={review} />
+   988→                  </TabsContent>
+   989→                </Tabs>
+   990→              </motion.div>
+   991→            )}
+   992→          </AnimatePresence>
+   993→        </div>
+   994→
+   995→        {/* ── Footer (sticky at bottom of dialog) ──────────── */}
+   996→        <DialogFooter className="border-t border-slate-800/60 bg-slate-950/80 backdrop-blur-sm p-3 sm:p-4 sm:flex-row sm:justify-between gap-2">
+   997→          <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
+   998→            {vp && (
+   999→              <>
+  1000→                <span className="font-mono text-slate-600 truncate max-w-[280px]">{vp.id}</span>
+  1001→                <span className="text-slate-700">·</span>
+  1002→                <span>Updated {new Date(vp.updatedAt).toLocaleDateString()}</span>
+  1003→              </>
+  1004→            )}
+  1005→          </div>
+  1006→          <div className="flex items-center gap-2 justify-end w-full sm:w-auto">
+  1007→            <Button
+  1008→              variant="outline"
+  1009→              size="sm"
+  1010→              onClick={onClose}
+  1011→              className="bg-slate-900/60 border-slate-700/50 text-slate-300 hover:text-slate-100 hover:bg-slate-800/60"
+  1012→            >
+  1013→              Close
+  1014→            </Button>
+  1015→            {showRerender && (
+  1016→              <Tooltip>
+  1017→                <TooltipTrigger asChild>
+  1018→                  <Button
+  1019→                    type="button"
+  1020→                    size="sm"
+  1021→                    variant="outline"
+  1022→                    onClick={() => setRerenderConfirmOpen(true)}
+  1023→                    className="gap-1.5 border-rose-500/40 bg-rose-500/5 text-rose-300 hover:border-rose-400/60 hover:bg-rose-500/10 hover:text-rose-200"
+  1024→                  >
+  1025→                    <RefreshCcw className="w-3.5 h-3.5" />
+  1026→                    Re-render
+  1027→                  </Button>
+  1028→                </TooltipTrigger>
+  1029→                <TooltipContent side="top" className="border-slate-700 bg-slate-800 text-slate-200">
+  1030→                  Re-render with revised script
+  1031→                </TooltipContent>
+  1032→              </Tooltip>
+  1033→            )}
+  1034→            {rerendering && (
+  1035→              <span className="flex items-center gap-1.5 text-xs text-violet-300">
+  1036→                <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+  1037→                Re-rendering…
+  1038→              </span>
+  1039→            )}
+  1040→            <Button
+  1041→              asChild
+  1042→              size="sm"
+  1043→              disabled={!videoUrl}
+  1044→              className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-400 hover:to-cyan-400 text-white border-0 shadow-lg shadow-violet-500/20"
+  1045→            >
+  1046→              <a href={videoUrl ?? '#'} download={`${vp?.title ?? 'video'}.mp4`}>
+  1047→                <Download className="w-3.5 h-3.5" />
+  1048→                Download
+  1049→              </a>
+  1050→            </Button>
+  1051→          </div>
+  1052→        </DialogFooter>
+  1053→      </DialogContent>
+  1054→    </Dialog>
+  1055→
+  1056→    {/* Re-render confirmation dialog — sibling of Dialog so radix
+  1057→        doesn't complain about nested overlays. */}
+  1058→    <AlertDialog
+  1059→      open={rerenderConfirmOpen}
+  1060→      onOpenChange={setRerenderConfirmOpen}
+  1061→    >
+  1062→      <AlertDialogContent className="border-slate-800 bg-slate-950 text-slate-100">
+  1063→        <AlertDialogHeader>
+  1064→          <AlertDialogTitle className="text-slate-100">
+  1065→            Re-render this video?
+  1066→          </AlertDialogTitle>
+  1067→          <AlertDialogDescription className="text-slate-400">
+  1068→            A new script version will be generated addressing the failed
+  1069→            review issues, then the video will be re-rendered from scratch.
+  1070→            This may take a few minutes.
+  1071→          </AlertDialogDescription>
+  1072→        </AlertDialogHeader>
+  1073→        <AlertDialogFooter>
+  1074→          <AlertDialogCancel className="border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-slate-100">
+  1075→            Cancel
+  1076→          </AlertDialogCancel>
+  1077→          <AlertDialogAction
+  1078→            onClick={() => { void handleRerender() }}
+  1079→            className="border-0 bg-gradient-to-r from-rose-500 to-violet-500 text-white hover:from-rose-400 hover:to-violet-400"
+  1080→          >
+  1081→            <RefreshCcw className="mr-1.5 w-3.5 h-3.5" />
+  1082→            Confirm Re-render
+  1083→          </AlertDialogAction>
+  1084→        </AlertDialogFooter>
+  1085→      </AlertDialogContent>
+  1086→    </AlertDialog>
+  1087→    </>
+  1088→  )
+  1089→}
+  1090→
