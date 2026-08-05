@@ -105,7 +105,7 @@ export default function Dashboard() {
   const [ytSetupInfo, setYtSetupInfo] = useState<any>(null)
   const [ytWizardOpen, setYtWizardOpen] = useState(false)
   const [ytDemoMode, setYtDemoMode] = useState(false)
-  const { toast } = useToast()
+  const { toast, dismiss, update } = useToast()
 
   // ── YouTube OAuth Callback Handler ────────────────────────────────
   useEffect(() => {
@@ -263,13 +263,13 @@ export default function Dashboard() {
       const data = await res.json()
       if (!res.ok) {
         const errMsg = data?.error || data?.message || `Command failed (${res.status})`
-        if (loadingId) toast.dismiss(loadingId)
+        if (loadingId) dismiss(loadingId)
         toast({ type: 'error', title: `${meta?.label || command} failed`, description: errMsg, duration: 5000 })
         return data
       }
       await fetchStatus()
       if (loadingId) {
-        toast.update(loadingId, {
+        update(loadingId, {
           type: 'success',
           title: meta?.success || `${command} command sent`,
           description: data?.message ? String(data.message).slice(0, 120) : undefined,
@@ -278,7 +278,7 @@ export default function Dashboard() {
       }
       return data
     } catch (e: any) {
-      if (loadingId) toast.dismiss(loadingId)
+      if (loadingId) dismiss(loadingId)
       toast({ type: 'error', title: 'Network error', description: e?.message || 'Failed to reach server', duration: 5000 })
       console.error(e)
     } finally {
