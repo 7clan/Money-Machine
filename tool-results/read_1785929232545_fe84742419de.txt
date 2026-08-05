@@ -1,0 +1,771 @@
+     1→'use client'
+     2→
+     3→import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react'
+     4→import { motion, AnimatePresence } from 'framer-motion'
+     5→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+     6→import { Button } from '@/components/ui/button'
+     7→import { Badge } from '@/components/ui/badge'
+     8→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+     9→import {
+    10→  Youtube, AlertOctagon, Search, Activity, Layers,
+    11→  Target, DollarSign, BarChart3, Handshake, FlaskConical,
+    12→  FileText, GitBranch, Settings, CalendarDays, CalendarClock,
+    13→  Keyboard, Database, Zap, RefreshCw, Loader2,
+    14→} from 'lucide-react'
+    15→import {
+    16→  AlertDialog,
+    17→  AlertDialogAction,
+    18→  AlertDialogCancel,
+    19→  AlertDialogContent,
+    20→  AlertDialogDescription,
+    21→  AlertDialogFooter,
+    22→  AlertDialogHeader,
+    23→  AlertDialogTitle,
+    24→  AlertDialogTrigger,
+    25→} from '@/components/ui/alert-dialog'
+    26→import { ThemeToggle } from '@/components/theme-toggle'
+    27→import { VideoPreviewModal } from '@/components/agent/video-preview-modal'
+    28→import { CommandPalette } from '@/components/agent/command-palette'
+    29→import { NotificationCenter } from '@/components/agent/notification-center'
+    30→import { ExportMenu } from '@/components/agent/export-menu'
+    31→import { KeyboardShortcuts } from '@/components/agent/keyboard-shortcuts'
+    32→import { YouTubeSetupWizard } from '@/components/agent/youtube-setup-wizard'
+    33→import { AgentPulseIndicator } from '@/components/agent/agent-pulse'
+    34→import { QuickActionsToolbar } from '@/components/agent/quick-actions-toolbar'
+    35→import { useToast } from '@/components/agent/toast-provider'
+    36→
+    37→// ── Shared types & helpers ───────────────────────────────────────────
+    38→import {
+    39→  AgentStatus, PipelineData, ChannelData, AnalyticsData,
+    40→  MODES, modeLabel, AgentStateIndicator,
+    41→} from '@/components/tabs/shared'
+    42→
+    43→// ── Lazy-loaded tab components ───────────────────────────────────────
+    44→const OverviewTab = React.lazy(() =>
+    45→  import('@/components/tabs/overview-tab').then(m => ({ default: m.OverviewTab }))
+    46→)
+    47→const PipelineTab = React.lazy(() =>
+    48→  import('@/components/tabs/pipeline-tab').then(m => ({ default: m.PipelineTab }))
+    49→)
+    50→const StrategyTab = React.lazy(() =>
+    51→  import('@/components/tabs/strategy-tab').then(m => ({ default: m.StrategyTab }))
+    52→)
+    53→const CalendarTab = React.lazy(() =>
+    54→  import('@/components/tabs/calendar-tab').then(m => ({ default: m.CalendarTab }))
+    55→)
+    56→const SchedulerTab = React.lazy(() =>
+    57→  import('@/components/tabs/scheduler-tab').then(m => ({ default: m.SchedulerTab }))
+    58→)
+    59→const RevenueTab = React.lazy(() =>
+    60→  import('@/components/tabs/revenue-tab').then(m => ({ default: m.RevenueTab }))
+    61→)
+    62→const AnalyticsTab = React.lazy(() =>
+    63→  import('@/components/tabs/analytics-tab').then(m => ({ default: m.AnalyticsTab }))
+    64→)
+    65→const OpportunitiesTab = React.lazy(() =>
+    66→  import('@/components/tabs/opportunities-tab').then(m => ({ default: m.OpportunitiesTab }))
+    67→)
+    68→const ExperimentsTab = React.lazy(() =>
+    69→  import('@/components/tabs/experiments-tab').then(m => ({ default: m.ExperimentsTab }))
+    70→)
+    71→const LogsTab = React.lazy(() =>
+    72→  import('@/components/tabs/logs-tab').then(m => ({ default: m.LogsTab }))
+    73→)
+    74→const DecisionsTab = React.lazy(() =>
+    75→  import('@/components/tabs/decisions-tab').then(m => ({ default: m.DecisionsTab }))
+    76→)
+    77→const SettingsTab = React.lazy(() =>
+    78→  import('@/components/tabs/settings-tab').then(m => ({ default: m.SettingsTab }))
+    79→)
+    80→
+    81→// ── Tab loading skeleton ─────────────────────────────────────────────
+    82→import { TabLoadingSkeleton } from '@/components/tabs/tab-skeleton'
+    83→
+    84→// ════════════════════════════════════════════════════════════════════
+    85→//  MAIN DASHBOARD
+    86→// ════════════════════════════════════════════════════════════════════
+    87→export default function Dashboard() {
+    88→  const [status, setStatus] = useState<AgentStatus | null>(null)
+    89→  const [pipeline, setPipeline] = useState<PipelineData | null>(null)
+    90→  const [channel, setChannel] = useState<ChannelData | null>(null)
+    91→  const [jobs, setJobs] = useState<any[]>([])
+    92→  const [logs, setLogs] = useState<any[]>([])
+    93→  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+    94→  const [loading, setLoading] = useState(false)
+    95→  const [activeTab, setActiveTab] = useState('overview')
+    96→  const [lastPoll, setLastPoll] = useState<Date>(new Date())
+    97→  const [previewVideoId, setPreviewVideoId] = useState<string | null>(null)
+    98→  const [initialLoaded, setInitialLoaded] = useState(false)
+    99→  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+   100→  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+   101→  const [schedulerIdeas, setSchedulerIdeas] = useState<any[]>([])
+   102→  const [estopDialogOpen, setEstopDialogOpen] = useState(false)
+   103→  const [ytConnecting, setYtConnecting] = useState(false)
+   104→  const [ytDisconnecting, setYtDisconnecting] = useState(false)
+   105→  const [ytSetupInfo, setYtSetupInfo] = useState<any>(null)
+   106→  const [ytWizardOpen, setYtWizardOpen] = useState(false)
+   107→  const [ytDemoMode, setYtDemoMode] = useState(false)
+   108→  const { toast } = useToast()
+   109→
+   110→  // ── YouTube OAuth Callback Handler ────────────────────────────────
+   111→  useEffect(() => {
+   112→    if (typeof window === 'undefined') return
+   113→    const params = new URLSearchParams(window.location.search)
+   114→    const ytAuth = params.get('youtube_auth')
+   115→    if (ytAuth) {
+   116→      const url = new URL(window.location.href)
+   117→      url.searchParams.delete('youtube_auth')
+   118→      url.searchParams.delete('message')
+   119→      url.searchParams.delete('channel')
+   120→      window.history.replaceState({}, '', url.toString())
+   121→
+   122→      if (ytAuth === 'success') {
+   123→        const chName = params.get('channel') || 'YouTube'
+   124→        toast({ type: 'success', title: 'YouTube Connected!', description: `Successfully connected to ${chName}`, duration: 5000 })
+   125→        fetchChannel()
+   126→      } else if (ytAuth === 'error') {
+   127→        const errMsg = params.get('message') || 'Unknown error'
+   128→        toast({ type: 'error', title: 'Connection Failed', description: decodeURIComponent(errMsg), duration: 7000 })
+   129→      }
+   130→    }
+   131→  }, [])
+   132→
+   133→  // ── Polling ─────────────────────────────────────────────────────
+   134→  const fetchStatus = useCallback(async () => {
+   135→    try {
+   136→      const res = await fetch('/api/agent/status')
+   137→      if (res.ok) setStatus(await res.json())
+   138→    } catch {}
+   139→  }, [])
+   140→
+   141→  const fetchPipeline = useCallback(async () => {
+   142→    try {
+   143→      const res = await fetch('/api/data/pipeline')
+   144→      if (res.ok) setPipeline(await res.json())
+   145→    } catch {}
+   146→  }, [])
+   147→
+   148→  const fetchChannel = useCallback(async () => {
+   149→    try {
+   150→      const res = await fetch('/api/data/channel')
+   151→      if (res.ok) setChannel(await res.json())
+   152→    } catch {}
+   153→  }, [])
+   154→
+   155→  const fetchJobs = useCallback(async () => {
+   156→    try {
+   157→      const res = await fetch('/api/data/jobs')
+   158→      if (res.ok) setJobs(await res.json())
+   159→    } catch {}
+   160→  }, [])
+   161→
+   162→  const fetchLogs = useCallback(async () => {
+   163→    try {
+   164→      const res = await fetch('/api/data/audit-logs')
+   165→      if (res.ok) setLogs(await res.json())
+   166→    } catch {}
+   167→  }, [])
+   168→
+   169→  const fetchAnalytics = useCallback(async () => {
+   170→    try {
+   171→      const res = await fetch('/api/data/analytics')
+   172→      if (res.ok) setAnalytics(await res.json())
+   173→    } catch {}
+   174→  }, [])
+   175→
+   176→  const pollAll = useCallback(async () => {
+   177→    await Promise.all([fetchStatus(), fetchPipeline(), fetchChannel(), fetchJobs(), fetchLogs(), fetchAnalytics()])
+   178→    setLastPoll(new Date())
+   179→    setInitialLoaded(true)
+   180→  }, [fetchStatus, fetchPipeline, fetchChannel, fetchJobs, fetchLogs, fetchAnalytics])
+   181→
+   182→  useEffect(() => {
+   183→    pollAll()
+   184→    const interval = setInterval(pollAll, 5000)
+   185→    return () => clearInterval(interval)
+   186→  }, [pollAll])
+   187→
+   188→  // ── YouTube Connect/Disconnect ────────────────────────────────────
+   189→  const connectYouTube = async () => {
+   190→    setYtWizardOpen(true)
+   191→  }
+   192→
+   193→  const enableDemoMode = async () => {
+   194→    setYtConnecting(true)
+   195→    try {
+   196→      const res = await fetch('/api/youtube/demo-connect', { method: 'POST' })
+   197→      const data = await res.json()
+   198→      if (!res.ok) {
+   199→        toast({ type: 'error', title: 'Demo Mode Failed', description: data.error || data.message, duration: 5000 })
+   200→        return
+   201→      }
+   202→      setYtDemoMode(true)
+   203→      setYtWizardOpen(false)
+   204→      toast({ type: 'success', title: 'Demo Mode Activated', description: data.message, duration: 5000 })
+   205→      await fetchChannel()
+   206→    } catch (e: any) {
+   207→      toast({ type: 'error', title: 'Demo Mode Error', description: e.message, duration: 5000 })
+   208→    } finally {
+   209→      setYtConnecting(false)
+   210→    }
+   211→  }
+   212→
+   213→  const handleWizardComplete = async () => {
+   214→    setYtWizardOpen(false)
+   215→    toast({ type: 'success', title: 'YouTube Connected!', description: 'Your YouTube account is now connected.', duration: 5000 })
+   216→    await fetchChannel()
+   217→  }
+   218→
+   219→  const disconnectYouTube = async () => {
+   220→    setYtDisconnecting(true)
+   221→    try {
+   222→      const res = await fetch('/api/youtube/disconnect', { method: 'POST' })
+   223→      const data = await res.json()
+   224→      if (!res.ok) {
+   225→        toast({ type: 'error', title: 'Disconnect Failed', description: data.error || data.message, duration: 5000 })
+   226→        return
+   227→      }
+   228→      toast({ type: 'success', title: 'YouTube Disconnected', description: 'Your YouTube account has been disconnected.', duration: 4000 })
+   229→      await fetchChannel()
+   230→    } catch (e: any) {
+   231→      toast({ type: 'error', title: 'Disconnect Error', description: e.message, duration: 5000 })
+   232→    } finally {
+   233→      setYtDisconnecting(false)
+   234→    }
+   235→  }
+   236→
+   237→  // ── Commands ────────────────────────────────────────────────────
+   238→  const COMMAND_LABELS: Record<string, { label: string; success: string; loading: string }> = {
+   239→    'start': { label: 'Start Agent', success: 'Agent started', loading: 'Starting agent…' },
+   240→    'stop': { label: 'Emergency Stop', success: 'Emergency stop activated', loading: 'Activating emergency stop…' },
+   241→    'pause': { label: 'Pause Agent', success: 'Agent paused', loading: 'Pausing agent…' },
+   242→    'resume': { label: 'Resume Agent', success: 'Agent resumed', loading: 'Resuming agent…' },
+   243→    'initial-setup': { label: 'Run Initial Setup', success: 'Initial setup complete', loading: 'Running initial setup…' },
+   244→    'full-cycle': { label: 'Full Cycle', success: 'Full cycle started', loading: 'Starting full autonomous cycle…' },
+   245→    'produce-next': { label: 'Produce Next Video', success: 'Production queued', loading: 'Producing next video…' },
+   246→    'process-job': { label: 'Process Next Job', success: 'Job processed', loading: 'Processing next job…' },
+   247→    'collect-analytics': { label: 'Collect Analytics', success: 'Analytics collection queued', loading: 'Collecting analytics…' },
+   248→    'schedule-jobs': { label: 'Schedule Jobs', success: 'Recurring jobs scheduled', loading: 'Scheduling jobs…' },
+   249→    'review-strategy': { label: 'Review Strategy', success: 'Strategy review queued', loading: 'Reviewing strategy…' },
+   250→    'reset': { label: 'Reset Agent', success: 'Agent reset', loading: 'Resetting agent…' },
+   251→  }
+   252→
+   253→  const sendCommand = async (command: string, extra?: any) => {
+   254→    const meta = COMMAND_LABELS[command]
+   255→    const loadingId = meta ? toast({ type: 'loading', title: meta.loading, duration: 0 }) : null
+   256→    setLoading(true)
+   257→    try {
+   258→      const res = await fetch('/api/agent/command', {
+   259→        method: 'POST',
+   260→        headers: { 'Content-Type': 'application/json' },
+   261→        body: JSON.stringify({ command, ...extra }),
+   262→      })
+   263→      const data = await res.json()
+   264→      if (!res.ok) {
+   265→        const errMsg = data?.error || data?.message || `Command failed (${res.status})`
+   266→        if (loadingId) toast.dismiss(loadingId)
+   267→        toast({ type: 'error', title: `${meta?.label || command} failed`, description: errMsg, duration: 5000 })
+   268→        return data
+   269→      }
+   270→      await fetchStatus()
+   271→      if (loadingId) {
+   272→        toast.update(loadingId, {
+   273→          type: 'success',
+   274→          title: meta?.success || `${command} command sent`,
+   275→          description: data?.message ? String(data.message).slice(0, 120) : undefined,
+   276→          duration: 3000,
+   277→        })
+   278→      }
+   279→      return data
+   280→    } catch (e: any) {
+   281→      if (loadingId) toast.dismiss(loadingId)
+   282→      toast({ type: 'error', title: 'Network error', description: e?.message || 'Failed to reach server', duration: 5000 })
+   283→      console.error(e)
+   284→    } finally {
+   285→      setLoading(false)
+   286→    }
+   287→  }
+   288→
+   289→  // ── Scheduler data fetcher ────────────────────────────────────
+   290→  const fetchSchedulerIdeas = useCallback(async () => {
+   291→    try {
+   292→      const res = await fetch('/api/data/pipeline')
+   293→      if (res.ok) {
+   294→        const data = await res.json()
+   295→        const ideas = (data.ideas || []).map((idea: any) => ({
+   296→          id: idea.id,
+   297→          title: idea.title,
+   298→          pillarColor: idea.pillar?.color || '#8b5cf6',
+   299→          pillarName: idea.pillar?.name || 'Uncategorized',
+   300→          type: idea.type || 'short',
+   301→          compositeScore: idea.compositeScore,
+   302→          scheduledDate: idea.scheduledDate,
+   303→          scheduledTime: null as string | null,
+   304→        }))
+   305→        setSchedulerIdeas(ideas)
+   306→      }
+   307→    } catch {}
+   308→  }, [])
+   309→
+   310→  const handleScheduleIdea = useCallback(async (ideaId: string, dateISO: string, time: string) => {
+   311→    try {
+   312→      await fetch('/api/data/ideas/' + ideaId + '/schedule', {
+   313→        method: 'POST',
+   314→        headers: { 'Content-Type': 'application/json' },
+   315→        body: JSON.stringify({ scheduledDate: dateISO, scheduledTime: time }),
+   316→      })
+   317→      setSchedulerIdeas(prev => prev.map(i => i.id === ideaId ? { ...i, scheduledDate: dateISO, scheduledTime: time } : i))
+   318→    } catch {}
+   319→  }, [])
+   320→
+   321→  const handleUnscheduleIdea = useCallback(async (ideaId: string) => {
+   322→    try {
+   323→      await fetch('/api/data/ideas/' + ideaId + '/schedule', {
+   324→        method: 'DELETE',
+   325→      })
+   326→      setSchedulerIdeas(prev => prev.map(i => i.id === ideaId ? { ...i, scheduledDate: null, scheduledTime: null } : i))
+   327→    } catch {}
+   328→  }, [])
+   329→
+   330→  useEffect(() => {
+   331→    fetchSchedulerIdeas()
+   332→  }, [fetchSchedulerIdeas])
+   333→
+   334→  // ── Computed ────────────────────────────────────────────────────
+   335→  const totalPipeline = status ? Object.values(status.pipeline).reduce((a: number, b: number) => a + b, 0) : 0
+   336→  const selectedNiche = useMemo(() => {
+   337→    if (!channel?.niches?.length) return null
+   338→    return channel.niches.find((n: any) => n.isSelected) || channel.niches[0] || null
+   339→  }, [channel?.niches])
+   340→  const selectedNicheScore: number | null = selectedNiche?.compositeScore ?? null
+   341→  const pipelineChartData = useMemo(() => {
+   342→    if (!logs.length) return []
+   343→    return Array.from({ length: 12 }, (_, i) => ({
+   344→      time: `${String((i + 1) % 24).padStart(2, '0')}:00`,
+   345→      ideas: Math.max(0, (status?.pipeline.ideas || 0) - Math.floor((i * 0.7) % 3)),
+   346→      produced: Math.max(0, (status?.pipeline.producing || 0) + (i % 2)),
+   347→      uploaded: Math.max(0, (status?.pipeline.uploaded || 0) - Math.floor((i * 0.2) % 2)),
+   348→    }))
+   349→  }, [status?.pipeline, logs.length])
+   350→
+   351→  // ── Render ──────────────────────────────────────────────────────
+   352→  return (
+   353→    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+   354→      {/* ═══ Decorative Background ═══ */}
+   355→      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+   356→        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(100,116,139,0.12)_1px,transparent_0)] [background-size:32px_32px]" />
+   357→        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-violet-500/[0.04] rounded-full blur-[100px] animate-pulse" />
+   358→        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-cyan-500/[0.04] rounded-full blur-[100px]" />
+   359→        <div className="absolute top-1/3 left-1/2 w-80 h-80 bg-emerald-500/[0.03] rounded-full blur-[80px]" />
+   360→        <div className="absolute top-2/3 right-1/4 w-64 h-64 bg-amber-500/[0.02] rounded-full blur-[80px]" />
+   361→        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-rose-500/[0.02] rounded-full blur-[90px]" />
+   362→      </div>
+   363→
+   364→      {/* ═══ TOP BAR ═══ */}
+   365→      <header className="sticky top-0 z-50 bg-slate-950/70 backdrop-blur-xl shadow-sm shadow-slate-900/50">
+   366→        <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
+   367→          {/* Logo */}
+   368→          <div className="flex items-center gap-3 shrink-0">
+   369→            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/20 ${channel?.youtubeConnected ? 'animate-pulse' : ''}`}>
+   370→              <Youtube className="w-5 h-5 text-white" />
+   371→            </div>
+   372→            <div className="hidden sm:block">
+   373→              <h1 className="text-base font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+   374→                Revenue Studio
+   375→              </h1>
+   376→              <p className="text-[11px] text-slate-400 uppercase tracking-widest">Mission Control</p>
+   377→            </div>
+   378→          </div>
+   379→
+   380→          {/* Center: Agent State + Pulse + Mode */}
+   381→          <div className="flex items-center gap-3 flex-1 justify-center">
+   382→            {status && <AgentStateIndicator state={status.state} />}
+   383→            {status && (
+   384→              <AgentPulseIndicator
+   385→                state={status.state}
+   386→                currentJob={status.currentJob}
+   387→                nextAction={status.nextAction}
+   388→              />
+   389→            )}
+   390→            <Badge className={`text-[10px] ${MODES.find(m => m.key === status?.operatingMode)?.badge || 'bg-slate-500/20 text-slate-300'}`}>
+   391→              {modeLabel(status?.operatingMode || 'private_production')}
+   392→            </Badge>
+   393→          </div>
+   394→
+   395→          {/* Right: Theme + Notifications + Command Palette + Emergency Stop + YT Connection */}
+   396→          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+   397→            <button
+   398→              onClick={() => setCommandPaletteOpen(true)}
+   399→              className="hidden md:inline-flex items-center gap-2 h-9 px-3 rounded-md border border-slate-800/60 bg-slate-900/60 hover:bg-slate-800/60 hover:border-slate-700/60 text-slate-400 hover:text-slate-200 text-xs transition-colors"
+   400→              title="Command Palette (Ctrl+K)"
+   401→            >
+   402→              <Search className="w-3.5 h-3.5" />
+   403→              <span className="hidden lg:inline">Search</span>
+   404→              <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-slate-700/60 bg-slate-800/80 text-[10px] text-slate-400 font-mono">⌘K</kbd>
+   405→            </button>
+   406→
+   407→            <div className="hidden md:block">
+   408→              <ExportMenu />
+   409→            </div>
+   410→
+   411→            <ThemeToggle />
+   412→
+   413→            <NotificationCenter onNavigate={(t) => setActiveTab(t)} />
+   414→
+   415→            <motion.button
+   416→              whileHover={{ scale: 1.05 }}
+   417→              whileTap={{ scale: 0.95 }}
+   418→              onClick={() => {
+   419→                if (!channel?.youtubeConnected) {
+   420→                  connectYouTube()
+   421→                } else {
+   422→                  setActiveTab('settings')
+   423→                }
+   424→              }}
+   425→              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium border transition-all cursor-pointer ${
+   426→                channel?.youtubeConnected
+   427→                  ? 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'
+   428→                  : 'bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30 animate-pulse'
+   429→              }`}
+   430→              title={channel?.youtubeConnected ? 'YouTube connected – click to view settings' : 'Click to connect YouTube'}
+   431→            >
+   432→              <Youtube className="w-3 h-3" />
+   433→              {channel?.youtubeConnected ? 'Connected' : 'Connect'}
+   434→            </motion.button>
+   435→
+   436→            {/* EMERGENCY STOP */}
+   437→            <AlertDialog open={estopDialogOpen} onOpenChange={setEstopDialogOpen}>
+   438→              <AlertDialogTrigger asChild>
+   439→                <motion.div whileTap={{ scale: 0.95 }} className="inline-block">
+   440→                  <Button
+   441→                    size="sm"
+   442→                    onClick={(e) => {
+   443→                      if (status?.emergencyStop) {
+   444→                        sendCommand('resume')
+   445→                      } else {
+   446→                        setEstopDialogOpen(true)
+   447→                      }
+   448→                    }}
+   449→                    className={`relative overflow-hidden transition-shadow duration-200 ${
+   450→                      status?.emergencyStop
+   451→                        ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 shadow-lg shadow-red-500/30 hover:shadow-red-500/40 animate-pulse'
+   452→                        : 'bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 shadow-md shadow-red-500/20 hover:shadow-red-500/40'
+   453→                    }`}
+   454→                  >
+   455→                    <AlertOctagon className="w-4 h-4 mr-1.5" />
+   456→                    {status?.emergencyStop ? 'RESUME' : 'E-STOP'}
+   457→                  </Button>
+   458→                </motion.div>
+   459→              </AlertDialogTrigger>
+   460→              <AlertDialogContent className="bg-slate-900 border-red-500/40 text-slate-100">
+   461→                <AlertDialogHeader>
+   462→                  <AlertDialogTitle className="flex items-center gap-2 text-red-300">
+   463→                    <AlertOctagon className="w-5 h-5" />
+   464→                    Activate Emergency Stop?
+   465→                  </AlertDialogTitle>
+   466→                  <AlertDialogDescription className="text-slate-400">
+   467→                    This will <span className="text-red-300 font-semibold">immediately halt</span> all autonomous agent activity:
+   468→                    running jobs will be interrupted, no new videos will be produced, and no uploads will occur.
+   469→                    The agent will remain stopped until you manually resume.
+   470→                  </AlertDialogDescription>
+   471→                </AlertDialogHeader>
+   472→                <AlertDialogFooter>
+   473→                  <AlertDialogCancel className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-slate-100">
+   474→                    Cancel
+   475→                  </AlertDialogCancel>
+   476→                  <AlertDialogAction
+   477→                    onClick={() => sendCommand('stop')}
+   478→                    className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white border-0"
+   479→                  >
+   480→                    <AlertOctagon className="w-4 h-4 mr-1.5" />
+   481→                    Activate E-STOP
+   482→                  </AlertDialogAction>
+   483→                </AlertDialogFooter>
+   484→              </AlertDialogContent>
+   485→            </AlertDialog>
+   486→          </div>
+   487→        </div>
+   488→        <div className="h-[1px] bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
+   489→      </header>
+   490→
+   491→      {/* ═══ MAIN CONTENT ═══ */}
+   492→      <main className="flex-1 p-3 md:p-6 overflow-auto">
+   493→        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+   494→          {/* ── Tab Bar ── */}
+   495→          <TabsList className="mb-4 bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-slate-900/90 border border-slate-800/50 backdrop-blur-sm w-full h-auto gap-0.5 p-1 overflow-x-auto flex-nowrap [&::-webkit-scrollbar]:h-0.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/40 [&::-webkit-scrollbar-thumb]:rounded-full relative">
+   496→            {[
+   497→              { v: 'overview', icon: Activity, label: 'Overview' },
+   498→              { v: 'pipeline', icon: Layers, label: 'Pipeline' },
+   499→              { v: 'strategy', icon: Target, label: 'Strategy' },
+   500→              { v: 'calendar', icon: CalendarDays, label: 'Calendar' },
+   501→              { v: 'scheduler', icon: CalendarClock, label: 'Scheduler' },
+   502→              { v: 'revenue', icon: DollarSign, label: 'Revenue' },
+   503→              { v: 'analytics', icon: BarChart3, label: 'Analytics' },
+   504→              { v: 'opportunities', icon: Handshake, label: 'Opportunities' },
+   505→              { v: 'experiments', icon: FlaskConical, label: 'Experiments' },
+   506→              { v: 'logs', icon: FileText, label: 'Logs' },
+   507→              { v: 'decisions', icon: GitBranch, label: 'Decisions' },
+   508→              { v: 'settings', icon: Settings, label: 'Settings' },
+   509→            ].map(tab => (
+   510→              <TabsTrigger
+   511→                key={tab.v}
+   512→                value={tab.v}
+   513→                className="shrink-0 data-[state=active]:bg-slate-700/80 data-[state=active]:text-white data-[state=active]:border-t-2 data-[state=active]:border-t-[currentColor] text-slate-400 text-[11px] px-2 py-1 transition-all duration-200 hover:bg-slate-800/60 whitespace-nowrap border-t-2 border-t-transparent"
+   514→              >
+   515→                <tab.icon className="w-3 h-3 mr-1" />
+   516→                {tab.label}
+   517→              </TabsTrigger>
+   518→            ))}
+   519→            <button
+   520→              onClick={() => setShortcutsOpen(true)}
+   521→              className="shrink-0 text-slate-500 hover:text-slate-300 transition-colors p-1.5 rounded-md hover:bg-slate-800/50"
+   522→              title="Keyboard Shortcuts (Ctrl+/)"
+   523→            >
+   524→              <Keyboard className="w-3.5 h-3.5" />
+   525→            </button>
+   526→          </TabsList>
+   527→
+   528→          {/* ── Tab Content (all lazy-loaded) ── */}
+   529→          <TabsContent value="overview" className="space-y-4">
+   530→            <Suspense fallback={<TabLoadingSkeleton />}>
+   531→              <OverviewTab
+   532→                status={status}
+   533→                pipeline={pipeline}
+   534→                channel={channel}
+   535→                analytics={analytics}
+   536→                jobs={jobs}
+   537→                logs={logs}
+   538→                loading={loading}
+   539→                totalPipeline={totalPipeline}
+   540→                selectedNicheScore={selectedNicheScore}
+   541→                sendCommand={sendCommand}
+   542→                setActiveTab={setActiveTab}
+   543→                enableDemoMode={enableDemoMode}
+   544→                ytConnecting={ytConnecting}
+   545→                setYtWizardOpen={setYtWizardOpen}
+   546→              />
+   547→            </Suspense>
+   548→          </TabsContent>
+   549→
+   550→          <TabsContent value="pipeline" className="space-y-4">
+   551→            <Suspense fallback={<TabLoadingSkeleton />}>
+   552→              <PipelineTab
+   553→                status={status}
+   554→                pipeline={pipeline}
+   555→                initialLoaded={initialLoaded}
+   556→                sendCommand={sendCommand}
+   557→                setActiveTab={setActiveTab}
+   558→                pollAll={pollAll}
+   559→                toast={toast}
+   560→                setPreviewVideoId={setPreviewVideoId}
+   561→              />
+   562→            </Suspense>
+   563→          </TabsContent>
+   564→
+   565→          <TabsContent value="strategy" className="space-y-4">
+   566→            <Suspense fallback={<TabLoadingSkeleton />}>
+   567→              <StrategyTab
+   568→                status={status}
+   569→                channel={channel}
+   570→              />
+   571→            </Suspense>
+   572→          </TabsContent>
+   573→
+   574→          <TabsContent value="calendar" className="space-y-4">
+   575→            <Suspense fallback={<TabLoadingSkeleton />}>
+   576→              <CalendarTab
+   577→                pipeline={pipeline}
+   578→                setActiveTab={setActiveTab}
+   579→              />
+   580→            </Suspense>
+   581→          </TabsContent>
+   582→
+   583→          <TabsContent value="scheduler" className="space-y-4">
+   584→            <Suspense fallback={<TabLoadingSkeleton />}>
+   585→              <SchedulerTab
+   586→                schedulerIdeas={schedulerIdeas}
+   587→                handleScheduleIdea={handleScheduleIdea}
+   588→                handleUnscheduleIdea={handleUnscheduleIdea}
+   589→              />
+   590→            </Suspense>
+   591→          </TabsContent>
+   592→
+   593→          <TabsContent value="revenue" className="space-y-4">
+   594→            <Suspense fallback={<TabLoadingSkeleton />}>
+   595→              <RevenueTab
+   596→                status={status}
+   597→                analytics={analytics}
+   598→              />
+   599→            </Suspense>
+   600→          </TabsContent>
+   601→
+   602→          <TabsContent value="analytics" className="space-y-4">
+   603→            <Suspense fallback={<TabLoadingSkeleton />}>
+   604→              <AnalyticsTab
+   605→                analytics={analytics}
+   606→                pipeline={pipeline}
+   607→                channel={channel}
+   608→                pipelineChartData={pipelineChartData}
+   609→              />
+   610→            </Suspense>
+   611→          </TabsContent>
+   612→
+   613→          <TabsContent value="opportunities" className="space-y-4">
+   614→            <Suspense fallback={<TabLoadingSkeleton />}>
+   615→              <OpportunitiesTab sendCommand={sendCommand} />
+   616→            </Suspense>
+   617→          </TabsContent>
+   618→
+   619→          <TabsContent value="experiments" className="space-y-4">
+   620→            <Suspense fallback={<TabLoadingSkeleton />}>
+   621→              <ExperimentsTab sendCommand={sendCommand} />
+   622→            </Suspense>
+   623→          </TabsContent>
+   624→
+   625→          <TabsContent value="logs" className="space-y-4">
+   626→            <Suspense fallback={<TabLoadingSkeleton />}>
+   627→              <LogsTab logs={logs} />
+   628→            </Suspense>
+   629→          </TabsContent>
+   630→
+   631→          <TabsContent value="decisions" className="space-y-4">
+   632→            <Suspense fallback={<TabLoadingSkeleton />}>
+   633→              <DecisionsTab logs={logs} />
+   634→            </Suspense>
+   635→          </TabsContent>
+   636→
+   637→          <TabsContent value="settings" className="space-y-4">
+   638→            <Suspense fallback={<TabLoadingSkeleton />}>
+   639→              <SettingsTab
+   640→                status={status}
+   641→                channel={channel}
+   642→                jobs={jobs}
+   643→                sendCommand={sendCommand}
+   644→                connectYouTube={connectYouTube}
+   645→                enableDemoMode={enableDemoMode}
+   646→                disconnectYouTube={disconnectYouTube}
+   647→                ytConnecting={ytConnecting}
+   648→                ytDisconnecting={ytDisconnecting}
+   649→                ytDemoMode={ytDemoMode}
+   650→                setYtWizardOpen={setYtWizardOpen}
+   651→                pollAll={pollAll}
+   652→              />
+   653→            </Suspense>
+   654→          </TabsContent>
+   655→        </Tabs>
+   656→
+   657→        {/* ═══ VIDEO PREVIEW MODAL ═══ */}
+   658→        <VideoPreviewModal
+   659→          videoProjectId={previewVideoId}
+   660→          onClose={() => setPreviewVideoId(null)}
+   661→        />
+   662→
+   663→        {/* ═══ COMMAND PALETTE ═══ */}
+   664→        <CommandPalette
+   665→          open={commandPaletteOpen}
+   666→          onOpenChange={setCommandPaletteOpen}
+   667→          onAction={(actionId) => {
+   668→            setCommandPaletteOpen(false)
+   669→            if (actionId === 'produce-next') sendCommand('produce-next')
+   670→            else if (actionId === 'full-cycle') sendCommand('full-cycle')
+   671→            else if (actionId === 'pause') sendCommand('pause')
+   672→            else if (actionId === 'resume') sendCommand('resume')
+   673→            else if (actionId === 'process-job') sendCommand('process-job')
+   674→            else if (actionId === 'emergency-stop') sendCommand(status?.emergencyStop ? 'resume' : 'stop')
+   675→            else if (actionId === 'refresh') pollAll()
+   676→            else if (actionId === 'show-shortcuts') setShortcutsOpen(true)
+   677→          }}
+   678→          onNavigate={(tabValue) => {
+   679→            setCommandPaletteOpen(false)
+   680→            setActiveTab(tabValue)
+   681→          }}
+   682→          stats={{
+   683→            totalIdeas: status?.pipeline?.ideas || 0,
+   684→            approvedVideos: status?.pipeline?.approved || 0,
+   685→            uploadedVideos: status?.pipeline?.uploaded || 0,
+   686→            jobsQueued: jobs.filter(j => j.status === 'pending' || j.status === 'running').length,
+   687→          }}
+   688→        />
+   689→
+   690→        {/* ═══ QUICK ACTIONS TOOLBAR (floating) ═══ */}
+   691→        <QuickActionsToolbar
+   692→          onCommand={(cmd) => {
+   693→            if (cmd === 'pause') sendCommand('pause')
+   694→            else if (cmd === 'initial-setup') sendCommand('initial-setup')
+   695→            else if (cmd === 'produce-next') sendCommand('produce-next')
+   696→            else if (cmd === 'collect-analytics') sendCommand('process-job')
+   697→            else if (cmd === 'strategy-review') setActiveTab('strategy')
+   698→            else if (cmd === 'schedule-jobs') setActiveTab('scheduler')
+   699→            else sendCommand(cmd)
+   700→          }}
+   701→          agentState={status?.state || 'idle'}
+   702→          loading={loading}
+   703→        />
+   704→
+   705→        {/* ═══ YOUTUBE SETUP WIZARD ═══ */}
+   706→        <YouTubeSetupWizard
+   707→          open={ytWizardOpen}
+   708→          onOpenChange={setYtWizardOpen}
+   709→          onComplete={handleWizardComplete}
+   710→          onDemoMode={enableDemoMode}
+   711→        />
+   712→
+   713→        {/* ═══ KEYBOARD SHORTCUTS ═══ */}
+   714→        <KeyboardShortcuts
+   715→          open={shortcutsOpen}
+   716→          onOpenChange={setShortcutsOpen}
+   717→          onCommand={(cmd) => {
+   718→            if (cmd === 'emergency-stop') sendCommand(status?.emergencyStop ? 'resume' : 'stop')
+   719→            else if (cmd === 'produce-next') sendCommand('produce-next')
+   720→            else if (cmd === 'refresh') pollAll()
+   721→            else if (cmd === 'pause') sendCommand('pause')
+   722→            else if (cmd === 'resume') sendCommand('resume')
+   723→            else if (cmd === 'command-palette') setCommandPaletteOpen(true)
+   724→            else if (cmd.startsWith('tab-')) {
+   725→              const tabs = ['overview', 'pipeline', 'strategy', 'calendar', 'scheduler', 'revenue', 'analytics', 'opportunities', 'experiments', 'logs', 'decisions', 'settings']
+   726→              const idx = parseInt(cmd.split('-')[1]) - 1
+   727→              if (idx >= 0 && idx < tabs.length) setActiveTab(tabs[idx])
+   728→            }
+   729→          }}
+   730→        />
+   731→      </main>
+   732→
+   733→      {/* ═══ FOOTER ═══ */}
+   734→      <footer className="border-t border-slate-800/60 px-4 md:px-6 py-3 bg-slate-950/90 backdrop-blur-md mt-auto">
+   735→        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-600">
+   736→          <div className="flex items-center gap-3">
+   737→            <div className="flex items-center gap-1.5">
+   738→              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+   739→              <span className="text-slate-400 font-semibold">YouTube Revenue Studio v2.4</span>
+   740→            </div>
+   741→            <span className="text-slate-700">·</span>
+   742→            <span>Z.AI Autonomous Agent</span>
+   743→            <span className="text-slate-700">·</span>
+   744→            <Badge variant="outline" className={`text-[10px] h-4 ${MODES.find(m => m.key === status?.operatingMode)?.badge || 'border-slate-600 text-slate-400'}`}>
+   745→              {modeLabel(status?.operatingMode || 'private_production')}
+   746→            </Badge>
+   747→          </div>
+   748→          <div className="flex items-center gap-3">
+   749→            <span className="flex items-center gap-1">
+   750→              <Database className="w-3 h-3 text-slate-600" />
+   751→              {totalPipeline} pipeline items
+   752→            </span>
+   753→            <span className="text-slate-700">|</span>
+   754→            <span className="flex items-center gap-1">
+   755→              <Zap className="w-3 h-3 text-amber-600/60" />
+   756→              {jobs.filter(j => j.status === 'pending').length} queued
+   757→            </span>
+   758→            <span className="text-slate-700">|</span>
+   759→            <span className="flex items-center gap-1">
+   760→              <RefreshCw className="w-3 h-3 text-slate-600" />
+   761→              {lastPoll.toLocaleTimeString()}
+   762→            </span>
+   763→            <span className="text-slate-700">|</span>
+   764→            <span>5s poll</span>
+   765→          </div>
+   766→        </div>
+   767→      </footer>
+   768→    </div>
+   769→  )
+   770→}
+   771→

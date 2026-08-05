@@ -93,7 +93,7 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
-  const [lastPoll, setLastPoll] = useState<Date>(new Date())
+  const [lastPoll, setLastPoll] = useState<Date | null>(null)
   const [previewVideoId, setPreviewVideoId] = useState<string | null>(null)
   const [initialLoaded, setInitialLoaded] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
@@ -758,7 +758,7 @@ export default function Dashboard() {
             <span className="text-slate-700">|</span>
             <span className="flex items-center gap-1">
               <RefreshCw className="w-3 h-3 text-slate-600" />
-              {lastPoll.toLocaleTimeString()}
+              {lastPoll ? lastPoll.toLocaleTimeString() : '—'}
             </span>
             <span className="text-slate-700">|</span>
             <span>5s poll</span>
