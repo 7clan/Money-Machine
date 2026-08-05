@@ -2021,3 +2021,30 @@ Stage Summary:
 - Users can connect by: 1) Opening Google auth URL → 2) Authorizing (bypassing unverified warning) → 3) Copying code from failed redirect URL → 4) Pasting into app
 - Smart parser handles both raw codes and full URLs
 - All three connection methods verified: Google OAuth, GCP Setup, Demo Mode
+
+---
+Task ID: oom-fix
+Agent: Lead Developer
+Task: Fix sandbox preview blank/OOM issue
+
+Work Log:
+- User reported preview showing blank white screen with only "Z" logo
+- Diagnosed: Linux OOM killer was killing the Next.js server process
+- The page.tsx was 2800 lines with heavy imports (recharts, framer-motion, many components)
+- Server compilation was using 2.5GB+ memory in a 4GB sandbox, triggering OOM kill
+- Split page.tsx (2800 lines → 770 lines) into 14 lazy-loaded tab components
+- Each tab now uses React.lazy() + Suspense for code splitting
+- Heavy components (PerformanceMetrics, recharts) only load when that tab is viewed
+- Added TabLoadingSkeleton as Suspense fallback
+- Created /src/components/tabs/ directory with: shared.tsx, overview-tab.tsx, strategy-tab.tsx, settings-tab.tsx, pipeline-tab.tsx, revenue-tab.tsx, analytics-tab.tsx, calendar-tab.tsx, scheduler-tab.tsx, opportunities-tab.tsx, experiments-tab.tsx, logs-tab.tsx, decisions-tab.tsx, tab-skeleton.tsx
+- Fixed Invalid Date in Production Trend chart (changed from D-29 format to ISO dates)
+- Fixed stale YouTube connection status in Agent Intelligence section
+- Fixed cross-origin warning by adding allowedDevOrigins to next.config.ts
+- Verified server now runs stably at ~1.4GB memory, page loads correctly
+
+Stage Summary:
+- Preview is now working - page renders with all content
+- Memory usage reduced from 2.5GB+ (OOM killed) to 1.4GB (stable)
+- Lazy loading means each tab compiles only when first visited
+- YouTube connection to "Alan Grill" still active
+- All 12 tabs functional
