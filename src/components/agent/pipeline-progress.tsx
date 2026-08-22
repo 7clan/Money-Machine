@@ -12,13 +12,16 @@ import {
 } from 'lucide-react'
 
 // ─── Pipeline Stages Config (matching page.tsx) ─────────────────────
+// IMPORTANT: hoverBg must be a literal static Tailwind class so the JIT
+// compiler can detect it. Dynamic class strings like `hover:${stage.bg}`
+// never get generated.
 const PIPELINE_STAGES = [
-  { key: 'ideas', label: 'Ideas', icon: Lightbulb, color: 'from-violet-500 to-purple-600', textColor: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30', hex: '#8b5cf6' },
-  { key: 'researched', label: 'Research', icon: Search, color: 'from-blue-500 to-cyan-600', textColor: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', hex: '#3b82f6' },
-  { key: 'scripted', label: 'Script', icon: PenTool, color: 'from-amber-500 to-orange-600', textColor: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', hex: '#f59e0b' },
-  { key: 'producing', label: 'Produce', icon: Clapperboard, color: 'from-emerald-500 to-green-600', textColor: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', hex: '#10b981' },
-  { key: 'reviewing', label: 'Review', icon: MessageSquare, color: 'from-rose-500 to-pink-600', textColor: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', hex: '#f43f5e' },
-  { key: 'uploaded', label: 'Upload', icon: CloudUpload, color: 'from-cyan-500 to-teal-600', textColor: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', hex: '#06b6d4' },
+  { key: 'ideas',      label: 'Ideas',   icon: Lightbulb,    color: 'from-violet-500 to-purple-600', textColor: 'text-violet-400',  bg: 'bg-violet-500/10',  border: 'border-violet-500/30',  hoverBg: 'hover:bg-violet-500/20',   hoverBorder: 'hover:border-violet-500/50',   hex: '#8b5cf6' },
+  { key: 'researched', label: 'Research', icon: Search,       color: 'from-blue-500 to-cyan-600',      textColor: 'text-blue-400',    bg: 'bg-blue-500/10',    border: 'border-blue-500/30',    hoverBg: 'hover:bg-blue-500/20',     hoverBorder: 'hover:border-blue-500/50',     hex: '#3b82f6' },
+  { key: 'scripted',  label: 'Script',   icon: PenTool,       color: 'from-amber-500 to-orange-600',   textColor: 'text-amber-400',   bg: 'bg-amber-500/10',   border: 'border-amber-500/30',   hoverBg: 'hover:bg-amber-500/20',    hoverBorder: 'hover:border-amber-500/50',    hex: '#f59e0b' },
+  { key: 'producing', label: 'Produce',  icon: Clapperboard,  color: 'from-emerald-500 to-green-600',  textColor: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', hoverBg: 'hover:bg-emerald-500/20',  hoverBorder: 'hover:border-emerald-500/50',  hex: '#10b981' },
+  { key: 'reviewing', label: 'Review',   icon: MessageSquare, color: 'from-rose-500 to-pink-600',      textColor: 'text-rose-400',    bg: 'bg-rose-500/10',    border: 'border-rose-500/30',   hoverBg: 'hover:bg-rose-500/20',     hoverBorder: 'hover:border-rose-500/50',     hex: '#f43f5e' },
+  { key: 'uploaded',  label: 'Upload',   icon: CloudUpload,   color: 'from-cyan-500 to-teal-600',      textColor: 'text-cyan-400',   bg: 'bg-cyan-500/10',    border: 'border-cyan-500/30',   hoverBg: 'hover:bg-cyan-500/20',     hoverBorder: 'hover:border-cyan-500/50',     hex: '#06b6d4' },
 ]
 
 // ─── Quick Action Labels ────────────────────────────────────────────
@@ -264,7 +267,7 @@ export function PipelineProgress({ pipelineCounts, onAction }: PipelineProgressP
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`w-full text-[11px] h-7 ${stage.border} ${stage.textColor} hover:${stage.bg}`}
+                  className={`w-full text-[11px] h-7 ${stage.border} ${stage.textColor} ${stage.hoverBg} ${stage.hoverBorder} hover:text-white transition-colors`}
                   onClick={() => onAction?.(stage.key)}
                 >
                   {QUICK_ACTIONS[stage.key]}

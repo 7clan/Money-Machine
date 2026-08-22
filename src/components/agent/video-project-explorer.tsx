@@ -843,9 +843,17 @@ function ProjectCard({
   const title = project.title || 'Untitled project'
 
   return (
-    <motion.button
-      type="button"
+    <motion.div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        // Keyboard accessibility — emulate button behavior (Enter / Space activate)
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
       className={cn(
@@ -1016,7 +1024,7 @@ function ProjectCard({
           <Play className="size-4 -rotate-0 shrink-0 self-center text-slate-600 transition-all group-hover:translate-x-0.5 group-hover:text-emerald-400" />
         )}
       </div>
-    </motion.button>
+    </motion.div>
   )
 }
 

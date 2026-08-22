@@ -248,6 +248,13 @@ export default function Dashboard() {
     'schedule-jobs': { label: 'Schedule Jobs', success: 'Recurring jobs scheduled', loading: 'Scheduling jobs…' },
     'review-strategy': { label: 'Review Strategy', success: 'Strategy review queued', loading: 'Reviewing strategy…' },
     'reset': { label: 'Reset Agent', success: 'Agent reset', loading: 'Resetting agent…' },
+    // Pipeline-stage buttons (in pipeline-progress.tsx)
+    'niche-research': { label: 'Generate Ideas', success: 'Idea generation started', loading: 'Researching niches & generating ideas…' },
+    'research':       { label: 'Research Topic', success: 'Topic research started',   loading: 'Researching the next topic…' },
+    'write-script':   { label: 'Write Script',   success: 'Script writing started',   loading: 'Writing the next script…' },
+    'produce':        { label: 'Produce Video',  success: 'Video production started', loading: 'Producing the next video…' },
+    'review':         { label: 'Quality Review', success: 'Quality review started',   loading: 'Running quality review…' },
+    'upload':         { label: 'Upload All',     success: 'Upload started',           loading: 'Uploading approved videos to YouTube…' },
   }
 
   const sendCommand = async (command: string, extra?: any) => {

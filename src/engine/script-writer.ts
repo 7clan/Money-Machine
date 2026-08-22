@@ -62,7 +62,7 @@ export async function writeScript(
     : ''
 
   const scriptResponse = await llm([
-    { role: 'system', content: `You are an expert YouTube script writer. Write an ORIGINAL script for this video.
+    { role: 'system', content: `You are an expert YouTube script writer and producer. Write an ORIGINAL script for this video.
 
 CRITICAL RULES:
 - NEVER copy wording from sources - write completely original content
@@ -80,6 +80,12 @@ CRITICAL RULES:
 - NO misleading urgency
 - If AI-generated content, note it clearly
 
+VISUAL DIRECTION (CRITICAL — the visualNotes field will be used verbatim as an image-generation prompt for an AI image model):
+- Each scene's visualNotes must be a CONCRETE, DESCRIBABLE visual — not abstract instructions like "show a chart" but a vivid scene like "an organized desk with a laptop showing code editor at sunset, warm light, books and coffee cup on the side, photorealistic, 50mm lens, shallow depth of field".
+- Include: subject, setting, lighting, mood, color palette, style (photorealistic / illustration / 3D render / flat design / isometric / etc.)
+- NO text in the image (no on-screen words, no signs, no UI labels). The video editor burns in the title separately.
+- Each scene should have a DISTINCT visual so the video feels dynamic — vary the angle, setting, or style between scenes.
+
 SCRIPT FORMAT - Return JSON:
 {
   "outline": "Section breakdown",
@@ -87,16 +93,16 @@ SCRIPT FORMAT - Return JSON:
   "callToAction": "The closing CTA",
   "scenes": [{
     "order": number,
-    "title": "Section title",
-    "description": "What happens visually",
-    "narrationText": "The spoken narration for this scene",
+    "title": "Section title (3-6 words)",
+    "description": "What happens in this scene (1 sentence)",
+    "narrationText": "The spoken narration for this scene (1-4 sentences, natural spoken language)",
     "visualType": "screenrecording|diagram|animation|chart|image|text|custom",
-    "visualNotes": "Detailed visual instructions for production",
+    "visualNotes": "Vivid image-generation prompt: subject + setting + lighting + mood + style + color palette. ~30-50 words. No text in image.",
     "duration": seconds
   }]
 }
 
-${isShort ? 'This is a YouTube Short (under 60 seconds). Deliver ONE complete useful idea with original narration.' : 'This is a long-form video. Target ~' + targetMinutes + ' minutes. Include chapters for timestamps.'}` },
+${isShort ? 'This is a YouTube Short (under 60 seconds). Deliver ONE complete useful idea with original narration across 3-5 quick scenes. Use vertical framing cues in visualNotes.' : 'This is a long-form video. Target ~' + targetMinutes + ' minutes. Use 8-14 scenes. Include chapter-style titles.'}` },
     { role: 'user', content: `Video Title: "${idea.title}"
 Video Type: ${idea.type}
 Niche: ${niche?.nicheName || 'General'}

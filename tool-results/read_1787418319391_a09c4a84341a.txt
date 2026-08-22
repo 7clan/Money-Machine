@@ -1,0 +1,709 @@
+     1→/**
+     2→ * Autonomous Agent - The main decision and execution loop.
+     3→ * 
+     4→ * This is the brain that runs the entire YouTube operation:
+     5→ * 1. Research niches → Select niche → Create strategy
+     6→ * 2. Select topic → Research → Write script
+     7→ * 3. Generate narration → Generate visuals → Render video
+     8→ * 4. Quality review → Upload → Schedule
+     9→ * 5. Collect analytics → Optimise strategy → Repeat
+    10→ */
+    11→
+    12→import { db } from '@/lib/db'
+    13→import { guardNotStopped, getOperatingMode, isStopped } from './emergency-stop'
+    14→import { researchNiches, getSelectedNiche } from './niche-research'
+    15→import { createChannelStrategy, getChannelStrategy } from './strategy'
+    16→import { researchTopic } from './research'
+    17→import { writeScript } from './script-writer'
+    18→import { renderVideo } from './video-renderer'
+    19→import { reviewVideo } from './quality-review'
+    20→import { uploadVideo, isYouTubeConnected } from './youtube-client'
+    21→import { llm } from './zai-provider'
+    22→import { triggerRerender, deriveRevisionNote, RETRY_MARKER } from './rerender'
+    23→
+    24→export interface AgentStatus {
+    25→  state: string
+    26→  currentJob: string | null
+    27→  operatingMode: string
+    28→  emergencyStop: boolean
+    29→  niche: string | null
+    30→  channelName: string | null
+    31→  pipeline: {
+    32→    ideas: number
+    33→    researched: number
+    34→    scripted: number
+    35→    producing: number
+    36→    reviewing: number
+    37→    approved: number
+    38→    uploaded: number
+    39→  }
+    40→  lastAction: string | null
+    41→  lastError: string | null
+    42→  nextAction: string | null
+    43→}
+    44→
+    45→/** Get current agent status */
+    46→export async function getAgentStatus(): Promise<AgentStatus> {
+    47→  const stopped = await isStopped()
+    48→  const mode = await getOperatingMode()
+    49→  const niche = await getSelectedNiche()
+    50→  const strategy = await getChannelStrategy()
+    51→  const channel = await db.channel.findFirst()
+    52→
+    53→  const currentState = await db.agentState.findUnique({ where: { key: 'agent_state' } })
+    54→  const currentJob = await db.agentState.findUnique({ where: { key: 'current_job' } })
+    55→  const lastAction = await db.agentState.findUnique({ where: { key: 'last_action' } })
+    56→  const lastError = await db.agentState.findUnique({ where: { key: 'last_error' } })
+    57→  const nextAction = await db.agentState.findUnique({ where: { key: 'next_action' } })
+    58→
+    59→  // Count pipeline items
+    60→  const ideas = await db.videoIdea.count({ where: { status: 'idea' } })
+    61→  const researched = await db.videoIdea.count({ where: { status: 'researched' } })
+    62→  const scripted = await db.videoIdea.count({ where: { status: 'scripted' } })
+    63→  const producing = await db.videoProject.count({ where: { status: { in: ['editing', 'rendering'] } } })
+    64→  const reviewing = await db.videoProject.count({ where: { status: 'review' } })
+    65→  const approved = await db.videoProject.count({ where: { status: 'approved' } })
+    66→  const uploaded = await db.upload.count({ where: { uploadStatus: 'completed' } })
+    67→
+    68→  return {
+    69→    state: currentState?.value || 'idle',
+    70→    currentJob: currentJob?.value || null,
+    71→    operatingMode: mode,
+    72→    emergencyStop: stopped,
+    73→    niche: niche?.nicheName || null,
+    74→    channelName: channel?.name || strategy?.channelName || null,
+    75→    pipeline: { ideas, researched, scripted, producing, reviewing, approved, uploaded },
+    76→    lastAction: lastAction?.value || null,
+    77→    lastError: lastError?.value || null,
+    78→    nextAction: nextAction?.value || null,
+    79→  }
+    80→}
+    81→
+    82→/** Set agent state values */
+    83→async function setAgentState(key: string, value: string) {
+    84→  await db.agentState.upsert({
+    85→    where: { key },
+    86→    create: { key, value },
+    87→    update: { value },
+    88→  })
+    89→}
+    90→
+    91→/** Categorize an action message into a semantic audit-log action type */
+    92→function categorizeAction(message: string): string {
+    93→  const m = message.toLowerCase()
+    94→  if (/(emergency stop|e-?stop|paused|resuming|agent start)/.test(m)) return 'emergency_stop'
+    95→  if (/(mode change|simulation mode|private production|autonomous)/.test(m)) return 'mode_change'
+    96→  if (/(upload|thumbnail upload|youtube)/.test(m)) return 'upload'
+    97→  if (/(quality review|review passed|review failed|fact check|originality|policy)/.test(m)) return 'metadata_update'
+    98→  if (/(render|video rendered|encoding)/.test(m)) return 'metadata_update'
+    99→  if (/(script|writing script)/.test(m)) return 'metadata_update'
+   100→  if (/(research|topic research|niche research)/.test(m)) return 'metadata_update'
+   101→  if (/(strategy|channel|pillar|niche)/.test(m)) return 'strategy_change'
+   102→  if (/(error|fail|failed)/.test(m)) return 'metadata_update'
+   103→  return 'metadata_update'
+   104→}
+   105→
+   106→/** Log an agent action with proper categorization, target, and structured details */
+   107→async function logAction(action: string, details?: string, target?: string) {
+   108→  await setAgentState('last_action', `${new Date().toISOString()}: ${action}`)
+   109→  const category = categorizeAction(action)
+   110→  // Store as JSON details so the UI can render structured info, but keep human-readable too
+   111→  const payload = {
+   112→    message: action,
+   113→    detail: details || null,
+   114→    ts: Date.now(),
+   115→  }
+   116→  await db.auditLog.create({
+   117→    data: {
+   118→      action: category,
+   119→      actor: 'agent',
+   120→      target: target || null,
+   121→      details: JSON.stringify(payload),
+   122→    },
+   123→  })
+   124→}
+   125→
+   126→// ─── Notification helper ───────────────────────────────────────────
+   127→// Persistence-aware wrapper. Failures are swallowed so a notification
+   128→// error never breaks the agent's main flow.
+   129→
+   130→type NotifType = 'success' | 'error' | 'warning' | 'info' | 'agent_event'
+   131→type NotifCategory = 'agent' | 'pipeline' | 'revenue' | 'system' | 'youtube'
+   132→
+   133→interface NotifyInput {
+   134→  type: NotifType
+   135→  category: NotifCategory
+   136→  title: string
+   137→  description?: string
+   138→  isImportant?: boolean
+   139→  targetId?: string
+   140→  targetType?: 'video_project' | 'upload' | 'idea' | 'job'
+   141→  actionLabel?: string
+   142→  actionTab?: string
+   143→}
+   144→
+   145→async function notify(input: NotifyInput): Promise<void> {
+   146→  try {
+   147→    await db.notification.create({
+   148→      data: {
+   149→        type: input.type,
+   150→        category: input.category,
+   151→        title: input.title.slice(0, 280),
+   152→        description: input.description ? input.description.slice(0, 1024) : null,
+   153→        isImportant: input.isImportant === true,
+   154→        targetId: input.targetId ?? null,
+   155→        targetType: input.targetType ?? null,
+   156→        actionLabel: input.actionLabel ?? null,
+   157→        actionTab: input.actionTab ?? null,
+   158→      },
+   159→    })
+   160→  } catch (e) {
+   161→    // Never let notification persistence break the agent.
+   162→    console.error('[agent.notify] failed to persist notification:', e)
+   163→  }
+   164→}
+   165→
+   166→// ============================================
+   167→// PHASE 1: Initial Setup
+   168→// ============================================
+   169→
+   170→/** Run the initial niche research phase */
+   171→export async function phase1_nicheResearch(): Promise<void> {
+   172→  await guardNotStopped()
+   173→  await setAgentState('agent_state', 'researching_niches')
+   174→  await setAgentState('current_job', 'niche_research')
+   175→  await setAgentState('next_action', 'Analyzing 30+ YouTube niches...')
+   176→
+   177→  try {
+   178→    logAction('Starting niche research')
+   179→    const niches = await researchNiches()
+   180→    const best = niches[0]
+   181→    
+   182→    logAction(`Niche research complete. Selected: ${best.nicheName} (score: ${best.compositeScore.toFixed(2)})`)
+   183→    await notify({
+   184→      type: 'success',
+   185→      category: 'pipeline',
+   186→      title: 'Niche selected',
+   187→      description: `${best.nicheName} — score ${best.compositeScore.toFixed(2)}`,
+   188→      actionTab: 'strategy',
+   189→    })
+   190→    await setAgentState('next_action', 'Create channel strategy')
+   191→  } catch (e: any) {
+   192→    await setAgentState('last_error', e.message)
+   193→    throw e
+   194→  }
+   195→}
+   196→
+   197→/** Run the strategy creation phase */
+   198→export async function phase2_createStrategy(): Promise<void> {
+   199→  await guardNotStopped()
+   200→  await setAgentState('agent_state', 'creating_strategy')
+   201→  await setAgentState('current_job', 'strategy_creation')
+   202→
+   203→  try {
+   204→    logAction('Creating channel strategy')
+   205→    const strategy = await createChannelStrategy()
+   206→    
+   207→    logAction(`Strategy created: "${strategy.channelName}" with ${strategy.contentPillars.length} pillars, ${strategy.first30VideoIdeas.length} video ideas, ${strategy.first60ShortIdeas.length} short ideas`)
+   208→    await notify({
+   209→      type: 'success',
+   210→      category: 'pipeline',
+   211→      title: 'Channel strategy created',
+   212→      description: `${strategy.channelName} — ${strategy.contentPillars.length} pillars, ${strategy.first30VideoIdeas.length} long-form ideas`,
+   213→      actionTab: 'strategy',
+   214→    })
+   215→    await setAgentState('next_action', 'Select and research first topic')
+   216→  } catch (e: any) {
+   217→    await setAgentState('last_error', e.message)
+   218→    throw e
+   219→  }
+   220→}
+   221→
+   222→// ============================================
+   223→// PHASE 2: Content Production Cycle
+   224→// ============================================
+   225→
+   226→/** Select the next best topic to produce */
+   227→async function selectNextTopic(): Promise<string | null> {
+   228→  // Priority: researched > ideas, longform first, best composite score
+   229→  const researched = await db.videoIdea.findFirst({
+   230→    where: { status: 'researched' },
+   231→    orderBy: { compositeScore: 'desc' },
+   232→  })
+   233→  if (researched) return researched.id
+   234→
+   235→  // Pick the best idea that hasn't been worked on
+   236→  const idea = await db.videoIdea.findFirst({
+   237→    where: { status: 'idea' },
+   238→    orderBy: [
+   239→      { type: 'desc' }, // longform first
+   240→      { compositeScore: 'desc' },
+   241→    ],
+   242→  })
+   243→  return idea?.id || null
+   244→}
+   245→
+   246→/** Research a topic */
+   247→export async function phase3_researchTopic(videoIdeaId?: string): Promise<string> {
+   248→  await guardNotStopped()
+   249→  await setAgentState('agent_state', 'researching_topic')
+   250→  await setAgentState('current_job', `research:${videoIdeaId || 'next'}`)
+   251→
+   252→  const ideaId = videoIdeaId || await selectNextTopic()
+   253→  if (!ideaId) throw new Error('No video ideas available. Run strategy creation first.')
+   254→
+   255→  try {
+   256→    logAction(`Researching topic: ${ideaId}`)
+   257→    await researchTopic(ideaId)
+   258→    logAction(`Topic research complete: ${ideaId}`)
+   259→    await setAgentState('next_action', 'Write script')
+   260→    return ideaId
+   261→  } catch (e: any) {
+   262→    await setAgentState('last_error', e.message)
+   263→    throw e
+   264→  }
+   265→}
+   266→
+   267→/** Write a script for a topic */
+   268→export async function phase4_writeScript(videoIdeaId: string): Promise<string> {
+   269→  await guardNotStopped()
+   270→  await setAgentState('agent_state', 'writing_script')
+   271→  await setAgentState('current_job', `script:${videoIdeaId}`)
+   272→
+   273→  try {
+   274→    logAction(`Writing script for: ${videoIdeaId}`)
+   275→    const result = await writeScript(videoIdeaId)
+   276→    logAction(`Script written: ${result.wordCount} words, ~${result.estimatedMinutes.toFixed(1)} minutes`)
+   277→    await setAgentState('next_action', 'Produce video')
+   278→    return videoIdeaId
+   279→  } catch (e: any) {
+   280→    await setAgentState('last_error', e.message)
+   281→    throw e
+   282→  }
+   283→}
+   284→
+   285→/** Produce a complete video (render) */
+   286→export async function phase5_produceVideo(videoIdeaId: string): Promise<string> {
+   287→  await guardNotStopped()
+   288→  await setAgentState('agent_state', 'producing_video')
+   289→  await setAgentState('current_job', `produce:${videoIdeaId}`)
+   290→
+   291→  const idea = await db.videoIdea.findUnique({
+   292→    where: { id: videoIdeaId },
+   293→    include: { scripts: true },
+   294→  })
+   295→  if (!idea) throw new Error(`Idea ${videoIdeaId} not found`)
+   296→
+   297→  // Create video project if not exists
+   298→  let project = await db.videoProject.findFirst({
+   299→    where: { videoIdeaId, status: { in: ['planning', 'editing', 'rendering'] } },
+   300→  })
+   301→
+   302→  if (!project) {
+   303→    project = await db.videoProject.create({
+   304→      data: {
+   305→        videoIdeaId,
+   306→        title: idea.title,
+   307→        status: 'planning',
+   308→      },
+   309→    })
+   310→  }
+   311→
+   312→  // Update idea status
+   313→  await db.videoIdea.update({
+   314→    where: { id: videoIdeaId },
+   315→    data: { status: 'producing' },
+   316→  })
+   317→
+   318→  try {
+   319→    logAction(`Rendering video: ${idea.title}`)
+   320→    const result = await renderVideo(project.id)
+   321→    logAction(`Video rendered: ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB`)
+   322→    await notify({
+   323→      type: 'success',
+   324→      category: 'pipeline',
+   325→      title: 'Video produced',
+   326→      description: `${idea.title} — ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB`,
+   327→      targetId: project.id,
+   328→      targetType: 'video_project',
+   329→      actionLabel: 'View pipeline',
+   330→      actionTab: 'pipeline',
+   331→    })
+   332→    await setAgentState('next_action', 'Quality review')
+   333→    return project.id
+   334→  } catch (e: any) {
+   335→    await setAgentState('last_error', e.message)
+   336→    await db.videoProject.update({
+   337→      where: { id: project.id },
+   338→      data: { status: 'failed' },
+   339→    })
+   340→    throw e
+   341→  }
+   342→}
+   343→
+   344→/** Run quality review */
+   345→export async function phase6_qualityReview(videoProjectId: string): Promise<string> {
+   346→  await guardNotStopped()
+   347→  await setAgentState('agent_state', 'reviewing')
+   348→  await setAgentState('current_job', `review:${videoProjectId}`)
+   349→
+   350→  try {
+   351→    logAction(`Quality review: ${videoProjectId}`)
+   352→    const result = await reviewVideo(videoProjectId)
+   353→    
+   354→    if (result.overallPassed) {
+   355→      logAction(`Quality review PASSED for ${videoProjectId}`)
+   356→      await notify({
+   357→        type: 'success',
+   358→        category: 'pipeline',
+   359→        title: 'Video approved',
+   360→        description: 'Quality review passed — ready for upload.',
+   361→        targetId: videoProjectId,
+   362→        targetType: 'video_project',
+   363→        actionLabel: 'View pipeline',
+   364→        actionTab: 'pipeline',
+   365→      })
+   366→      await setAgentState('next_action', 'Upload to YouTube')
+   367→    } else {
+   368→      logAction(`Quality review FAILED: ${result.issues.join(', ')}`)
+   369→
+   370→      // ── Auto-retry hook ────────────────────────────────────────────
+   371→      // If this is the FIRST failure on this project (no RETRY_MARKER in
+   372→      // editorNotes yet), automatically trigger a re-render with a
+   373→      // revisionNote derived from the failed checks. Capped at 1 retry
+   374→      // per project — second failures stay as 'failed'.
+   375→      const project = await db.videoProject.findUnique({
+   376→        where: { id: videoProjectId },
+   377→        select: { editorNotes: true },
+   378→      })
+   379→      const alreadyRetried = !!project?.editorNotes?.includes(RETRY_MARKER)
+   380→
+   381→      if (!alreadyRetried) {
+   382→        const revisionNote = deriveRevisionNote(result.issues)
+   383→        logAction(`Auto-retry: re-rendering ${videoProjectId} with revised script (attempt 1)`)
+   384→        await notify({
+   385→          type: 'warning',
+   386→          category: 'pipeline',
+   387→          title: 'Auto-retry: re-rendering video',
+   388→          description: `First review failed — generating a revised script addressing: ${result.issues.slice(0, 2).join(' · ')}`,
+   389→          isImportant: true,
+   390→          targetId: videoProjectId,
+   391→          targetType: 'video_project',
+   392→          actionLabel: 'View pipeline',
+   393→          actionTab: 'pipeline',
+   394→        })
+   395→        try {
+   396→          const rerenderResult = await triggerRerender(videoProjectId, revisionNote, true)
+   397→          logAction(`Re-render started (new script ${rerenderResult.newScriptId})`)
+   398→          await setAgentState('next_action', 'Re-rendering with revised script')
+   399→          return videoProjectId
+   400→        } catch (rerenderErr: any) {
+   401→          // If the auto-retry setup itself fails, fall through to the
+   402→          // "leave as failed" path so the operator can intervene.
+   403→          logAction(`Auto-retry failed: ${rerenderErr?.message || rerenderErr}`)
+   404→          await notify({
+   405→            type: 'error',
+   406→            category: 'pipeline',
+   407→            title: 'Auto-retry failed',
+   408→            description: rerenderErr?.message || 'Could not start re-render — manual intervention required.',
+   409→            isImportant: true,
+   410→            targetId: videoProjectId,
+   411→            targetType: 'video_project',
+   412→            actionLabel: 'View pipeline',
+   413→            actionTab: 'pipeline',
+   414→          })
+   415→        }
+   416→      } else {
+   417→        logAction(`Auto-retry cap reached — leaving ${videoProjectId} as failed`)
+   418→      }
+   419→
+   420→      await notify({
+   421→        type: 'error',
+   422→        category: 'pipeline',
+   423→        title: 'Video failed review',
+   424→        description: result.issues.slice(0, 4).join(' · ') || 'Quality checks did not pass',
+   425→        isImportant: true,
+   426→        targetId: videoProjectId,
+   427→        targetType: 'video_project',
+   428→        actionLabel: 'View pipeline',
+   429→        actionTab: 'pipeline',
+   430→      })
+   431→      await setAgentState('next_action', `Fix issues: ${result.issues[0]}`)
+   432→    }
+   433→    return videoProjectId
+   434→  } catch (e: any) {
+   435→    await setAgentState('last_error', e.message)
+   436→    throw e
+   437→  }
+   438→}
+   439→
+   440→/** Upload video to YouTube */
+   441→export async function phase7_upload(videoProjectId: string): Promise<string> {
+   442→  await guardNotStopped()
+   443→  const mode = await getOperatingMode()
+   444→  
+   445→  if (mode === 'simulation') {
+   446→    logAction('Simulation mode - skipping upload')
+   447→    await setAgentState('next_action', 'Select next topic')
+   448→    return videoProjectId
+   449→  }
+   450→
+   451→  await setAgentState('agent_state', 'uploading')
+   452→  await setAgentState('current_job', `upload:${videoProjectId}`)
+   453→
+   454→  const project = await db.videoProject.findUnique({
+   455→    where: { id: videoProjectId },
+   456→    include: { videoIdea: true },
+   457→  })
+   458→  if (!project) throw new Error(`Project ${videoProjectId} not found`)
+   459→
+   460→  const ytConnected = await isYouTubeConnected()
+   461→  
+   462→  if (!ytConnected) {
+   463→    logAction('YouTube not connected - video approved but awaiting YouTube connection')
+   464→    await notify({
+   465→      type: 'warning',
+   466→      category: 'youtube',
+   467→      title: 'YouTube not connected',
+   468→      description: 'Video approved and queued — connect YouTube in Settings to upload.',
+   469→      isImportant: true,
+   470→      targetId: videoProjectId,
+   471→      targetType: 'video_project',
+   472→      actionLabel: 'Open Settings',
+   473→      actionTab: 'settings',
+   474→    })
+   475→    // Not an error — just a setup step. Don't set last_error.
+   476→    await setAgentState('next_action', 'Connect YouTube account, or produce next video')
+   477→    await setAgentState('agent_state', 'ready')
+   478→    await setAgentState('current_job', '')
+   479→    return videoProjectId
+   480→  }
+   481→
+   482→  try {
+   483→    logAction(`Uploading: ${project.title}`)
+   484→    
+   485→    const niche = await getSelectedNiche()
+   486→    const result = await uploadVideo(
+   487→      videoProjectId,
+   488→      project.videoFilePath!,
+   489→      {
+   490→        title: project.title,
+   491→        description: `An original educational video about ${project.title}. ${niche?.nicheName || ''}`,
+   492→        tags: [niche?.nicheName || 'education', 'tutorial', project.videoIdea.type],
+   493→        privacy: 'private', // Always private first
+   494→      }
+   495→    )
+   496→
+   497→    logAction(`Uploaded: YouTube ID ${result.youtubeVideoId}`)
+   498→    await notify({
+   499→      type: 'success',
+   500→      category: 'youtube',
+   501→      title: 'Video uploaded',
+   502→      description: `YouTube ID ${result.youtubeVideoId} — privacy: private`,
+   503→      targetId: videoProjectId,
+   504→      targetType: 'video_project',
+   505→      actionLabel: 'View pipeline',
+   506→      actionTab: 'pipeline',
+   507→    })
+   508→    
+   509→    // Upload thumbnail
+   510→    if (project.thumbnailPath) {
+   511→      try {
+   512→        const { uploadThumbnail } = await import('./youtube-client')
+   513→        await uploadThumbnail(result.youtubeVideoId, project.thumbnailPath)
+   514→        logAction('Thumbnail uploaded')
+   515→      } catch (e: any) {
+   516→        logAction(`Thumbnail upload failed: ${e.message}`)
+   517→        await notify({
+   518→          type: 'warning',
+   519→          category: 'youtube',
+   520→          title: 'Thumbnail upload failed',
+   521→          description: e.message?.slice(0, 200) || 'Unknown thumbnail upload error',
+   522→          isImportant: true,
+   523→          targetId: videoProjectId,
+   524→          targetType: 'video_project',
+   525→        })
+   526→      }
+   527→    }
+   528→
+   529→    await setAgentState('next_action', 'Select next topic')
+   530→    return videoProjectId
+   531→  } catch (e: any) {
+   532→    // Upload failed (e.g. token refresh error, network issue) — don't crash the agent
+   533→    const errMsg = e?.message || 'Upload failed'
+   534→    logAction(`Upload failed: ${errMsg}`)
+   535→    await setAgentState('last_error', errMsg)
+   536→    await setAgentState('agent_state', 'ready')
+   537→    await setAgentState('current_job', '')
+   538→    await setAgentState('next_action', 'Upload failed — check YouTube connection, or produce next video')
+   539→    await notify({
+   540→      type: 'error',
+   541→      category: 'youtube',
+   542→      title: 'Upload failed',
+   543→      description: errMsg.slice(0, 200),
+   544→      isImportant: true,
+   545→      targetId: videoProjectId,
+   546→      targetType: 'video_project',
+   547→      actionLabel: 'Open Settings',
+   548→      actionTab: 'settings',
+   549→    })
+   550→    return videoProjectId
+   551→  }
+   552→}
+   553→
+   554→// ============================================
+   555→// FULL AUTONOMOUS CYCLE
+   556→// ============================================
+   557→
+   558→/** Run the complete initial setup (niche research + strategy) */
+   559→export async function runInitialSetup(): Promise<void> {
+   560→  await guardNotStopped()
+   561→  
+   562→  // Check if already done
+   563→  const niche = await getSelectedNiche()
+   564→  const strategy = await getChannelStrategy()
+   565→
+   566→  if (!niche) {
+   567→    await phase1_nicheResearch()
+   568→  }
+   569→  
+   570→  if (!strategy) {
+   571→    await phase2_createStrategy()
+   572→  }
+   573→
+   574→  await setAgentState('agent_state', 'ready')
+   575→  await setAgentState('next_action', 'Produce first video')
+   576→}
+   577→
+   578→/** Produce the next video (full pipeline) */
+   579→export async function produceNextVideo(): Promise<string | null> {
+   580→  await guardNotStopped()
+   581→  
+   582→  // Ensure setup is done
+   583→  const niche = await getSelectedNiche()
+   584→  if (!niche) {
+   585→    await runInitialSetup()
+   586→  }
+   587→
+   588→  // Find work in progress or select new topic
+   589→  // Check for items at each pipeline stage
+   590→  const needsResearch = await db.videoIdea.findFirst({ where: { status: 'idea' } })
+   591→  const needsScript = await db.videoIdea.findFirst({ where: { status: 'researched' } })
+   592→  const needsProduction = await db.videoIdea.findFirst({ where: { status: 'scripted' } })
+   593→  const needsReview = await db.videoProject.findFirst({ where: { status: 'review' } })
+   594→  const needsUpload = await db.videoProject.findFirst({ where: { status: 'approved' } })
+   595→
+   596→  try {
+   597→    // Continue the pipeline from wherever it's needed
+   598→    if (needsUpload) {
+   599→      return await phase7_upload(needsUpload.id)
+   600→    }
+   601→    
+   602→    if (needsReview) {
+   603→      return await phase6_qualityReview(needsReview.id)
+   604→    }
+   605→
+   606→    if (needsProduction) {
+   607→      const projectId = await phase5_produceVideo(needsProduction.id)
+   608→      await phase6_qualityReview(projectId)
+   609→      const project = await db.videoProject.findUnique({ where: { id: projectId } })
+   610→      if (project?.isApproved) {
+   611→        return await phase7_upload(projectId)
+   612→      }
+   613→      return projectId
+   614→    }
+   615→
+   616→    if (needsScript) {
+   617→      await phase4_writeScript(needsScript.id)
+   618→      const projectId = await phase5_produceVideo(needsScript.id)
+   619→      await phase6_qualityReview(projectId)
+   620→      const project = await db.videoProject.findUnique({ where: { id: projectId } })
+   621→      if (project?.isApproved) {
+   622→        return await phase7_upload(projectId)
+   623→      }
+   624→      return projectId
+   625→    }
+   626→
+   627→    if (needsResearch) {
+   628→      await phase3_researchTopic(needsResearch.id)
+   629→      await phase4_writeScript(needsResearch.id)
+   630→      const projectId = await phase5_produceVideo(needsResearch.id)
+   631→      await phase6_qualityReview(projectId)
+   632→      const project = await db.videoProject.findUnique({ where: { id: projectId } })
+   633→      if (project?.isApproved) {
+   634→        return await phase7_upload(projectId)
+   635→      }
+   636→      return projectId
+   637→    }
+   638→
+   639→    // No work available
+   640→    await setAgentState('agent_state', 'ready')
+   641→    await setAgentState('current_job', '')
+   642→    await setAgentState('next_action', 'All pipeline items processed. Click "Produce Next" to continue.')
+   643→    return null
+   644→  } catch (e: any) {
+   645→    // Non-upload errors (research, script, render, review) — recover gracefully
+   646→    const errMsg = e?.message || 'Pipeline step failed'
+   647→    logAction(`Pipeline error: ${errMsg}`)
+   648→    await setAgentState('last_error', errMsg)
+   649→    await setAgentState('agent_state', 'ready')
+   650→    await setAgentState('current_job', '')
+   651→    await setAgentState('next_action', `Error: ${errMsg.slice(0, 80)}. Retry or check settings.`)
+   652→    await notify({
+   653→      type: 'error',
+   654→      category: 'pipeline',
+   655→      title: 'Pipeline step failed',
+   656→      description: errMsg.slice(0, 200),
+   657→      isImportant: true,
+   658→    })
+   659→    return null
+   660→  }
+   661→}
+   662→
+   663→/** Run the full autonomous cycle (setup + first video) */
+   664→export async function runAutonomousCycle(): Promise<void> {
+   665→  await guardNotStopped()
+   666→  await setAgentState('agent_state', 'running')
+   667→  
+   668→  try {
+   669→    // Phase 1: Setup if needed
+   670→    await runInitialSetup()
+   671→    
+   672→    // Phase 2: Produce first video
+   673→    await produceNextVideo()
+   674→    
+   675→    await setAgentState('agent_state', 'idle')
+   676→    await setAgentState('current_job', '')
+   677→    logAction('Autonomous cycle complete')
+   678→  } catch (e: any) {
+   679→    const errMsg = e?.message || 'Cycle failed'
+   680→    logAction(`Cycle error: ${errMsg}`)
+   681→    await setAgentState('last_error', errMsg)
+   682→    await setAgentState('agent_state', 'ready')
+   683→    await setAgentState('current_job', '')
+   684→    await setAgentState('next_action', `Cycle error: ${errMsg.slice(0, 80)}. Retry from dashboard.`)
+   685→    throw e
+   686→  }
+   687→}
+   688→
+   689→/** Start the autonomous agent */
+   690→export async function startAgent(): Promise<void> {
+   691→  await guardNotStopped()
+   692→  await setAgentState('agent_state', 'starting')
+   693→  logAction('Agent starting')
+   694→  await runAutonomousCycle()
+   695→}
+   696→
+   697→/** Pause the agent */
+   698→export async function pauseAgent(): Promise<void> {
+   699→  await setAgentState('agent_state', 'paused')
+   700→  logAction('Agent paused')
+   701→}
+   702→
+   703→/** Resume the agent */
+   704→export async function resumeAgent(): Promise<void> {
+   705→  await setAgentState('agent_state', 'resuming')
+   706→  logAction('Agent resuming')
+   707→  await produceNextVideo()
+   708→}
+   709→
