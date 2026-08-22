@@ -1,0 +1,2426 @@
+# MONEY MACHINE V3 — REBUILD THE CONTENT ENGINE AROUND REAL YOUTUBE PRODUCTION
+
+You are working inside the EXISTING MONEY MACHINE repository with filesystem, terminal, browser, and execution access.
+
+The application already has working infrastructure, UI, pipeline stages, YouTube connectivity, and existing video-generation code.
+
+Your job is **NOT** to rebuild the dashboard.
+
+Your job is to **replace the weak content-generation philosophy with a genuinely competent autonomous YouTube production system.**
+
+---
+
+# THE CURRENT PROBLEM
+
+The current generation pipeline effectively does:
+
+```text
+topic
+→ generic AI script
+→ several scenes
+→ one AI image per scene
+→ Ken Burns zoom
+→ crossfade
+→ captions
+→ AI voice
+→ export MP4
+```
+
+This technically creates a video.
+
+It does **NOT** create a good YouTube video.
+
+The result looks like generic AI-generated slideshow content.
+
+Do not improve this by merely adding:
+
+```text
+more transitions
+more zoom
+more captions
+more AI images
+more lower thirds
+more sound effects
+```
+
+That is polishing the wrong architecture.
+
+The entire production reasoning system must change.
+
+---
+
+# PRIMARY OBJECTIVE
+
+The system should behave like:
+
+```text
+researcher
++
+YouTube strategist
++
+writer
++
+creative director
++
+visual researcher
++
+motion designer
++
+video editor
++
+sound designer
++
+thumbnail designer
++
+analytics strategist
+```
+
+while software executes repetitive operations automatically.
+
+The ultimate quality test is:
+
+> Would a normal viewer voluntarily continue watching this video?
+
+NOT:
+
+> Did FFmpeg successfully create an MP4?
+
+---
+
+# DO NOT COPY OTHER CHANNELS
+
+Study successful creators to understand principles.
+
+Do NOT clone their branding, exact editing style, scripts, thumbnails, or creative identity.
+
+Use channels such as these only as workflow references:
+
+```text
+Johnny Harris
+LEMMiNO
+Nexpo
+Veritasium
+MagnatesMedia
+How Money Works
+Kurzgesagt
+Zack D. Films
+successful educational/documentary/Shorts channels
+```
+
+Extract:
+
+```text
+research philosophy
+storytelling patterns
+editing density
+hook construction
+visual reasoning
+asset diversity
+pacing
+thumbnail/title relationships
+production organization
+```
+
+Then create an ORIGINAL channel identity.
+
+---
+
+# NON-NEGOTIABLE PRINCIPLE
+
+## FORMAT FOLLOWS CONTENT
+
+The system must never force every subject into the same editing template.
+
+These should look fundamentally different:
+
+```text
+How Nokia Lost the Smartphone War
+
+7 Windows Settings Worth Changing
+
+The Town That Disappeared Overnight
+
+Why SpongeBob's Early Seasons Feel Different
+
+How Roman Apartments Actually Worked
+
+What Happens When a Plane Loses Both Engines
+
+The Startup That Burned $2 Billion
+
+A Strange Fact About Sharks
+```
+
+If all of those look like:
+
+```text
+AI picture
+→ zoom
+→ subtitle
+→ AI picture
+→ zoom
+```
+
+the system has FAILED.
+
+---
+
+# PHASE 1 — AUDIT THE EXISTING PIPELINE
+
+Before changing anything:
+
+inspect the repository.
+
+Identify:
+
+```text
+idea generation
+research
+topic scoring
+script generation
+scene generation
+image generation
+video generation
+TTS
+audio
+FFmpeg
+thumbnail engine
+quality review
+YouTube integration
+analytics
+scheduler
+database models
+existing asset storage
+```
+
+Run the current generation system.
+
+Generate one CURRENT video.
+
+Watch/inspect it.
+
+Document internally exactly why it feels bad.
+
+Examples:
+
+```text
+generic narration
+visual does not prove narration
+AI stills dominate
+shot length repetitive
+visual style repetitive
+no actual evidence
+poor music
+poor voice performance
+generic intro
+weak hook
+fake-looking motion
+random B-roll
+lack of story
+```
+
+Do not assume.
+
+Inspect the actual output.
+
+---
+
+# PHASE 2 — REBUILD THE PIPELINE
+
+Replace:
+
+```text
+TOPIC
+→ SCRIPT
+→ SCENES
+→ IMAGES
+→ VIDEO
+```
+
+with:
+
+```text
+TOPIC DISCOVERY
+        ↓
+REFERENCE RESEARCH
+        ↓
+ANGLE DISCOVERY
+        ↓
+FORMAT SELECTION
+        ↓
+REPORTING BRIEF
+        ↓
+RESEARCH PACK
+        ↓
+STORY ARCHITECTURE
+        ↓
+VISUAL SCRIPT
+        ↓
+PAPER EDIT
+        ↓
+ROUGH CUT
+        ↓
+CRITIQUE
+        ↓
+ASSET PLAN
+        ↓
+ASSET ACQUISITION
+        ↓
+EDIT DECISION LIST
+        ↓
+FINE CUT
+        ↓
+SOUND DESIGN
+        ↓
+QUALITY REVIEW
+        ↓
+THUMBNAIL/TITLE
+        ↓
+PRIVATE OUTPUT
+        ↓
+PUBLISH
+        ↓
+ANALYTICS
+        ↓
+LEARN
+```
+
+---
+
+# PHASE 3 — CREATE VIDEO ARCHETYPES
+
+Implement an ArchetypeRouter.
+
+At minimum support:
+
+```text
+DOCUMENTARY
+VIDEO_ESSAY
+BUSINESS_CASE_STUDY
+HISTORY_DOCUMENTARY
+SCIENCE_EXPLAINER
+TECH_EXPLAINER
+SCREEN_TUTORIAL
+PRODUCT_COMPARISON
+COMMENTARY
+MEDIA_ANALYSIS
+STORY_MYSTERY
+LIST_ENTERTAINMENT
+DATA_STORY
+GAMEPLAY
+SHORT_FACT
+SHORT_STORY
+SHORT_COMMENTARY
+SHORT_VISUAL_SPECTACLE
+```
+
+The AI may create new archetypes.
+
+Each archetype gets different:
+
+```text
+story structure
+average shot rhythm
+visual priorities
+asset types
+graphics
+caption style
+music style
+transition philosophy
+hook strategy
+narration tone
+ending structure
+```
+
+There must NOT be one universal renderer style.
+
+---
+
+# PHASE 4 — RESEARCH REAL YOUTUBE BEFORE SELECTING TOPICS
+
+The system should not ask GLM:
+
+> What topic should I make?
+
+with no external evidence.
+
+Research real current YouTube performance.
+
+For potential subjects collect approximately:
+
+```text
+10–30 relevant videos
+```
+
+where practical.
+
+Store:
+
+```text
+video ID
+channel
+title
+thumbnail
+views
+publish date
+duration
+description
+available transcript
+channel subscriber count where available
+related topic
+```
+
+Calculate internal signals:
+
+```text
+views/day
+views relative to channel size
+views relative to channel baseline
+topic recurrence
+topic age
+duration cluster
+competition
+novelty
+search opportunity
+```
+
+Find **breakout videos**.
+
+Example:
+
+A channel normally receives:
+
+```text
+50K–100K views
+```
+
+but one topic receives:
+
+```text
+2.8M views
+```
+
+That is more useful strategically than blindly copying the biggest channel in the niche.
+
+---
+
+# PHASE 5 — SEARCH OUTSIDE YOUTUBE
+
+For every serious idea, research relevant web sources.
+
+Depending on topic:
+
+```text
+official websites
+government sources
+academic literature
+news publications
+company filings
+technical documentation
+archives
+public datasets
+Reddit discussions
+specialist forums
+Stack Overflow
+GitHub
+community discussions
+```
+
+Reddit/community material should be treated as:
+
+```text
+audience sentiment
+questions
+pain points
+opinions
+anecdotes
+```
+
+not authoritative factual evidence unless independently verified.
+
+---
+
+# PHASE 6 — CREATE A REPORTING BRIEF
+
+Before scripting create:
+
+```text
+reporting_brief.json
+```
+
+Include:
+
+```text
+subject
+angle
+central question
+viewer promise
+why now
+target viewer
+what viewer probably already knows
+what is surprising
+main conflict
+main payoff
+required evidence
+possible visual opportunities
+risks
+sources
+```
+
+Example:
+
+```text
+SUBJECT:
+Nokia
+
+ANGLE:
+How the world's dominant phone company collapsed so quickly.
+
+CENTRAL QUESTION:
+How did a company controlling almost half of the mobile market lose its position within only a few years?
+
+VIEWER PROMISE:
+By the end, the viewer understands the combination of technology, organizational decisions, and market shifts that caused the collapse.
+
+VISUAL OPPORTUNITIES:
+market-share charts
+old Nokia ads
+phone models
+executive photos
+iPhone launch footage where appropriate
+Symbian UI
+news headlines
+timeline animation
+```
+
+---
+
+# PHASE 7 — SUBJECT ≠ ANGLE
+
+Do not make generic topics.
+
+Separate:
+
+```text
+SUBJECT
+```
+
+from:
+
+```text
+ANGLE
+```
+
+Example:
+
+BAD:
+
+```text
+Roman Concrete
+```
+
+WEAK:
+
+```text
+How Roman Concrete Was Made
+```
+
+STRONGER:
+
+```text
+Why Roman Concrete Can Get Stronger After 2,000 Years
+```
+
+Another:
+
+```text
+SUBJECT:
+Nokia
+
+WEAK:
+History of Nokia
+
+STRONGER:
+How Nokia Lost the Smartphone War
+```
+
+The system should generate many angles before choosing one.
+
+---
+
+# PHASE 8 — IDEA FUNNEL
+
+Do not produce the first idea GLM invents.
+
+Use a funnel similar to:
+
+```text
+100 raw concepts
+↓
+50 potentially interesting
+↓
+25 strong angles
+↓
+15 with strong visual potential
+↓
+10 with compelling viewer promise
+↓
+5 feasible/monetizable
+↓
+1–3 production candidates
+```
+
+Cheap reasoning should eliminate bad concepts before expensive video generation.
+
+Score:
+
+```text
+viewer curiosity
+market evidence
+novelty
+visual potential
+story potential
+production feasibility
+competition
+monetization potential
+evergreen value
+channel fit
+```
+
+---
+
+# PHASE 9 — REFERENCE BOARD
+
+For each production candidate create:
+
+```text
+reference_board.json
+```
+
+Use approximately 3–8 relevant videos.
+
+For each:
+
+```text
+concept
+opening mechanism
+story structure
+duration
+visual grammar
+editing density
+thumbnail concept
+title structure
+what works
+what should NOT be copied
+```
+
+References are inspiration and research.
+
+Never reproduce another creator's script or design.
+
+---
+
+# PHASE 10 — STORY FIRST
+
+Scripts must be stories, arguments, demonstrations, or experiences.
+
+Not Wikipedia articles read aloud.
+
+Ban generic AI openings such as:
+
+```text
+Welcome back
+In today's video
+Today we are going to
+Let's dive in
+Without further ado
+You won't believe
+Here are five reasons
+In conclusion
+```
+
+unless they genuinely fit the format.
+
+Open with something that creates a question.
+
+Possible mechanisms:
+
+```text
+contradiction
+consequence
+mystery
+visual event
+surprising fact
+character conflict
+problem
+before/after
+experiment
+unexpected result
+```
+
+Example:
+
+BAD:
+
+```text
+Today we're discussing Nokia.
+```
+
+BETTER:
+
+```text
+In 2007, Nokia sold nearly half of the world's mobile phones.
+
+Six years later, its phone business was effectively finished.
+
+How does the biggest phone company on Earth collapse that quickly?
+```
+
+---
+
+# PHASE 11 — VIEWER QUESTIONS
+
+The story engine must continuously understand:
+
+> What question is currently inside the viewer's head?
+
+Every section should:
+
+```text
+answer one question
+while naturally creating another
+```
+
+Example:
+
+```text
+HOOK:
+How did Nokia collapse?
+
+SECTION 1 ANSWERS:
+How dominant was Nokia?
+
+NEW QUESTION:
+If it was this dominant, what changed?
+
+SECTION 2 ANSWERS:
+The smartphone transition.
+
+NEW QUESTION:
+Why couldn't Nokia respond?
+
+SECTION 3...
+```
+
+This prevents article-like scripts.
+
+---
+
+# PHASE 12 — STORY BEATS, NOT FIXED SCENES
+
+Remove the assumption that videos have 8 or 10 giant “scenes.”
+
+Create semantic beats.
+
+Schema similar to:
+
+```typescript
+interface StoryBeat {
+  id: string;
+
+  narration: string;
+
+  purpose:
+    | "HOOK"
+    | "SETUP"
+    | "QUESTION"
+    | "EVIDENCE"
+    | "ESCALATION"
+    | "CONTRADICTION"
+    | "REVEAL"
+    | "PAYOFF"
+    | "TRANSITION"
+    | "CALLBACK"
+    | "ENDING";
+
+  viewerQuestion: string | null;
+
+  newInformation: string;
+
+  emotionalIntent: string;
+
+  visualIntent: string;
+
+  preferredAssetType: string;
+
+  evidenceSourceIds: string[];
+
+  soundIntent: string;
+}
+```
+
+A 10-minute documentary could contain 50–150 visual beats.
+
+The number must follow content.
+
+---
+
+# PHASE 13 — VISUAL SCRIPT
+
+Take inspiration from professional documentary workflows where narration and visuals are written together.
+
+Create:
+
+```text
+visual_script.json
+```
+
+Every beat needs:
+
+```text
+VOICEOVER
+VISUAL
+PURPOSE
+SOURCE
+EDIT
+SOUND
+```
+
+Example:
+
+```text
+VOICEOVER:
+"In 2007 Nokia controlled almost half of global phone sales."
+
+VISUAL:
+Animated market-share chart builds from 2000 to 2007.
+Nokia line reaches dominant position.
+Actual Nokia handset images appear beside it.
+
+PURPOSE:
+Prove visually how dominant Nokia was.
+
+SOURCE:
+market dataset
+Nokia product imagery
+
+EDIT:
+chart builds over 2.5 sec
+hard cut to phone montage
+
+SOUND:
+subtle rising tick
+small impact at peak
+```
+
+The system should never generate a visual without knowing WHY it belongs there.
+
+---
+
+# PHASE 14 — VISUAL SELECTION QUESTION
+
+For every line ask:
+
+> What would a competent human editor put on screen while this sentence is spoken?
+
+Examples:
+
+Narration:
+
+```text
+"Revenue had already passed $100 billion."
+```
+
+Correct visual:
+
+```text
+animated revenue chart
+highlight $100B
+source citation
+```
+
+Poor visual:
+
+```text
+generic AI image of office building
+```
+
+---
+
+Narration:
+
+```text
+"Users had to navigate through six menus."
+```
+
+Correct:
+
+```text
+actual/simulated screen recording
+cursor navigates menus
+click count appears
+```
+
+Poor:
+
+```text
+cinematic AI laptop
+```
+
+---
+
+Narration:
+
+```text
+"The ship vanished on November 7."
+```
+
+Correct:
+
+```text
+map
+route animation
+date
+historical ship photo
+weather map
+```
+
+---
+
+# PHASE 15 — CREATE A REAL ASSET SOURCING ENGINE
+
+Create:
+
+```text
+AssetResearchAgent
+AssetLibrary
+AssetManifest
+```
+
+Asset categories:
+
+```text
+ORIGINAL_SCREEN_RECORDING
+ORIGINAL_GRAPHIC
+ORIGINAL_CHART
+ORIGINAL_MAP
+ORIGINAL_DIAGRAM
+
+PUBLIC_DOMAIN_VIDEO
+PUBLIC_DOMAIN_IMAGE
+CREATIVE_COMMONS
+LICENSED_STOCK
+
+WEBPAGE_CAPTURE
+DOCUMENT
+NEWS_HEADLINE
+DATASET
+
+ZAI_VIDEO
+ZAI_IMAGE
+
+EDITORIAL_EXCERPT
+```
+
+Every asset must store provenance.
+
+```text
+source URL
+creator
+license
+commercial use status
+attribution requirement
+retrieval date
+content ID
+story beat ID
+```
+
+---
+
+# PHASE 16 — ASSET PRIORITY
+
+Use approximately this priority:
+
+## 1. Original/functional evidence
+
+```text
+screen recordings
+charts
+maps
+diagrams
+web demonstrations
+code demonstrations
+gameplay
+simulations
+data visualizations
+```
+
+## 2. Legitimate real footage/assets
+
+```text
+public domain
+government archives
+commercially usable Creative Commons
+licensed stock
+properly licensed media
+```
+
+## 3. Z.ai generated VIDEO
+
+Use when actual movement contributes meaningfully.
+
+Examples:
+
+```text
+historical reconstruction
+visual metaphor
+cinematic establishing shot
+impossible camera view
+atmosphere
+story reconstruction
+```
+
+## 4. Z.ai IMAGE
+
+Use when a still is appropriate.
+
+## 5. Editorial third-party excerpts
+
+Only when genuinely necessary for:
+
+```text
+commentary
+criticism
+analysis
+review
+reporting
+parody where applicable
+```
+
+Never as generic attention-grabbing background footage.
+
+---
+
+# PHASE 17 — INTEGRATE Z.AI VIDEO GENERATION
+
+The current application focuses too heavily on AI still images.
+
+Integrate the official Z.ai video-generation API.
+
+Create a provider module.
+
+Support models currently available to the Z.ai account.
+
+Requirements:
+
+```text
+text-to-video
+image-to-video where supported
+reference workflows where supported
+asynchronous jobs
+polling
+download
+verification
+storage
+cost logging
+```
+
+Store:
+
+```text
+prompt
+model
+request ID
+duration
+resolution
+generation time
+estimated/actual API cost
+local file path
+story beat
+```
+
+Returned temporary URLs must be downloaded immediately.
+
+Do NOT use another AI video provider.
+
+Z.ai remains the AI provider.
+
+---
+
+# PHASE 18 — DO NOT GENERATE VIDEO FOR EVERY SECOND
+
+Generated video is expensive and unnecessary.
+
+Use it selectively.
+
+Example documentary could contain:
+
+```text
+real footage
+documents
+maps
+charts
+motion graphics
+photographs
+web material
+Z.ai video
+Z.ai images
+typography
+```
+
+The exact percentages depend entirely on the story.
+
+A software tutorial should mostly contain screen recording.
+
+A history documentary may contain archival imagery.
+
+A mystery may use more reconstruction.
+
+Gameplay should actually show gameplay.
+
+---
+
+# PHASE 19 — CREATE AN ASSET LIBRARY
+
+High-output production needs reusable infrastructure.
+
+Implement:
+
+```text
+AssetLibrary
+```
+
+Store reusable:
+
+```text
+sound effects
+motion components
+map templates
+chart templates
+UI components
+icons
+3D assets if used
+backgrounds
+textures
+characters
+environments
+title animations
+lower thirds
+transition components
+music
+```
+
+Before generating something new:
+
+```text
+Can existing asset work?
+Can it be modified?
+Can a safe external asset work?
+Does new generation add meaningful value?
+```
+
+This reduces cost and improves consistency.
+
+---
+
+# PHASE 20 — RENDERING ARCHITECTURE
+
+Do NOT make FFmpeg responsible for the entire edit.
+
+Use:
+
+```text
+CREATIVE DIRECTOR
+↓
+EDIT DECISION LIST
+↓
+REMOTION COMPOSITION
+↓
+FFMPEG
+↓
+FINAL MP4
+```
+
+## Remotion responsibilities
+
+Use Remotion for:
+
+```text
+timeline composition
+motion graphics
+charts
+maps
+captions
+animated text
+UI demonstrations
+photo compositions
+SVG
+Canvas
+WebGL where useful
+dynamic layouts
+transitions
+timeline preview
+```
+
+## FFmpeg responsibilities
+
+Keep FFmpeg for:
+
+```text
+media normalization
+codec conversion
+clip trimming
+audio processing
+loudness
+muxing
+final encode
+H.264
+AAC
+probe/validation
+```
+
+Do not browser-record an HTML canvas to create the master video.
+
+Use deterministic frame rendering.
+
+---
+
+# PHASE 21 — EDIT DECISION LIST
+
+Create an explicit EDL.
+
+Example:
+
+```typescript
+interface EditDecision {
+  start: number;
+  end: number;
+
+  narrationText: string;
+
+  assetId: string;
+
+  visualPurpose: string;
+
+  crop?: string;
+  movement?: string;
+  overlay?: string;
+  transitionIn?: string;
+  transitionOut?: string;
+
+  musicCue?: string;
+  sfx?: string;
+
+  reason: string;
+}
+```
+
+`reason` is mandatory.
+
+If the agent cannot explain why the visual belongs on screen, reject it.
+
+---
+
+# PHASE 22 — VISUAL CHANGES ARE SEMANTIC
+
+Do NOT implement:
+
+```text
+change visual every 3 seconds
+```
+
+Visual changes should occur when:
+
+```text
+new entity
+new evidence
+new fact
+new location
+new time period
+new question
+contrast
+joke
+reveal
+emphasis
+attention reset
+```
+
+Some shots can be:
+
+```text
+0.7 sec
+```
+
+others:
+
+```text
+8 sec
+```
+
+depending on purpose.
+
+---
+
+# PHASE 23 — STOP USING KEN BURNS EVERYWHERE
+
+Ken Burns movement is allowed.
+
+It cannot be the default animation for every image.
+
+Possible still treatments:
+
+```text
+layered parallax
+mask reveal
+camera push
+camera pull
+crop reveal
+spotlight
+animated annotations
+object isolation
+background blur
+depth separation
+subtle lighting
+document highlighting
+timeline movement
+```
+
+Use movement because it communicates something.
+
+---
+
+# PHASE 24 — PAPER EDIT AND ROUGH CUT
+
+Before final rendering:
+
+create:
+
+```text
+paper_edit.json
+```
+
+Then produce a cheap rough cut.
+
+Use:
+
+```text
+low-resolution assets
+temporary voice
+temporary graphics
+temporary generated media
+```
+
+The purpose is to evaluate:
+
+```text
+story
+length
+pacing
+clarity
+hook
+payoff
+visual logic
+```
+
+before spending money generating final media.
+
+Pipeline:
+
+```text
+SCRIPT
+↓
+PAPER EDIT
+↓
+ROUGH CUT
+↓
+AI CRITIQUE
+↓
+REWRITE
+↓
+FINAL ASSET GENERATION
+↓
+FINE CUT
+```
+
+---
+
+# PHASE 25 — SOUND DESIGN
+
+REMOVE fake sine-wave generated background music.
+
+Use legitimate music.
+
+Potential source:
+
+```text
+YouTube Audio Library
+properly licensed music
+originally generated music where legally appropriate
+```
+
+Track licensing.
+
+Music mood:
+
+```text
+curious
+mysterious
+tense
+optimistic
+sad
+energetic
+comic
+neutral
+```
+
+Sound design can include:
+
+```text
+music cues
+music changes
+silence
+ducking
+risers
+impacts
+ambience
+UI clicks
+environmental sounds
+stingers
+```
+
+Silence can be intentional.
+
+Do not fill every second with sound.
+
+---
+
+# PHASE 26 — NARRATION PERFORMANCE
+
+Narration must sound written for speech.
+
+Create a PerformanceScript.
+
+Example:
+
+```text
+[quiet, curious]
+For twelve years... nobody noticed.
+
+[pause 500ms]
+
+[energy increases]
+Then one engineer opened a forgotten server log.
+
+[pause]
+
+[emphasis]
+And everything changed.
+```
+
+Support:
+
+```text
+pause
+speed
+energy
+emphasis
+emotion
+sentence length variation
+```
+
+If the current TTS cannot produce sufficiently natural output:
+
+fail narration QC.
+
+Do not disguise poor TTS with louder music.
+
+---
+
+# PHASE 27 — LONG FORM AND SHORTS ARE DIFFERENT PRODUCTS
+
+Create:
+
+```text
+LongFormCreativeDirector
+ShortsCreativeDirector
+```
+
+Never automatically create a Short by:
+
+```text
+crop long video
+→ center subject
+→ subtitles
+```
+
+The Short gets its own concept and edit.
+
+---
+
+# PHASE 28 — SHORTS IDEA/HOOК SYSTEM
+
+The hook must be embedded in the IDEA.
+
+Do not choose boring idea first and then write clickbait.
+
+Idea funnel:
+
+```text
+raw ideas
+↓
+interesting premise
+↓
+strong first-frame visual
+↓
+clear promise
+↓
+payoff
+↓
+production feasibility
+```
+
+If no compelling visual exists for the opening:
+
+reject the Short concept.
+
+---
+
+# PHASE 29 — SHORTS STRUCTURE
+
+Use flexible heuristics such as:
+
+```text
+0–1.5 sec
+immediate visual/story hook
+
+1.5–4 sec
+context
+
+4–15 sec
+development/escalation
+
+15–30 sec
+core information
+
+30–45 sec
+payoff
+
+ending
+satisfying close or natural loop
+```
+
+Do NOT treat these as fixed timing laws.
+
+---
+
+# PHASE 30 — SHORTS VISUAL LANGUAGE
+
+Require:
+
+```text
+9:16
+mobile readability
+safe UI zones
+strong first frame
+clear subject
+large text when necessary
+phrase-level captions
+fast visual comprehension
+```
+
+Avoid:
+
+```text
+tiny desktop screenshots
+small charts
+huge paragraphs
+random captions
+```
+
+---
+
+# PHASE 31 — LONG FORM TYPOGRAPHY
+
+Do not cover long-form videos in giant TikTok captions.
+
+Use typography selectively for:
+
+```text
+important number
+person
+location
+date
+quote
+chapter
+critical phrase
+```
+
+Let visuals breathe.
+
+---
+
+# PHASE 32 — COPYRIGHT AND REUSED CONTENT
+
+Do not ban third-party clips completely.
+
+But understand the difference between:
+
+```text
+EDITORIAL EVIDENCE
+```
+
+and:
+
+```text
+ATTENTION BORROWING
+```
+
+Example acceptable direction:
+
+```text
+Video:
+Why SpongeBob's Early Seasons Feel Different
+
+Use:
+short relevant excerpts/screenshots
+frame annotations
+animation comparison
+commentary
+analysis
+```
+
+Bad direction:
+
+```text
+Video:
+5 Ways To Make Money Online
+
+Visual:
+random SpongeBob clips simply because they hold attention
+```
+
+Do not do this.
+
+---
+
+# PHASE 33 — NEVER INVENT A “SAFE CLIP LENGTH”
+
+There is no:
+
+```text
+5-second rule
+10-second rule
+30-second rule
+```
+
+that automatically makes copyrighted footage safe.
+
+Never encode such a rule.
+
+For every copyrighted excerpt evaluate:
+
+```text
+Why is it necessary?
+
+Is the clip itself being analyzed?
+
+Is substantial original commentary present?
+
+Does it substitute for the original?
+
+Could safer media communicate the point?
+
+What is the copyright risk?
+
+What is the reused-content risk?
+```
+
+Maintain separate:
+
+```text
+COPYRIGHT_RISK
+REUSED_CONTENT_RISK
+INAUTHENTIC_CONTENT_RISK
+```
+
+---
+
+# PHASE 34 — THUMBNAIL GENERATION
+
+Do not start by generating an image.
+
+Generate approximately:
+
+```text
+5–10 thumbnail CONCEPTS
+```
+
+Each should contain:
+
+```text
+visual subject
+composition
+emotion
+background
+text if any
+curiosity mechanism
+relationship to title
+```
+
+Then generate pixel candidates.
+
+Title and thumbnail should complement each other.
+
+BAD:
+
+```text
+TITLE:
+Why Nokia Failed
+
+THUMBNAIL:
+WHY NOKIA FAILED
+```
+
+Better:
+
+```text
+TITLE:
+How Nokia Lost Everything
+
+THUMBNAIL:
+Nokia phone
+falling graph
+"6 YEARS"
+```
+
+---
+
+# PHASE 35 — TITLE ENGINE
+
+Generate many titles.
+
+Evaluate:
+
+```text
+clarity
+curiosity
+specificity
+promise
+topic accuracy
+novelty
+thumbnail synergy
+overclaiming risk
+```
+
+Avoid fabricated claims.
+
+---
+
+# PHASE 36 — REAL A/B TESTING
+
+Predicted CTR scores are not proof.
+
+When YouTube account features permit it:
+
+use YouTube's actual title/thumbnail testing capabilities where available.
+
+Pipeline:
+
+```text
+AI predicts candidates
+↓
+YouTube test
+↓
+real audience response
+↓
+winner
+↓
+learning system
+```
+
+---
+
+# PHASE 37 — QUALITY CRITIC MUST INSPECT THE ACTUAL VIDEO
+
+Do NOT grade quality from:
+
+```text
+script metadata
+title metadata
+number of scenes
+```
+
+Inspect the rendered output.
+
+Sample frames across the timeline.
+
+Inspect audio.
+
+Inspect timeline.
+
+Evaluate:
+
+```text
+hook
+story clarity
+viewer questions
+visual/narration alignment
+visual variety
+shot repetition
+generic AI appearance
+asset quality
+AI artifacts
+caption readability
+editing rhythm
+voice quality
+sound design
+music fit
+payoff
+title promise
+thumbnail promise
+copyright risk
+reused-content risk
+inauthentic-content risk
+```
+
+---
+
+# PHASE 38 — SLOP SCORE
+
+Implement:
+
+```text
+SlopScore
+```
+
+LOWER is better.
+
+Penalize:
+
+```text
+too many AI stills
+same transition repeatedly
+same camera move repeatedly
+same caption treatment repeatedly
+random stock
+visual unrelated to narration
+repeated assets
+generic voice
+generic intro
+generic outro
+identical-looking scenes
+visual template reused across unrelated subjects
+unnecessary lower thirds
+overuse of generated imagery
+article-like narration
+```
+
+Set a publication threshold.
+
+If SlopScore is too high:
+
+```text
+FAIL
+→ RE-EDIT
+```
+
+---
+
+# PHASE 39 — CHANNEL IDENTITY
+
+The videos need consistency without becoming templates.
+
+Create a subtle BrandSystem:
+
+```text
+typography
+small palette
+chart language
+map language
+sound logo if appropriate
+caption conventions
+thumbnail conventions
+voice character
+editorial tone
+```
+
+The content format still changes per subject.
+
+Brand consistency ≠ identical video template.
+
+---
+
+# PHASE 40 — YOUTUBE ANALYTICS LEARNING
+
+After publication retrieve available:
+
+```text
+impressions
+CTR
+views
+watch time
+average view duration
+average percentage viewed
+audience retention
+likes
+comments
+shares
+subscriber gain
+traffic sources
+revenue where available
+```
+
+Connect analytics to the timeline.
+
+Example:
+
+```text
+RETENTION DIP
+01:42–01:51
+
+story beat:
+background exposition
+
+visual:
+static generated portrait
+
+duration:
+9.2 seconds
+
+audio:
+unchanged music
+
+hypothesis:
+too much exposition
+visual stagnation
+
+future experiment:
+compress section
+replace static portrait with timeline/document sequence
+```
+
+Learn editing decisions.
+
+Not only topics.
+
+---
+
+# PHASE 41 — RETENTION-SPECIFIC LEARNING
+
+Analyze:
+
+```text
+INTRO
+TOP MOMENTS
+SPIKES
+DIPS
+```
+
+Ask:
+
+```text
+What story beat occurred here?
+What visual occurred?
+How long was the shot?
+Was there motion?
+Was a question answered?
+Was a new question created?
+What happened in the audio?
+```
+
+Turn this into future production adjustments.
+
+---
+
+# PHASE 42 — BUILD A MEMORY OF SUCCESSFUL COMPONENTS
+
+Store reusable performance information.
+
+Examples:
+
+```text
+timeline animations perform well
+first-person hooks perform poorly
+maps work well for history content
+8-second static images cause dips
+certain caption treatment helps Shorts
+specific thumbnail composition produces stronger CTR
+specific video lengths perform better for certain archetypes
+```
+
+Use Bayesian/bandit-style exploration where appropriate.
+
+Do not overfit from one video.
+
+---
+
+# PHASE 43 — DO NOT INVENT PLATFORM RULES
+
+The current system has previously guessed YouTube restrictions incorrectly.
+
+From now on:
+
+if a YouTube API function fails:
+
+```text
+read actual API error
+↓
+check current official documentation
+↓
+identify cause
+↓
+record evidence
+↓
+fix/report accurately
+```
+
+Never invent subscriber thresholds, policy requirements, or API restrictions.
+
+---
+
+# PHASE 44 — KEEP PUBLISHING CODE BORING
+
+Do not redesign the already-working OAuth/upload integration for creativity.
+
+Use reliable official YouTube patterns:
+
+```text
+OAuth
+refresh tokens
+resumable upload
+thumbnail upload
+metadata
+playlist
+processing polling
+analytics
+```
+
+Creative complexity belongs in production.
+
+Publishing should prioritize reliability.
+
+---
+
+# PHASE 45 — REQUIRED TEST VIDEOS
+
+This overhaul cannot PASS after creating one video.
+
+Create THREE radically different PRIVATE test videos.
+
+---
+
+## TEST A — LONG-FORM DOCUMENTARY
+
+Topic:
+
+```text
+How Nokia Lost the Smartphone War
+```
+
+Expected materials:
+
+```text
+market charts
+Nokia products
+timeline
+documents/headlines
+real imagery
+motion graphics
+generated reconstruction only where useful
+```
+
+Do NOT create a cinematic AI slideshow.
+
+---
+
+## TEST B — SCREEN TUTORIAL
+
+Topic:
+
+```text
+7 Windows Settings Worth Changing
+```
+
+Expected:
+
+```text
+actual screen demonstrations
+cursor movement
+zoom into UI
+highlight controls
+before/after
+graphics
+```
+
+Generated cinematic footage should be almost irrelevant here.
+
+---
+
+## TEST C — STORY/MYSTERY SHORT
+
+Topic:
+
+```text
+The Town That Disappeared Overnight
+```
+
+Expected:
+
+```text
+strong first-frame visual
+map
+documents
+fast story beats
+vertical graphics
+Z.ai generated VIDEO where reconstruction helps
+sound design
+captions
+payoff
+```
+
+---
+
+# PHASE 46 — COMPARE THE THREE
+
+They should NOT have:
+
+```text
+same intro
+same transition rhythm
+same lower thirds
+same music
+same captions
+same shot lengths
+same image style
+same generated-video style
+same outro
+```
+
+If they obviously come from one template:
+
+FAIL.
+
+---
+
+# PHASE 47 — HUMAN-QUALITY ACCEPTANCE TEST
+
+Ask the Quality Critic:
+
+> If the branding were removed, would these videos still look like three intentionally edited productions appropriate for their respective subjects?
+
+If NO:
+
+FAIL.
+
+---
+
+# PHASE 48 — TECHNICAL VERIFICATION
+
+For each test video verify:
+
+```text
+valid MP4
+H.264
+AAC
+yuv420p
+correct resolution
+correct aspect ratio
+audio exists
+no corrupted clips
+no black-frame gaps
+no missing files
+no clipping
+no broken subtitles
+```
+
+Use FFprobe.
+
+---
+
+# PHASE 49 — VISUAL VERIFICATION
+
+Generate contact sheets / sampled frames across each completed test video.
+
+Inspect them with Z.ai vision.
+
+Look for:
+
+```text
+repetition
+AI artifacts
+unreadable elements
+bad crop
+bad generated text
+visual monotony
+irrelevant media
+poor composition
+```
+
+Fix them.
+
+---
+
+# PHASE 50 — BROWSER VERIFICATION
+
+Open the final outputs inside MONEY MACHINE.
+
+Confirm:
+
+```text
+PLAY works
+DOWNLOAD works
+RERENDER works
+APPROVE works
+REJECT works
+UPLOAD works
+```
+
+No dead buttons.
+
+No hydration errors.
+
+No browser console errors.
+
+---
+
+# DEVELOPMENT RULES
+
+Do NOT respond with 5,000 lines of source code.
+
+WORK IN THE REPOSITORY.
+
+Use filesystem and terminal.
+
+Inspect.
+
+Implement.
+
+Run.
+
+Watch.
+
+Fail.
+
+Diagnose.
+
+Fix.
+
+Rerun.
+
+---
+
+# DO NOT DELETE WORKING FUNCTIONALITY
+
+YouTube connection currently works.
+
+Existing dashboard features exist.
+
+Preserve working:
+
+```text
+OAuth
+channel connection
+upload
+analytics
+scheduler
+database
+pipeline UI
+agent controls
+```
+
+Modify only where necessary.
+
+Do not rebuild functional infrastructure unnecessarily.
+
+---
+
+# USE CURRENT SOURCES WHEN BUILDING
+
+Consult reputable/current material when implementing decisions.
+
+Especially:
+
+* YouTube official monetization/reused-content documentation
+* YouTube official copyright guidance
+* YouTube official audience-retention documentation
+* YouTube official Shorts creator guidance
+* current Z.ai API documentation
+* Remotion documentation
+* FFmpeg documentation
+* Google/YouTube API documentation
+
+Developer-community sources such as:
+
+```text
+Stack Overflow
+GitHub issues/discussions
+Reddit creator/editor communities
+```
+
+may inform engineering/creator experience but should not override official API/policy documentation.
+
+Useful reference material:
+
+YouTube monetization/reused content:
+https://support.google.com/youtube/answer/1311392
+
+YouTube copyright guidance:
+https://support.google.com/youtube/answer/9783148
+
+YouTube audience retention:
+https://support.google.com/youtube/answer/9314415
+
+YouTube thumbnail/title testing:
+https://support.google.com/youtube/answer/16391400
+
+YouTube Shorts creator discussion:
+https://blog.youtube/creator-and-artist-stories/youtube-shorts-deep-dive/
+
+Remotion:
+https://www.remotion.dev/
+
+Remotion GitHub:
+https://github.com/remotion-dev/remotion
+
+Z.ai documentation:
+https://docs.z.ai/
+
+---
+
+# FINAL DEFINITION OF DONE
+
+Do NOT tell me:
+
+```text
+The renderer has been dramatically improved.
+```
+
+Do NOT tell me:
+
+```text
+The new pipeline should create engaging videos.
+```
+
+PROVE IT.
+
+Final status should resemble:
+
+```text
+CONTENT ENGINE V3
+
+Current renderer audit:
+PASS
+
+Archetype router:
+PASS
+
+YouTube reference research:
+PASS
+
+Reporting brief:
+PASS
+
+Story engine:
+PASS
+
+Visual script:
+PASS
+
+Paper edit:
+PASS
+
+Asset sourcing:
+PASS
+
+Z.ai image:
+PASS
+
+Z.ai video:
+PASS
+
+Asset library:
+PASS
+
+Remotion:
+PASS
+
+FFmpeg final encoding:
+PASS
+
+Sound design:
+PASS
+
+Performance narration:
+PASS
+
+SlopScore:
+PASS
+
+Quality critic:
+PASS
+
+Retention learning:
+PASS
+
+TEST A — Nokia documentary:
+PASS
+Runtime:
+SlopScore:
+Output:
+
+TEST B — Windows tutorial:
+PASS
+Runtime:
+SlopScore:
+Output:
+
+TEST C — Mystery Short:
+PASS
+Runtime:
+SlopScore:
+Output:
+
+Cross-video template similarity:
+PASS
+
+Browser/player validation:
+PASS
+
+YouTube connectivity:
+PASS
+
+Remaining blockers:
+...
+```
+
+Every PASS requires actual execution evidence.
+
+---
+
+# MOST IMPORTANT FINAL RULE
+
+Do not optimize for:
+
+> AUTOMATIC VIDEO GENERATION.
+
+Optimize for:
+
+> AUTOMATIC VIDEO PRODUCTION DECISION-MAKING.
+
+The machine must decide:
+
+```text
+what is worth making
+why anyone would care
+what the story is
+what the viewer sees
+why that visual belongs there
+whether to use real media, graphics, screen recording, generated image, generated video, document, map, chart, or editorial excerpt
+how the edit should feel
+how sound should support it
+whether the final result is actually watchable
+```
+
+The rendering software is only the last part.
+
+Start now by generating and watching one video from the CURRENT pipeline, diagnosing exactly why it feels generic, and then rebuilding from the creative-decision layer upward.

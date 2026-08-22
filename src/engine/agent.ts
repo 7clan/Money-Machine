@@ -316,14 +316,30 @@ export async function phase5_produceVideo(videoIdeaId: string): Promise<string> 
   })
 
   try {
-    logAction(`Rendering video: ${idea.title}`)
-    const result = await renderVideo(project.id)
-    logAction(`Video rendered: ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB`)
+    logAction(`Rendering video (V3 pipeline): ${idea.title}`)
+    // ── V3 pipeline ONLY — NO legacy fallback (spec section 28) ──
+    // The legacy renderer produced black/silent output and must never be used
+    // for autonomous publication. If V3 fails, the video is marked FAILED
+    // and the editor can inspect the checkpoint to resume.
+    const { produceVideoV3 } = await import('./v3/creative-director-v2')
+    const v3result = await produceVideoV3(project.id, {
+      enableVideoGeneration: true,
+      maxVideoClips: 2,
+    })
+    const updated = await db.videoProject.findUnique({ where: { id: project.id } })
+    const result = {
+      videoPath: v3result.videoPath,
+      duration: v3result.duration,
+      fileSize: updated?.fileSize || 0,
+    }
+    const archetypeInfo = ` [${v3result.archetype}, QC ${v3result.qualityGate.passed ? 'PASS' : 'FAIL'}${v3result.qualityGate.audioLUFS !== null ? `, ${v3result.qualityGate.audioLUFS.toFixed(0)} LUFS` : ''}]`
+
+    logAction(`Video rendered: ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB${archetypeInfo}`)
     await notify({
       type: 'success',
       category: 'pipeline',
       title: 'Video produced',
-      description: `${idea.title} — ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB`,
+      description: `${idea.title} — ${result.duration.toFixed(1)}s, ${(result.fileSize / 1024 / 1024).toFixed(1)}MB${archetypeInfo}`,
       targetId: project.id,
       targetType: 'video_project',
       actionLabel: 'View pipeline',

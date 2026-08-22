@@ -97,15 +97,21 @@ export async function POST(request: NextRequest) {
       // ═══════════════════════════════════════════════════════════════════
 
       case 'niche-research': {
-        // "Generate More" button — runs niche research + strategy creation to refill ideas
-        researchNiches()
-          .then(async () => {
-            // After niches are picked, create strategy + 90 ideas automatically
+        // "Generate More" button — V3 idea funnel + create new VideoIdea
+        ;(async () => {
+          try {
+            const { generateIdeaViaFunnel } = await import('@/engine/v3/creative-director')
+            const newIdeaId = await generateIdeaViaFunnel()
+            console.log(`[command:niche-research] V3 funnel created idea ${newIdeaId}`)
+          } catch (e: any) {
+            console.error('[command:niche-research] V3 funnel failed, falling back to legacy:', e.message)
+            // Fallback to legacy niche research + strategy creation
+            await researchNiches()
             const { createChannelStrategy } = await import('@/engine/strategy')
             await createChannelStrategy()
-          })
-          .catch(e => console.error('Niche research error:', e))
-        return NextResponse.json({ ok: true, message: 'Generating new video ideas via niche research...' })
+          }
+        })().catch(e => console.error('Niche research error:', e))
+        return NextResponse.json({ ok: true, message: 'Generating new video ideas via V3 funnel...' })
       }
 
       case 'research': {
