@@ -41,6 +41,46 @@ function extractCode(input: string): string {
   return trimmed
 }
 
+/**
+ * Detect common mistakes when the user pastes something that ISN'T an auth code.
+ * Returns a friendly explanation string, or null if the input looks like a real code.
+ */
+function detectPasteMistake(input: string): string | null {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+
+  const lower = trimmed.toLowerCase()
+
+  // User pasted Google's error-details text (no actual code was ever issued)
+  if (
+    (lower.includes('redirect_uri=') && lower.includes('flowname')) ||
+    lower.includes('redirect_uri_mismatch') ||
+    lower.includes('error 400') ||
+    lower.includes('access blocked')
+  ) {
+    return "You pasted Google's error page text — not an authorization code. Google rejected your OAuth request with \"redirect_uri_mismatch\" BEFORE issuing a code, so there's no code to extract. Fix this by registering the Redirect URI above in Google Cloud Console (see the blue help box), then come back and click Open Google Authorization Page again."
+  }
+
+  // User pasted something that's clearly an env var or other config text
+  if (/^(youthub_client_|youtube_client_|client_id|client_secret)/i.test(lower)) {
+    return "You pasted what looks like an environment variable or credential text — not an authorization code. Authorization codes look like `4/0AX4XfWj...` (about 60-100 characters, start with `4/`)."
+  }
+
+  // User pasted just a URL without a `?code=` parameter
+  if (trimmed.startsWith('http') && !trimmed.includes('code=')) {
+    return "You pasted a URL, but it doesn't contain a `code=` parameter. The authorization code only appears in the URL AFTER you've clicked Allow on Google's consent screen. If you're seeing \"This site can't be reached\" without `code=` in the address bar, Google rejected your request (likely redirect_uri_mismatch) — fix the Redirect URI above first."
+  }
+
+  // Real Google OAuth codes are long and contain slashes (e.g. `4/0AAX...`)
+  // Real codes: usually 40-200 chars, contain `/` or `_`
+  if (trimmed.length < 20 || (!trimmed.includes('/') && !trimmed.includes('-') && !trimmed.includes('_'))) {
+    return "This doesn't look like a Google authorization code. Codes are typically 50+ characters and contain `/` characters (e.g. `4/0AX4XfWj...`). After clicking Allow on Google's consent screen, copy the FULL URL from the address bar of the failed \"This site can't be reached\" page and paste it here — we'll extract the code automatically."
+  }
+
+  return null
+}
+
+
 export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode }: YouTubeSetupWizardProps) {
   const [step, setStep] = useState<WizardStep>('method')
   const [authUrl, setAuthUrl] = useState('')
@@ -108,10 +148,18 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
 
   // Exchange the authorization code for tokens (passing the redirect URI so it matches the auth URL)
   const exchangeAuthCode = async () => {
+    setError('')
+
+    // Pre-flight: detect common paste mistakes BEFORE hitting the network
+    const mistake = detectPasteMistake(authCode)
+    if (mistake) {
+      setError(mistake)
+      return
+    }
+
     const code = extractCode(authCode)
     if (!code) return
     setExchanging(true)
-    setError('')
     try {
       const res = await fetch('/api/youtube/exchange-code', {
         method: 'POST',
@@ -121,7 +169,20 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.message || data.error || 'Code exchange failed')
+        const serverMsg = data.message || data.error || 'Code exchange failed'
+        // Surface the underlying Google error in plain language
+        const raw = typeof serverMsg === 'string' ? serverMsg : JSON.stringify(serverMsg)
+        let friendly = raw
+        if (raw.includes('Malformed auth code') || raw.includes('invalid_grant')) {
+          friendly =
+            "Google rejected the code: \"" + raw + "\"\n\n" +
+            "This usually means one of:\n" +
+            "  • The code expired (codes are valid for ~10 minutes) — click Open Google Authorization Page to get a fresh one\n" +
+            "  • You already used this code (codes are single-use) — get a new one by clicking Open Google Authorization Page\n" +
+            "  • You pasted something that isn't a real authorization code (e.g. text from Google's error page)\n" +
+            "  • The Redirect URI at the top of this dialog doesn't match what's registered in Google Cloud Console — Google will silently invalidate the code"
+        }
+        setError(friendly)
         setExchanging(false)
         return
       }
@@ -426,17 +487,69 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                   </div>
                 </div>
 
-                {/* ── Hint about redirect_uri_mismatch ── */}
-                <div className="rounded-lg bg-blue-500/8 border border-blue-500/20 p-3 text-xs text-blue-300/90 space-y-1.5">
+                {/* ── Hint about redirect_uri_mismatch (expanded with deep link + quick URIs) ── */}
+                <div className="rounded-lg bg-blue-500/8 border border-blue-500/20 p-3 text-xs text-blue-300/90 space-y-2">
                   <p className="font-medium flex items-center gap-1.5">
-                    <HelpCircle className="w-3.5 h-3.5" /> Seeing &quot;Error 400: redirect_uri_mismatch&quot;?
+                    <HelpCircle className="w-3.5 h-3.5" /> ⚠ If Google shows &quot;Error 400: redirect_uri_mismatch&quot;
                   </p>
                   <p className="text-blue-300/70 leading-relaxed">
-                    The URI above must <strong className="text-blue-200">exactly match</strong> what you registered in
-                    Google Cloud Console (same path, port, scheme — no trailing slash unless you added one).
-                    Click <strong className="text-blue-200">Edit</strong> next to the Redirect URI above,
-                    paste the URI from Google Cloud Console → Credentials → OAuth 2.0 Client → Authorized redirect URIs,
-                    then click <strong className="text-blue-200">Apply &amp; Refresh</strong>.
+                    Google is rejecting the Redirect URI above because it&apos;s not in your OAuth client&apos;s
+                    <strong className="text-blue-200"> Authorized redirect URIs</strong> list. You must add it in Google Cloud Console:
+                  </p>
+                  <a
+                    href="https://console.cloud.google.com/apis/credentials/oauthclient"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 p-2 rounded-md bg-blue-500/15 border border-blue-500/30 text-blue-200 hover:bg-blue-500/25 transition-colors font-medium"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> Open Google Cloud Console → Credentials
+                  </a>
+                  <p className="text-blue-300/70 leading-relaxed">
+                    Find your OAuth 2.0 Client ID (starts with <code className="text-blue-200 bg-blue-500/10 px-1 rounded">9920073…</code>),
+                    click it, scroll to <strong className="text-blue-200">Authorized redirect URIs</strong>,
+                    click <strong className="text-blue-200">ADD URI</strong>, paste this exact URI, click <strong className="text-blue-200">Save</strong>:
+                  </p>
+                  <div className="flex items-center gap-2 p-2 rounded bg-slate-900/80 border border-slate-700/50">
+                    <code className="text-[10px] text-amber-300 font-mono break-all flex-1">{redirectUri}</code>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 shrink-0 text-slate-400 hover:text-slate-200"
+                      onClick={() => copyToClipboard(redirectUri, 'redirect-help')}
+                    >
+                      {copied === 'redirect-help' ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    </Button>
+                  </div>
+
+                  {/* Common URI variations — let user try them with one click */}
+                  <div className="space-y-1.5">
+                    <p className="text-blue-300/70">Or try one of these common variations (click to load it into the editor):</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/api/youtube/callback`,
+                        `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/api/auth/youtube/callback`,
+                        `http://localhost:3000/api/youtube/callback`,
+                        `http://localhost:3000/api/auth/youtube/callback`,
+                        `http://127.0.0.1:3000/api/youtube/callback`,
+                        `http://127.0.0.1:3000/api/auth/youtube/callback`,
+                      ]
+                        .filter((v, i, arr) => arr.indexOf(v) === i && v !== redirectUri)
+                        .map(uri => (
+                          <button
+                            key={uri}
+                            onClick={() => { setRedirectUriDraft(uri); setEditingRedirectUri(true) }}
+                            className="px-2 py-1 rounded bg-slate-800/60 border border-slate-700/50 text-[9px] font-mono text-slate-300 hover:bg-slate-700/60 hover:text-slate-100 transition-colors"
+                            title={`Use: ${uri}`}
+                          >
+                            {uri.replace(/^https?:\/\/[^/]+/, '')}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-blue-300/60 italic">
+                    After adding the URI in Google Cloud Console, come back here and click <strong>Open Google Authorization Page</strong> again.
+                    If you changed the URI in this dialog (didn&apos;t use the default), click <strong>Apply &amp; Refresh</strong> first.
                   </p>
                 </div>
 
@@ -539,18 +652,32 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                     </div>
                   </div>
 
-                  {/* Show what was extracted */}
-                  {authCode.trim() && (
-                    <div className="text-[10px] text-slate-500">
-                      {authCode.includes('code=') ? (
-                        <span className="text-emerald-400/80">
-                          ✓ URL detected — code will be auto-extracted: <code className="text-emerald-300/60">{extractCode(authCode).substring(0, 30)}...</code>
-                        </span>
-                      ) : (
+                  {/* Show what was extracted / live paste-mistake detection */}
+                  {authCode.trim() && (() => {
+                    const mistake = detectPasteMistake(authCode)
+                    if (mistake) {
+                      return (
+                        <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300 flex items-start gap-2">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-400" />
+                          <div className="flex-1 whitespace-pre-wrap leading-relaxed">{mistake}</div>
+                        </div>
+                      )
+                    }
+                    if (authCode.includes('code=')) {
+                      return (
+                        <div className="text-[10px] text-slate-500">
+                          <span className="text-emerald-400/80">
+                            ✓ URL detected — code will be auto-extracted: <code className="text-emerald-300/60">{extractCode(authCode).substring(0, 30)}...</code>
+                          </span>
+                        </div>
+                      )
+                    }
+                    return (
+                      <div className="text-[10px] text-slate-500">
                         <span className="text-slate-500">Using as raw authorization code</span>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 {error && (
@@ -558,7 +685,7 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium">Connection failed</p>
-                      <p className="text-red-300/80 mt-0.5">{error}</p>
+                      <p className="text-red-300/80 mt-0.5 whitespace-pre-wrap break-words leading-relaxed">{error}</p>
                       {error.includes('expire') && (
                         <p className="text-red-300/60 mt-1">Tip: Authorization codes expire in ~10 minutes. Go back to step 1 to get a fresh code.</p>
                       )}

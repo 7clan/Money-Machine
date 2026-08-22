@@ -2108,3 +2108,36 @@ Stage Summary:
 Unresolved / next steps:
 - User still needs to complete the OAuth flow once (open dashboard → Setup Wizard → Connect with Google OAuth → Edit the redirect URI to match what they registered → Open Google Auth → sign in → copy code from failed redirect URL → paste in step 3 → Connect)
 - After successful connection, run a full produce→upload cycle to verify uploads work end-to-end with the new client ID
+
+---
+Task ID: oauth-paste-mistake-guard
+Agent: Lead Developer
+Task: Fix confusing UX when user pastes Google's error text instead of an auth code
+
+Work Log:
+- User pasted text from Google's "Error 400: redirect_uri_mismatch" error-details dialog into the code field, then clicked Connect YouTube → got "Malformed auth code" from Google because what they pasted wasn't a real authorization code (Google never issued one — it rejected the OAuth request before reaching consent)
+- Root cause: Google's "redirect_uri_mismatch" error means http://localhost:3000/api/auth/youtube/callback is NOT in the user's OAuth client's "Authorized redirect URIs" list in Google Cloud Console — despite the user's belief that they registered it
+- Added detectPasteMistake() to the wizard — a smart pre-flight check that catches:
+  • Google error-details text (contains "redirect_uri=" + "flowName", or "redirect_uri_mismatch", "Error 400", "access blocked")
+  • Env var / credential text (starts with "YOUTUBE_CLIENT_" or "client_id"/"client_secret")
+  • URL without a code= parameter
+  • Strings that don't look like real Google OAuth codes (too short, no `/` or `-` or `_`)
+- The check fires BOTH live as the user types (amber warning under the input) AND in exchangeAuthCode (red error above the buttons)
+- Made the "Malformed auth code" / "invalid_grant" server response much friendlier — explains the 4 most common causes (expired code, single-use code, non-code paste, redirect_uri mismatch silently invalidating the code)
+- Massively expanded the blue "redirect_uri_mismatch" help box:
+  • Direct deep link to https://console.cloud.google.com/apis/credentials/oauthclient
+  • Step-by-step instructions: find OAuth client → Authorized redirect URIs → ADD URI → paste → Save
+  • A copy-to-clipboard for the exact current redirect URI
+  • "Common URI variations to try" — clickable buttons for /api/youtube/callback, /api/auth/youtube/callback, localhost vs 127.0.0.1 (6 variants deduplicated against the current URI). Clicking loads the variant into the editor with Apply & Refresh ready.
+  • Closing reminder about clicking Apply & Refresh if the URI was changed
+- Verified via agent-browser: (1) pasting Google's error text now triggers the amber "you pasted Google's error page text" warning live, (2) the deep link to Google Cloud Console is present with the correct href, (3) clicking a URI variation loads it into the editor, (4) pasting a URL without code= also triggers the appropriate warning
+- Lint passes (0 errors)
+
+Stage Summary:
+- The wizard now stops users from pasting non-code text BEFORE they waste a click on Connect YouTube
+- For genuine redirect_uri_mismatch cases, the user now has a one-click path to Google Cloud Console credentials + a copy button for the exact URI + one-click variations to try
+- The "Malformed auth code" error from Google is now translated into a 4-bullet list of likely causes
+
+Unresolved / next steps:
+- The user still needs to actually add the Redirect URI to their Google Cloud Console OAuth client — that's an action only they can take
+- After successful OAuth, run a full produce→upload cycle to verify uploads
