@@ -1,16 +1,22 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUrl, getYouTubeConfig } from '@/engine/youtube-client'
 import { db } from '@/lib/db'
 import { randomUUID } from 'crypto'
 
 /**
- * GET /api/youtube/auth
+ * GET /api/youtube/auth?redirect_uri=<optional override>
  * Initiates the YouTube OAuth 2.0 flow.
  * Generates a CSRF state, stores it, and returns the Google authorization URL.
+ * The optional `redirect_uri` query param lets the caller override the env-based
+ * YOUTUBE_REDIRECT_URI — useful when the user registered a different URI in
+ * Google Cloud Console than what's in .env.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const config = getYouTubeConfig()
+
+    // Optional override from query string
+    const overrideRedirectUri = request.nextUrl.searchParams.get('redirect_uri')?.trim() || undefined
 
     // Check if credentials are configured
     if (!config.clientId || !config.clientSecret) {
@@ -23,7 +29,7 @@ export async function GET() {
           '2. Create a new project or select existing one',
           '3. Enable YouTube Data API v3',
           '4. Go to Credentials → Create OAuth 2.0 Client ID',
-          '5. Set redirect URI to: ' + config.redirectUri,
+          '5. Set redirect URI to: ' + (overrideRedirectUri || config.redirectUri),
           '6. Copy Client ID and Client Secret to your .env file',
         ],
       }, { status: 400 })
@@ -57,13 +63,13 @@ export async function GET() {
       update: { csrfState: state },
     })
 
-    // Generate the Google authorization URL
-    const authUrl = getAuthUrl(state)
+    // Generate the Google authorization URL (with optional redirect URI override)
+    const authUrl = getAuthUrl(state, overrideRedirectUri)
 
     return NextResponse.json({
       authUrl,
       state,
-      redirectUri: config.redirectUri,
+      redirectUri: overrideRedirectUri || config.redirectUri,
     })
   } catch (e: any) {
     console.error('YouTube auth init error:', e)

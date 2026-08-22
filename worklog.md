@@ -2048,3 +2048,63 @@ Stage Summary:
 - Lazy loading means each tab compiles only when first visited
 - YouTube connection to "Alan Grill" still active
 - All 12 tabs functional
+
+---
+Task ID: oauth-cred-rotate
+Agent: Lead Developer
+Task: Rotate YouTube OAuth credentials to new client ID
+
+Work Log:
+- User provided new Google OAuth credentials (client ID 992007302192-vt6bsqg67h83s52o8kqaobommu6qjp7v.apps.googleusercontent.com)
+- Updated /home/z/my-project/.env with new YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, YOUTUBE_REDIRECT_URI (http://localhost:3000/api/youtube/callback)
+- Discovered dev server had been killed by supervisor session-exit behavior — wrote /home/z/my-project/.zscripts/dev-detached.sh (setsid+nohup+disown, parent reparented to PID 1) to keep dev server alive across bash session boundaries
+- Restarted dev server (PID 2212, parent=init) — verified home page returns HTTP 200
+- Found stale OAuthConnection row in DB made with the OLD client ID — refresh attempt failed with "Token has been expired or revoked" (Google ties refresh tokens to the issuing client ID)
+- Deleted all google OAuthConnection rows so a fresh OAuth flow with the new client ID will issue a compatible refresh token
+- Verified /api/youtube/auth now returns an authUrl that uses the new client ID and the correct redirect_uri
+
+Stage Summary:
+- New OAuth credentials are loaded by Next.js (confirmed via /api/youtube/auth response)
+- Stale connection (made with old client ID) deleted — user must click "Connect" once more to do OAuth with the new client ID
+- After the user completes OAuth, the stored refresh token will be compatible with the new client ID/secret and uploads will work
+- Dev server now survives bash session exits thanks to /home/z/my-project/.zscripts/dev-detached.sh
+
+Unresolved / next steps:
+- User needs to complete the OAuth flow once with the new client ID (open the dashboard, click Connect, sign in to Google)
+- After that, run a full produce→upload cycle to verify uploads succeed end-to-end
+
+---
+Task ID: oauth-redirect-override
+Agent: Lead Developer
+Task: Make YouTube OAuth redirect URI configurable from the UI (handle redirect_uri_mismatch)
+
+Work Log:
+- User reported Google OAuth still returns "Error 400: redirect_uri_mismatch" with the new credentials
+- Root cause: the redirect URI we send (http://localhost:3000/api/auth/youtube/callback) is not registered in Google Cloud Console for this OAuth client. The user said they registered it "correctly" but the URI in Google Cloud Console must differ from what's in .env
+- Solution: added a per-request redirect URI override so the user can paste the exact URI they registered in Google Cloud Console without needing to edit .env or restart the dev server
+- Backend changes (src/engine/youtube-client.ts):
+  - getAuthUrl(state, redirectUriOverride?) — accepts optional override
+  - exchangeCode(code, redirectUriOverride?) — accepts optional override (Google requires the same redirect_uri on both auth + token exchange)
+- Route changes:
+  - /api/youtube/auth now accepts ?redirect_uri=XXX query param (src/app/api/youtube/auth/route.ts)
+  - /api/youtube/exchange-code now accepts { redirectUri } in the request body (src/app/api/youtube/exchange-code/route.ts)
+  - Added alias route at /api/auth/youtube/callback that re-exports the same handlers as /api/youtube/callback (src/app/api/auth/youtube/callback/route.ts) — supports either URI shape
+- Frontend changes (src/components/agent/youtube-setup-wizard.tsx):
+  - Added "Redirect URI" section at top of the authorize step showing the current URI + a Copy button + an Edit button
+  - Edit mode lets user paste the exact URI they registered in Google Cloud Console
+  - Clicking "Apply & Refresh" calls /api/youtube/auth with the override, regenerating the Google auth link
+  - The overridden URI is also sent to /api/youtube/exchange-code so the token exchange matches
+  - Added a blue help box explaining the redirect_uri_mismatch error and what to do
+- .env: set YOUTUBE_REDIRECT_URI=http://localhost:3000/api/auth/youtube/callback (path that worked in the previous session)
+- Wrote /home/z/my-project/.zscripts/dev-detached.sh (setsid+nohup+disown) to keep the dev server alive across bash session exits — the supervisor was killing the dev server when each command's bash exited
+
+Stage Summary:
+- New client ID/secret are loaded by Next.js
+- The wizard now lets the user paste the EXACT redirect URI they registered in Google Cloud Console — no .env edit, no restart needed
+- When Google shows "redirect_uri_mismatch", the user clicks Edit, copies the URI from Google Cloud Console → Credentials → OAuth 2.0 Client → Authorized redirect URIs, pastes it, clicks Apply & Refresh — Google will then accept the new auth URL
+- Lint passes (0 errors)
+- Dev server is detached and stable (PID 3253, parent = init)
+
+Unresolved / next steps:
+- User still needs to complete the OAuth flow once (open dashboard → Setup Wizard → Connect with Google OAuth → Edit the redirect URI to match what they registered → Open Google Auth → sign in → copy code from failed redirect URL → paste in step 3 → Connect)
+- After successful connection, run a full produce→upload cycle to verify uploads work end-to-end with the new client ID

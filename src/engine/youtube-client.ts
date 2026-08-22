@@ -38,12 +38,17 @@ export function getYouTubeConfig(): YouTubeConfig {
   }
 }
 
-/** Generate the OAuth authorization URL */
-export function getAuthUrl(state: string): string {
+/**
+ * Generate the OAuth authorization URL.
+ * If `redirectUriOverride` is provided, it's used instead of the env value —
+ * this lets the wizard send exactly the URI the user registered in Google Cloud Console.
+ */
+export function getAuthUrl(state: string, redirectUriOverride?: string): string {
   const config = getYouTubeConfig()
+  const redirectUri = redirectUriOverride || config.redirectUri
   const params = new URLSearchParams({
     client_id: config.clientId,
-    redirect_uri: config.redirectUri,
+    redirect_uri: redirectUri,
     response_type: 'code',
     scope: REQUIRED_SCOPES.join(' '),
     access_type: 'offline',
@@ -53,13 +58,21 @@ export function getAuthUrl(state: string): string {
   return `${YOUTUBE_AUTH_URL}?${params.toString()}`
 }
 
-/** Exchange authorization code for tokens */
-export async function exchangeCode(code: string): Promise<{
+/**
+ * Exchange authorization code for tokens.
+ * The `redirectUriOverride` MUST match the redirect_uri used in the auth URL —
+ * Google validates this on token exchange.
+ */
+export async function exchangeCode(
+  code: string,
+  redirectUriOverride?: string,
+): Promise<{
   accessToken: string
   refreshToken: string
   expiresIn: number
 }> {
   const config = getYouTubeConfig()
+  const redirectUri = redirectUriOverride || config.redirectUri
   const res = await fetch(YOUTUBE_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -67,7 +80,7 @@ export async function exchangeCode(code: string): Promise<{
       code,
       client_id: config.clientId,
       client_secret: config.clientSecret,
-      redirect_uri: config.redirectUri,
+      redirect_uri: redirectUri,
       grant_type: 'authorization_code',
     }),
   })

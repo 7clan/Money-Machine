@@ -51,6 +51,10 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
   const [copied, setCopied] = useState('')
   const [channelTitle, setChannelTitle] = useState('')
   const [showUnverifiedHelp, setShowUnverifiedHelp] = useState(false)
+  const [redirectUri, setRedirectUri] = useState('')
+  const [editingRedirectUri, setEditingRedirectUri] = useState(false)
+  const [redirectUriDraft, setRedirectUriDraft] = useState('')
+  const [loadingAuth, setLoadingAuth] = useState(false)
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
@@ -58,15 +62,13 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
     setTimeout(() => setCopied(''), 2000)
   }
 
-  const redirectUri = typeof window !== 'undefined'
-    ? `${window.location.origin}/api/youtube/callback`
-    : 'http://localhost:3000/api/youtube/callback'
-
-  // Start the OAuth flow — get auth URL from backend
-  const startOAuth = async () => {
+  // Start the OAuth flow — get auth URL from backend (with optional redirect URI override)
+  const startOAuth = async (overrideUri?: string) => {
     setError('')
+    setLoadingAuth(true)
     try {
-      const res = await fetch('/api/youtube/auth')
+      const qs = overrideUri ? `?redirect_uri=${encodeURIComponent(overrideUri)}` : ''
+      const res = await fetch(`/api/youtube/auth${qs}`)
       const data = await res.json()
 
       if (!res.ok) {
@@ -86,13 +88,25 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
 
       setAuthUrl(data.authUrl)
       setAuthState(data.state)
+      setRedirectUri(data.redirectUri)
+      setRedirectUriDraft(data.redirectUri)
       setStep('authorize')
     } catch (e: any) {
       setError(e.message || 'Network error')
+    } finally {
+      setLoadingAuth(false)
     }
   }
 
-  // Exchange the authorization code for tokens
+  // Re-fetch the auth URL with the edited redirect URI
+  const applyRedirectUriEdit = async () => {
+    const trimmed = redirectUriDraft.trim()
+    if (!trimmed) return
+    setEditingRedirectUri(false)
+    await startOAuth(trimmed)
+  }
+
+  // Exchange the authorization code for tokens (passing the redirect URI so it matches the auth URL)
   const exchangeAuthCode = async () => {
     const code = extractCode(authCode)
     if (!code) return
@@ -102,7 +116,7 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
       const res = await fetch('/api/youtube/exchange-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, state: authState }),
+        body: JSON.stringify({ code, state: authState, redirectUri }),
       })
       const data = await res.json()
 
@@ -170,7 +184,7 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                 <motion.button
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
-                  onClick={startOAuth}
+                  onClick={() => startOAuth()}
                   className="w-full p-4 rounded-xl border-2 border-red-500/30 bg-red-500/5 hover:bg-red-500/10 text-left transition-all group"
                 >
                   <div className="flex items-start gap-3">
@@ -295,7 +309,7 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                   <Button variant="ghost" size="sm" onClick={() => setStep('method')} className="text-slate-400 hover:text-slate-200 gap-1">
                     <ArrowLeft className="w-3 h-3" /> Back
                   </Button>
-                  <Button size="sm" onClick={startOAuth} className="bg-red-600 hover:bg-red-500 text-white gap-1.5">
+                  <Button size="sm" onClick={() => startOAuth()} className="bg-red-600 hover:bg-red-500 text-white gap-1.5">
                     <Youtube className="w-3.5 h-3.5" /> Connect Now
                   </Button>
                 </div>
@@ -311,6 +325,70 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                   </DialogTitle>
                   <DialogDescription className="text-slate-400">Follow these 3 steps to authorize the app with your Google account</DialogDescription>
                 </DialogHeader>
+
+                {/* ── Redirect URI (editable) — must match what's in Google Cloud Console ── */}
+                <div className="p-3 rounded-lg bg-slate-800/40 border border-slate-700/40 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <Globe className="w-3.5 h-3.5 text-blue-400" /> Redirect URI
+                    </p>
+                    {!editingRedirectUri && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-[10px] text-slate-400 hover:text-slate-200 gap-1"
+                        onClick={() => { setRedirectUriDraft(redirectUri); setEditingRedirectUri(true) }}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                  </div>
+                  {!editingRedirectUri ? (
+                    <div className="flex items-center gap-2 p-2 rounded bg-slate-900/80 border border-slate-700/50">
+                      <code className="text-[10px] text-amber-300 font-mono break-all flex-1">{redirectUri}</code>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 shrink-0 text-slate-400 hover:text-slate-200"
+                        onClick={() => copyToClipboard(redirectUri, 'redirect')}
+                      >
+                        {copied === 'redirect' ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        value={redirectUriDraft}
+                        onChange={e => setRedirectUriDraft(e.target.value)}
+                        placeholder="http://localhost:3000/api/youtube/callback"
+                        className="bg-slate-900/80 border-slate-700/50 text-slate-200 placeholder:text-slate-500 text-xs h-9 font-mono"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 h-7 text-[11px] border-slate-700 text-slate-300 hover:text-slate-100 gap-1"
+                          onClick={() => { setEditingRedirectUri(false); setRedirectUriDraft(redirectUri) }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1 h-7 text-[11px] bg-red-600 hover:bg-red-500 text-white gap-1"
+                          onClick={applyRedirectUriEdit}
+                          disabled={!redirectUriDraft.trim() || loadingAuth}
+                        >
+                          {loadingAuth ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                          Apply &amp; Refresh
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        Paste the exact URI you registered in Google Cloud Console → APIs &amp; Services → Credentials → OAuth 2.0 Client.
+                        Editing this regenerates the Google authorization link with your custom redirect URI.
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 {/* ── Step 1: Open Google Auth ── */}
                 <div className="space-y-2">
@@ -346,6 +424,20 @@ export function YouTubeSetupWizard({ open, onOpenChange, onComplete, onDemoMode 
                       {copied === 'authUrl' ? 'Copied!' : 'Copy Link'}
                     </Button>
                   </div>
+                </div>
+
+                {/* ── Hint about redirect_uri_mismatch ── */}
+                <div className="rounded-lg bg-blue-500/8 border border-blue-500/20 p-3 text-xs text-blue-300/90 space-y-1.5">
+                  <p className="font-medium flex items-center gap-1.5">
+                    <HelpCircle className="w-3.5 h-3.5" /> Seeing &quot;Error 400: redirect_uri_mismatch&quot;?
+                  </p>
+                  <p className="text-blue-300/70 leading-relaxed">
+                    The URI above must <strong className="text-blue-200">exactly match</strong> what you registered in
+                    Google Cloud Console (same path, port, scheme — no trailing slash unless you added one).
+                    Click <strong className="text-blue-200">Edit</strong> next to the Redirect URI above,
+                    paste the URI from Google Cloud Console → Credentials → OAuth 2.0 Client → Authorized redirect URIs,
+                    then click <strong className="text-blue-200">Apply &amp; Refresh</strong>.
+                  </p>
                 </div>
 
                 {/* ── Unverified App Help (collapsible) ── */}

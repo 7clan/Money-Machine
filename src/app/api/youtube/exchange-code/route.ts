@@ -12,7 +12,7 @@ import { db } from '@/lib/db'
  */
 export async function POST(request: NextRequest) {
   try {
-    const { code, state } = await request.json()
+    const { code, state, redirectUri } = await request.json()
 
     if (!code) {
       return NextResponse.json({
@@ -32,8 +32,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Exchange code for tokens
-    const tokens = await exchangeCode(code)
+    // Exchange code for tokens (with optional redirect URI override — MUST match
+    // whatever was sent in the original auth URL, or Google rejects the exchange)
+    const tokens = await exchangeCode(code, redirectUri)
 
     // Fetch YouTube channel info
     let channelTitle = ''
