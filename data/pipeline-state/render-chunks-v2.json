@@ -44,8 +44,11 @@
       ],
       "startTime": 29.136000000000003,
       "duration": 27.576,
-      "status": "RENDERING",
-      "verified": false
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk2.mp4",
+      "frameCount": 827,
+      "renderMs": 74127
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -57,7 +60,7 @@
       ],
       "startTime": 26.184,
       "duration": 26.544,
-      "status": "PENDING",
+      "status": "RENDERING",
       "verified": false
     },
     {
