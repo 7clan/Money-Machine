@@ -1078,9 +1078,9 @@
       "movement": "static",
       "overlay": "In 2007, Nokia controlled 50% of the global smartp",
       "transitionIn": "fade_in",
-      "transitionOut": "hard_cut",
+      "transitionOut": "crossfade",
       "musicCue": "dramatic sting followed by subtle tension",
-      "reason": "Visualize the shocking scale of Nokia's collapse"
+      "reason": "HOOK: Dramatic market share visualization"
     },
     {
       "id": "edl_2",
@@ -1091,10 +1091,10 @@
       "visualPurpose": "Establish that Nokia had early access to smartphone technology",
       "movement": "pan_right",
       "overlay": "The smartphone revolution didn't catch Nokia by su",
-      "transitionIn": "hard_cut",
+      "transitionIn": "crossfade",
       "transitionOut": "hard_cut",
       "musicCue": "Subtle ticking clock",
-      "reason": "Establish that Nokia had early access to smartphone technology"
+      "reason": "SETUP: Timeline showing early smartphone development"
     },
     {
       "id": "edl_3",
@@ -1106,9 +1106,9 @@
       "movement": "static",
       "overlay": "Research reveals a surprising culprit: shared fear",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "fade_in",
       "musicCue": "Low, ominous drone",
-      "reason": "Introduce the psychological aspect of Nokia's failure"
+      "reason": "QUESTION: Abstract representation of organizational fear"
     },
     {
       "id": "edl_4",
@@ -1119,10 +1119,10 @@
       "visualPurpose": "Show how organizational culture prevented critical information from reaching leadership",
       "movement": "pan_left",
       "overlay": "These fears created a culture where bad news was s",
-      "transitionIn": "hard_cut",
+      "transitionIn": "fade_in",
       "transitionOut": "hard_cut",
       "musicCue": "Muffled voices, distorted sounds",
-      "reason": "Show how organizational culture prevented critical information from reaching leadership"
+      "reason": "EVIDENCE: Visual representation of information flow being blocked"
     },
     {
       "id": "edl_5",
@@ -1134,9 +1134,9 @@
       "movement": "static",
       "overlay": "When Apple launched the iPhone in 2007, Nokia had ",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "crossfade",
       "musicCue": "Tech startup buzz, then silence",
-      "reason": "Demonstrate that Nokia had the capability but failed to execute"
+      "reason": "REVEAL: Side-by-side comparison of early Nokia concept vs. iPhone"
     },
     {
       "id": "edl_6",
@@ -1147,10 +1147,10 @@
       "visualPurpose": "Illustrate how organizational inertia prevented necessary change",
       "movement": "zoom_in",
       "overlay": "Their Symbian operating system was outdated, but i",
-      "transitionIn": "hard_cut",
+      "transitionIn": "crossfade",
       "transitionOut": "hard_cut",
       "musicCue": "Clock ticking, growing more urgent",
-      "reason": "Illustrate how organizational inertia prevented necessary change"
+      "reason": "EVIDENCE: Flowchart showing decision points and missed opportunities"
     },
     {
       "id": "edl_7",
@@ -1162,9 +1162,9 @@
       "movement": "static",
       "overlay": "Over-confidence in their market position blinded N",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "fade_in",
       "musicCue": "Ego-driven music, then fading",
-      "reason": "Show how hubris affected decision-making"
+      "reason": "REVEAL: Visual representation of arrogance and missed signals"
     },
     {
       "id": "edl_8",
@@ -1175,10 +1175,10 @@
       "visualPurpose": "Analytical",
       "movement": "pan_right",
       "overlay": "Internal silos prevented collaboration between dif",
-      "transitionIn": "hard_cut",
+      "transitionIn": "fade_in",
       "transitionOut": "hard_cut",
       "musicCue": "Fragmented, disconnected sounds",
-      "reason": "Analytical"
+      "reason": "EVIDENCE: Organizational chart showing disconnected departments"
     },
     {
       "id": "edl_9",
@@ -1190,9 +1190,9 @@
       "movement": "static",
       "overlay": "The company's focus shifted from innovation to fin",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "crossfade",
       "musicCue": "Calculator sounds, then innovation sounds fading",
-      "reason": "Critical"
+      "reason": "REVEAL: Balance sheet vs. product development visual"
     },
     {
       "id": "edl_10",
@@ -1203,10 +1203,10 @@
       "visualPurpose": "Concern",
       "movement": "pan_left",
       "overlay": "Key engineers and designers left for competitors, ",
-      "transitionIn": "hard_cut",
+      "transitionIn": "crossfade",
       "transitionOut": "hard_cut",
       "musicCue": "Draining water, footsteps leaving",
-      "reason": "Concern"
+      "reason": "EVIDENCE: Visual representation of talent leaving the organization"
     },
     {
       "id": "edl_11",
@@ -1218,9 +1218,9 @@
       "movement": "static",
       "overlay": "Their response to the iPhone was too little, too l",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "fade_in",
       "musicCue": "Crickets, then negative audience murmurs",
-      "reason": "Disappointment"
+      "reason": "REVEAL: Product launch visuals with negative reviews"
     },
     {
       "id": "edl_12",
@@ -1231,10 +1231,10 @@
       "visualPurpose": "Urgency",
       "movement": "zoom_in",
       "overlay": "By 2010, Android was gaining momentum while Nokia'",
-      "transitionIn": "hard_cut",
+      "transitionIn": "fade_in",
       "transitionOut": "hard_cut",
       "musicCue": "Accelerating heartbeat",
-      "reason": "Urgency"
+      "reason": "EVIDENCE: Market share comparison chart"
     },
     {
       "id": "edl_13",
@@ -1246,9 +1246,9 @@
       "movement": "static",
       "overlay": "Their partnership with Microsoft in 2011 came too ",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "crossfade",
       "musicCue": "Fading hope, then silence",
-      "reason": "Resignation"
+      "reason": "REVEAL: Partnership announcement with subsequent decline visuals"
     },
     {
       "id": "edl_14",
@@ -1259,10 +1259,10 @@
       "visualPurpose": "Instructive",
       "movement": "pan_right",
       "overlay": "The lesson is clear: even dominant companies can f",
-      "transitionIn": "hard_cut",
+      "transitionIn": "crossfade",
       "transitionOut": "hard_cut",
       "musicCue": "Building sounds, then stable foundation",
-      "reason": "Instructive"
+      "reason": "TRANSITION: Visual representation of healthy vs. toxic organizational cu"
     },
     {
       "id": "edl_15",
@@ -1274,9 +1274,9 @@
       "movement": "static",
       "overlay": "Companies that survive disruption embrace psycholo",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "fade_in",
       "musicCue": "Open, collaborative sounds",
-      "reason": "Empowering"
+      "reason": "REVEAL: Visual representation of healthy organizational dynamics"
     },
     {
       "id": "edl_16",
@@ -1287,10 +1287,10 @@
       "visualPurpose": "Reflective",
       "movement": "pan_left",
       "overlay": "By 2013, Nokia sold its smartphone division to Mic",
-      "transitionIn": "hard_cut",
+      "transitionIn": "fade_in",
       "transitionOut": "hard_cut",
       "musicCue": "Finality, then reflective music",
-      "reason": "Reflective"
+      "reason": "PAYOFF: Final acquisition visuals with contrast to earlier dominance"
     },
     {
       "id": "edl_17",
@@ -1302,9 +1302,9 @@
       "movement": "static",
       "overlay": "Nokia's story isn't just about technology - it's a",
       "transitionIn": "hard_cut",
-      "transitionOut": "hard_cut",
+      "transitionOut": "crossfade",
       "musicCue": "Reflective, thoughtful music",
-      "reason": "Thoughtful"
+      "reason": "ENDING: Final visual of Nokia's journey with reflective overlay"
     },
     {
       "id": "edl_18",
@@ -1315,10 +1315,10 @@
       "visualPurpose": "Conclusive",
       "movement": "zoom_in",
       "overlay": "The smartphone war wasn't just fought in the marke",
-      "transitionIn": "hard_cut",
+      "transitionIn": "crossfade",
       "transitionOut": "fade_out",
       "musicCue": "Final, conclusive music sting",
-      "reason": "Conclusive"
+      "reason": "ENDING: Final visual contrasting Nokia's peak with its decline"
     }
   ],
   "assets": [

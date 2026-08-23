@@ -1,0 +1,90 @@
+{
+  "contentId": "cmt4yh4nf000bmajq976v6csn",
+  "totalChunks": 6,
+  "chunks": [
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 0,
+      "beatIds": [
+        "beat_1",
+        "beat_2",
+        "beat_3"
+      ],
+      "startTime": 18.816000000000003,
+      "duration": 27.936,
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk0.mp4",
+      "frameCount": 838,
+      "renderMs": 77696
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 1,
+      "beatIds": [
+        "beat_4",
+        "beat_5",
+        "beat_6"
+      ],
+      "startTime": 26.64,
+      "duration": 28.368000000000002,
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk1.mp4",
+      "frameCount": 851,
+      "renderMs": 64692
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 2,
+      "beatIds": [
+        "beat_7",
+        "beat_8",
+        "beat_9"
+      ],
+      "startTime": 29.136000000000003,
+      "duration": 27.576,
+      "status": "RENDERING",
+      "verified": false
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 3,
+      "beatIds": [
+        "beat_10",
+        "beat_11",
+        "beat_12"
+      ],
+      "startTime": 26.184,
+      "duration": 26.544,
+      "status": "PENDING",
+      "verified": false
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 4,
+      "beatIds": [
+        "beat_13",
+        "beat_15",
+        "beat_16"
+      ],
+      "startTime": 25.104,
+      "duration": 26.183999999999997,
+      "status": "PENDING",
+      "verified": false
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 5,
+      "beatIds": [
+        "beat_14",
+        "beat_17",
+        "beat_18"
+      ],
+      "startTime": 20.925551,
+      "duration": 21.957551000000002,
+      "status": "PENDING",
+      "verified": false
+    }
+  ]
+}
