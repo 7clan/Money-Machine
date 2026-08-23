@@ -1,12 +1,13 @@
 {
   "videoProjectId": "cmt4yh4nf000bmajq976v6csn",
-  "stage": "init",
+  "stage": "asset_acquisition",
   "startedAt": "2026-08-23T00:35:29.119Z",
   "completedStages": [
     "reference_research",
     "master_plan",
     "tts",
-    "edl"
+    "edl",
+    "asset_acquisition"
   ],
   "errors": [],
   "researchPack": [
@@ -1456,6 +1457,141 @@
       "metadata": {
         "width": 1920,
         "height": 1080
+      }
+    },
+    {
+      "id": "f2ee1bf9-bdfa-45c2-8fe3-4ca5d6996fba",
+      "type": "ZAI_IMAGE",
+      "storyBeatId": "beat_10",
+      "localPath": "data/assets/04f53c98-9706-4f16-a2ce-4a74cf03202d.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.991Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "3586352f-2bde-4fb9-9b22-f2f9afd26d6d",
+      "type": "DOCUMENT",
+      "storyBeatId": "beat_11",
+      "localPath": "data/assets/1de5260d-8e2c-4441-b017-d03682b86c20.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "28cd0787-6191-4609-955f-ed417ebf08ab",
+      "type": "ORIGINAL_CHART",
+      "storyBeatId": "beat_12",
+      "localPath": "data/assets/1e6546b2-52fb-4e83-abdd-ca0101d4530c.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "15ceeeb8-c8da-4493-be96-ef9a6c338565",
+      "type": "DOCUMENT",
+      "storyBeatId": "beat_13",
+      "localPath": "data/assets/1eeafa7d-47b5-401b-a9bd-23cb97fc90e1.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "3b94229b-8b12-4dbb-b2f9-708cb6b70d08",
+      "type": "ZAI_IMAGE",
+      "storyBeatId": "beat_15",
+      "localPath": "data/assets/27e37b68-31af-4624-b42c-12574a10c1fb.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "330e2e52-abff-45c2-9754-e4b49a6985b5",
+      "type": "ZAI_IMAGE",
+      "storyBeatId": "beat_16",
+      "localPath": "data/assets/317f46b9-0ef6-462b-bb9b-e6e06f160a17.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "6561b5c7-69a3-4d6b-8746-9e3569f9d5aa",
+      "type": "ORIGINAL_SCREEN_RECORDING",
+      "storyBeatId": "beat_14",
+      "localPath": "data/assets/3f6a6385-fd3c-4729-8107-1ca8a653eca5.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "6d3e4383-35f3-4c5d-8dd0-6fe5466a93cb",
+      "type": "ZAI_IMAGE",
+      "storyBeatId": "beat_17",
+      "localPath": "data/assets/4e9e4c59-8a72-4163-b57c-86bdd37e88f0.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
+      }
+    },
+    {
+      "id": "af164a15-80d6-4395-9094-1109dd5a477b",
+      "type": "ZAI_IMAGE",
+      "storyBeatId": "beat_18",
+      "localPath": "data/assets/63643c70-e3a1-470e-a1cf-150d15ec277b.png",
+      "creator": "Acquired during pipeline",
+      "license": "Generated",
+      "commercialUse": true,
+      "attributionRequired": false,
+      "retrievalDate": "2026-08-23T12:16:45.992Z",
+      "metadata": {
+        "width": 1344,
+        "height": 768
       }
     }
   ]

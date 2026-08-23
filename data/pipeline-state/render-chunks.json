@@ -1,0 +1,54 @@
+{
+  "projectId": "cmt4yh4nf000bmajq976v6csn",
+  "totalChunks": 5,
+  "chunks": [
+    {
+      "index": 0,
+      "beats": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "status": "RENDERING"
+    },
+    {
+      "index": 1,
+      "beats": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "status": "PENDING"
+    },
+    {
+      "index": 2,
+      "beats": [
+        8,
+        9,
+        10,
+        11
+      ],
+      "status": "PENDING"
+    },
+    {
+      "index": 3,
+      "beats": [
+        12,
+        13,
+        14,
+        15
+      ],
+      "status": "PENDING"
+    },
+    {
+      "index": 4,
+      "beats": [
+        16,
+        17
+      ],
+      "status": "PENDING"
+    }
+  ]
+}
