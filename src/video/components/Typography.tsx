@@ -13,10 +13,11 @@ interface TypographyComponentProps {
   frame: number
   fps: number
   durationFrames: number
+  text?: string  // optional: override the narration with a specific text
 }
 
-export const TypographyComponent: React.FC<TypographyComponentProps> = ({ beat, frame, durationFrames }) => {
-  const text = beat.narration
+export const TypographyComponent: React.FC<TypographyComponentProps> = ({ beat, frame, durationFrames, text: textProp }) => {
+  const text = textProp || beat.narration
   // Split into words for staggered reveal
   const words = text.split(/\s+/)
   const wordsRevealed = Math.floor(

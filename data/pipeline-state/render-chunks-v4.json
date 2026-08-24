@@ -1,0 +1,96 @@
+{
+  "contentId": "cmt4yh4nf000bmajq976v6csn",
+  "totalChunks": 6,
+  "chunks": [
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 0,
+      "beatIds": [
+        "beat_1",
+        "beat_2",
+        "beat_3"
+      ],
+      "status": "COMPLETE",
+      "verified": true,
+      "lastError": null,
+      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk0.mp4",
+      "frameCount": 838,
+      "renderMs": 73649
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 1,
+      "beatIds": [
+        "beat_4",
+        "beat_5",
+        "beat_6"
+      ],
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk1.mp4",
+      "frameCount": 851,
+      "renderMs": 67987,
+      "lastError": null
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 2,
+      "beatIds": [
+        "beat_7",
+        "beat_8",
+        "beat_9"
+      ],
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk2.mp4",
+      "frameCount": 827,
+      "renderMs": 68112,
+      "lastError": null
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 3,
+      "beatIds": [
+        "beat_10",
+        "beat_11",
+        "beat_12"
+      ],
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk3.mp4",
+      "frameCount": 796,
+      "renderMs": 64136,
+      "lastError": null
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 4,
+      "beatIds": [
+        "beat_13",
+        "beat_15",
+        "beat_16"
+      ],
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk4.mp4",
+      "frameCount": 786,
+      "renderMs": 61522,
+      "lastError": null
+    },
+    {
+      "contentId": "cmt4yh4nf000bmajq976v6csn",
+      "chunkIndex": 5,
+      "beatIds": [
+        "beat_14",
+        "beat_17",
+        "beat_18"
+      ],
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk5.mp4",
+      "frameCount": 659,
+      "renderMs": 57879,
+      "lastError": null
+    }
+  ]
+}
