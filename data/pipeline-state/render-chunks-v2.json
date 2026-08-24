@@ -16,7 +16,8 @@
       "verified": true,
       "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk0.mp4",
       "frameCount": 838,
-      "renderMs": 77696
+      "renderMs": 94963,
+      "lastError": null
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -32,7 +33,8 @@
       "verified": true,
       "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk1.mp4",
       "frameCount": 851,
-      "renderMs": 64692
+      "renderMs": 95509,
+      "lastError": null
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -48,7 +50,8 @@
       "verified": true,
       "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk2.mp4",
       "frameCount": 827,
-      "renderMs": 74127
+      "renderMs": 104894,
+      "lastError": null
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -60,8 +63,12 @@
       ],
       "startTime": 26.184,
       "duration": 26.544,
-      "status": "RENDERING",
-      "verified": false
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk3.mp4",
+      "frameCount": 796,
+      "renderMs": 136997,
+      "lastError": null
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -73,8 +80,12 @@
       ],
       "startTime": 25.104,
       "duration": 26.183999999999997,
-      "status": "PENDING",
-      "verified": false
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk4.mp4",
+      "frameCount": 786,
+      "renderMs": 73786,
+      "lastError": null
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -85,9 +96,13 @@
         "beat_18"
       ],
       "startTime": 20.925551,
-      "duration": 21.957551000000002,
-      "status": "PENDING",
-      "verified": false
+      "duration": 19.921995,
+      "status": "COMPLETE",
+      "verified": true,
+      "outputPath": "/home/z/my-project/data/videos/chunks/cmt4yh4nf000bmajq976v6csn_chunk5.mp4",
+      "frameCount": 659,
+      "renderMs": 58356,
+      "lastError": null
     }
   ]
 }

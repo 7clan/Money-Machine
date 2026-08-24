@@ -93,7 +93,7 @@ async function renderChunk(
 
   // Build assets for this chunk — use real assets where available
   const realManifest = JSON.parse(await readFile(path.join(DATA_DIR, 'pipeline-state', 'real-assets-manifest.json'), 'utf-8'))
-  const chunkAssets = chunkBeats.map((beat: any) => {
+  const chunkAssets = chunkBeats.map((beat: any, beatIndex: number) => {
     const realAsset = realManifest.assets.find((a: any) => a.beatId === beat.id)
     if (realAsset && realAsset.localPath && existsSync(realAsset.localPath)) {
       return {
@@ -110,7 +110,55 @@ async function renderChunk(
         metadata: {},
       }
     }
-    // For chart/timeline/document/typography beats — Remotion renders them, no external asset
+    // For beats without real assets: check if this is a chart/timeline/document beat
+    // If NOT, use an existing Z.ai image so we get a PhotoComposition instead of text-only
+    const narration = (beat.narration || '').toLowerCase()
+    const needsChart = /\b(percent|market share|billion|\$|revenue|chart|graph|data)\b/.test(narration)
+    const needsTimeline = /\b(2007|2008|2009|2010|2011|2012|2013|timeline|sequence|year)\b/.test(narration)
+    const needsDocument = /\b(memo|document|headline|quote|burning platform|announced)\b/.test(narration)
+    
+    if (needsChart || needsTimeline || needsDocument) {
+      // These beats get Remotion components (no external asset needed)
+      return {
+        id: `component_${beat.id}`,
+        type: 'ORIGINAL_GRAPHIC',
+        storyBeatId: beat.id,
+        localPath: '',
+        creator: 'Remotion',
+        license: 'Original',
+        commercialUse: true,
+        attributionRequired: false,
+        retrievalDate: new Date().toISOString(),
+        metadata: {},
+      }
+    }
+    
+    // For other beats without real assets: use an existing Z.ai image
+    // This prevents text-only slides and gives visual variety
+    // Use existing Z.ai images for visual variety (prevents text-only slides)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('fs')
+    const aiImages = fs.readdirSync('/home/z/my-project/data/assets').filter((f: string) => f.endsWith('.png'))
+    if (aiImages.length > 0) {
+      const imgName = aiImages[beatIndex % aiImages.length]
+      const imgPath = `/home/z/my-project/data/assets/${imgName}`
+      if (existsSync(imgPath)) {
+        return {
+          id: `zai_${beat.id}`,
+          type: 'ZAI_IMAGE',
+          storyBeatId: beat.id,
+          localPath: imgPath,
+          creator: 'Z.ai generated',
+          license: 'Generated content',
+          commercialUse: true,
+          attributionRequired: false,
+          retrievalDate: new Date().toISOString(),
+          metadata: {},
+        }
+      }
+    }
+    
+    // Last resort: Remotion component
     return {
       id: `component_${beat.id}`,
       type: 'ORIGINAL_GRAPHIC',
