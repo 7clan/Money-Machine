@@ -1,0 +1,368 @@
+[
+  {
+    "beatId": "beat_1",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.0,
+        "desc": "Nokia 3310 product photo (Wikimedia)",
+        "anim": "ken_burns_in"
+      },
+      {
+        "type": "CHART",
+        "dur": 4.0,
+        "desc": "Animated market share chart: Nokia 50% in 2007",
+        "anim": "build_up"
+      },
+      {
+        "type": "TIMELINE",
+        "dur": 2.0,
+        "desc": "Year marker: 2007",
+        "anim": "slide_in"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 2.4,
+        "desc": "Key stat: '50% global market share' large text",
+        "anim": "fade_in"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_2",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.5,
+        "desc": "Nokia N97 product photo (Wikimedia)",
+        "anim": "pan_right"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 3.9,
+        "desc": "Citation card: 'Nokia had early warning signals \u2014 Insead study, 2015'",
+        "anim": "typewriter"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_3",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.0,
+        "desc": "Stephen Elop photo (Wikimedia)",
+        "anim": "ken_burns_in"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 3.0,
+        "desc": "Quote card: 'shared fears among middle and top management'",
+        "anim": "highlight_reveal"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 3.1,
+        "desc": "'The culprit wasn't technology \u2014 it was fear' \u2014 key phrase",
+        "anim": "word_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_4",
+    "shots": [
+      {
+        "type": "DIAGRAM",
+        "dur": 4.0,
+        "desc": "Organizational diagram: hierarchy with 'fear' blocking upward communication",
+        "anim": "progressive_build"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 4.3,
+        "desc": "Citation: 'culture where bad news was suppressed' \u2014 Insead research",
+        "anim": "highlight_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_5",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.0,
+        "desc": "Original iPhone photo (Wikimedia)",
+        "anim": "ken_burns_in"
+      },
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.0,
+        "desc": "Nokia phone photo side-by-side with iPhone",
+        "anim": "split_screen"
+      },
+      {
+        "type": "TIMELINE",
+        "dur": 3.2,
+        "desc": "Timeline: Jan 2007 \u2014 iPhone launch marker",
+        "anim": "slide_in"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_6",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.5,
+        "desc": "Nokia N70 with Symbian (Wikimedia)",
+        "anim": "pan_left"
+      },
+      {
+        "type": "DIAGRAM",
+        "dur": 4.0,
+        "desc": "Symbian architecture diagram: layers showing complexity",
+        "anim": "progressive_build"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 3.3,
+        "desc": "'Internal resistance prevented a meaningful response'",
+        "anim": "highlight_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_7",
+    "shots": [
+      {
+        "type": "CHART",
+        "dur": 4.0,
+        "desc": "Nokia market share chart 2007: dominant position highlighted",
+        "anim": "build_up"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 3.0,
+        "desc": "'Over-confidence blinded Nokia to the changing landscape'",
+        "anim": "word_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_8",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.5,
+        "desc": "Nokia HQ building (Wikimedia)",
+        "anim": "ken_burns_out"
+      },
+      {
+        "type": "DIAGRAM",
+        "dur": 4.0,
+        "desc": "Silo diagram: departments isolated, arrows blocked",
+        "anim": "progressive_build"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 3.8,
+        "desc": "'Internal silos prevented collaboration'",
+        "anim": "highlight_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_9",
+    "shots": [
+      {
+        "type": "CHART",
+        "dur": 4.5,
+        "desc": "Nokia stock price decline chart: financial engineering vs innovation",
+        "anim": "build_up"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 4.8,
+        "desc": "'Focus shifted from innovation to financial engineering'",
+        "anim": "word_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_10",
+    "shots": [
+      {
+        "type": "DIAGRAM",
+        "dur": 3.5,
+        "desc": "Brain drain diagram: arrows leaving Nokia toward competitors",
+        "anim": "progressive_build"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 3.7,
+        "desc": "'Key engineers left for competitors'",
+        "anim": "highlight_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_11",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.5,
+        "desc": "Nokia Lumia product photo (Wikimedia)",
+        "anim": "pan_right"
+      },
+      {
+        "type": "TIMELINE",
+        "dur": 3.0,
+        "desc": "Timeline: 2009 N97 launch \u2192 2011 Microsoft deal \u2192 2013 sale",
+        "anim": "slide_in"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 3.1,
+        "desc": "'Too little, too late'",
+        "anim": "word_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_12",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.0,
+        "desc": "Android logo (Wikimedia)",
+        "anim": "fade_in"
+      },
+      {
+        "type": "CHART",
+        "dur": 4.0,
+        "desc": "Market share chart: Android rising, Nokia falling, 2010-2013",
+        "anim": "build_up"
+      },
+      {
+        "type": "TIMELINE",
+        "dur": 2.6,
+        "desc": "Timeline: Android's growth trajectory",
+        "anim": "slide_in"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_13",
+    "shots": [
+      {
+        "type": "TIMELINE",
+        "dur": 3.0,
+        "desc": "Timeline: Feb 2011 \u2014 Microsoft partnership announced",
+        "anim": "slide_in"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 3.0,
+        "desc": "'Partnership came too late and failed to revive fortunes'",
+        "anim": "highlight_reveal"
+      },
+      {
+        "type": "CHART",
+        "dur": 2.6,
+        "desc": "Nokia stock drop after announcement: -14%",
+        "anim": "build_up"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_14",
+    "shots": [
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 2.0,
+        "desc": "'$7.2 billion \u2014 a fraction of Nokia's peak value'",
+        "anim": "impact_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_15",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 3.5,
+        "desc": "Nokia logo/brand (Wikimedia)",
+        "anim": "fade_out"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 3.4,
+        "desc": "'Even dominant companies can fail if they let fear stifle innovation'",
+        "anim": "word_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_16",
+    "shots": [
+      {
+        "type": "DIAGRAM",
+        "dur": 4.0,
+        "desc": "Comparison: 'Fear-based culture' vs 'Psychological safety culture'",
+        "anim": "progressive_build"
+      },
+      {
+        "type": "DOCUMENT",
+        "dur": 3.5,
+        "desc": "'Survivors embrace psychological safety, encourage dissent'",
+        "anim": "highlight_reveal"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 3.2,
+        "desc": "'Innovation requires psychological safety'",
+        "anim": "word_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_17",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 4.0,
+        "desc": "Nokia logo (Wikimedia) \u2014 slow fade",
+        "anim": "ken_burns_out"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 4.2,
+        "desc": "'Nokia's story isn't just about technology'",
+        "anim": "word_reveal"
+      }
+    ]
+  },
+  {
+    "beatId": "beat_18",
+    "shots": [
+      {
+        "type": "REAL_PHOTO",
+        "dur": 4.0,
+        "desc": "Nokia HQ building (Wikimedia) \u2014 final shot",
+        "anim": "ken_burns_out"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 4.0,
+        "desc": "'The smartphone war was lost in the boardrooms of Espoo'",
+        "anim": "word_reveal"
+      },
+      {
+        "type": "TYPOGRAPHY",
+        "dur": 3.8,
+        "desc": "'Not in the marketplace, but in the minds of those who feared change'",
+        "anim": "fade_in"
+      }
+    ]
+  }
+]
