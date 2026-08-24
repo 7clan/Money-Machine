@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevTools Demo App</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; color: #333; }
+.navbar { background: #2563eb; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+.navbar h1 { color: white; font-size: 20px; }
+.navbar button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+.container { max-width: 900px; margin: 32px auto; padding: 0 24px; }
+.card { background: white; border-radius: 12px; padding: 32px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 2px solid transparent; }
+.card h2 { font-size: 24px; margin-bottom: 16px; color: #1e40af; }
+.card p { font-size: 16px; line-height: 1.6; color: #555; margin-bottom: 16px; }
+.btn { background: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: background 0.2s; }
+.btn:hover { background: #1e40af; }
+.status { padding: 12px 16px; border-radius: 8px; margin-top: 16px; font-size: 14px; }
+.status.idle { background: #f3f4f6; color: #6b7280; }
+.status.loading { background: #fef3c7; color: #92400e; }
+.status.success { background: #d1fae5; color: #065f46; }
+.status.error { background: #fee2e2; color: #991b1b; }
+.user-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 16px; }
+.user-item { background: #f9fafb; padding: 16px; border-radius: 8px; text-align: center; }
+.user-item img { width: 48px; height: 48px; border-radius: 50%; margin-bottom: 8px; }
+.user-item .name { font-weight: 600; font-size: 14px; }
+.user-item .email { font-size: 12px; color: #6b7280; }
+@media (max-width: 768px) {
+  .navbar { flex-direction: column; gap: 12px; }
+  .user-list { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <h1>DevTools Demo</h1>
+  <button id="loadUsers">Load Users</button>
+</nav>
+<div class="container">
+  <div class="card" id="profileCard">
+    <h2>User Profile</h2>
+    <p>This card has a blue border-radius of 12px. Try changing it in DevTools!</p>
+    <button class="btn" onclick="toggleHighlight()">Toggle Highlight</button>
+    <div class="status idle" id="status">Ready</div>
+  </div>
+  <div class="card">
+    <h2>User Directory</h2>
+    <p>Click "Load Users" to fetch real data via API.</p>
+    <div class="user-list" id="userList"></div>
+  </div>
+</div>
+<script>
+async function loadUsers() {
+  const status = document.getElementById('status');
+  const list = document.getElementById('userList');
+  status.className = 'status loading';
+  status.textContent = 'Loading users...';
+  try {
+    const res = await fetch('https://jsonplaceholder.typicode.com/users');
+    const users = await res.json();
+    list.innerHTML = users.slice(0, 6).map(u => `
+      <div class="user-item">
+        <img src="https://i.pravatar.cc/48?u=${u.id}" alt="${u.name}">
+        <div class="name">${u.name}</div>
+        <div class="email">${u.email}</div>
+      </div>
+    `).join('');
+    status.className = 'status success';
+    status.textContent = 'Loaded ' + users.length + ' users successfully!';
+  } catch (e) {
+    status.className = 'status error';
+    status.textContent = 'Error: ' + e.message;
+  }
+}
+document.getElementById('loadUsers').addEventListener('click', loadUsers);
+
+function toggleHighlight() {
+  const card = document.getElementById('profileCard');
+  if (card.style.borderColor === 'transparent' || !card.style.borderColor) {
+    card.style.borderColor = '#2563eb';
+    card.style.borderWidth = '3px';
+  } else {
+    card.style.borderColor = 'transparent';
+    card.style.borderWidth = '2px';
+  }
+}
+
+// Expose for Console demo
+window.demoApp = {
+  title: 'DevTools Demo',
+  users: [],
+  getStatus: () => document.getElementById('status').textContent,
+  changeTitle: (newTitle) => { document.querySelector('.navbar h1').textContent = newTitle; },
+  changeRadius: (px) => { document.querySelectorAll('.card').forEach(c => c.style.borderRadius = px + 'px'); }
+};
+</script>
+</body>
+</html>
