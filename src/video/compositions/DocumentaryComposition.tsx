@@ -21,8 +21,8 @@ import { LowerThirdOverlay } from '../components/LowerThirdOverlay'
 
 export const DOCUMENTARY_COMP_ID = 'documentary'
 export const DOCUMENTARY_FPS = 30
-export const DOCUMENTARY_WIDTH = 1280
-export const DOCUMENTARY_HEIGHT = 720
+export const DOCUMENTARY_WIDTH = 1920
+export const DOCUMENTARY_HEIGHT = 1080
 
 interface DocumentaryCompositionProps {
   shots: VisualShot[]

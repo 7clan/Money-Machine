@@ -15,12 +15,12 @@ import path from 'path'
 
 const exec = promisify(execFile)
 const DATA_DIR = path.join(process.cwd(), 'data')
-const CHUNKS_DIR = path.join(DATA_DIR, 'videos', 'chunks-v4')
-const CHECKPOINT_PATH = path.join(DATA_DIR, 'pipeline-state', 'render-chunks-v4.json')
+const CHUNKS_DIR = path.join(DATA_DIR, 'videos', 'chunks-1080p')
+const CHECKPOINT_PATH = path.join(DATA_DIR, 'pipeline-state', 'render-chunks-1080p.json')
 const PROJECT_ID = 'cmt4yh4nf000bmajq976v6csn'
 const FPS = 30
-const WIDTH = 1280
-const HEIGHT = 720
+const WIDTH = 1920
+const HEIGHT = 1080
 
 async function probeDuration(filePath: string): Promise<number> {
   try {
@@ -75,7 +75,7 @@ async function renderChunk(
   const durationInFrames = Math.max(30, Math.round(totalDur * FPS))
 
   // Copy real assets to public for Remotion staticFile
-  const publicDir = path.join(process.cwd(), 'public', 'remotion-assets', `${PROJECT_ID}_v4_chunk${chunkIndex}`)
+  const publicDir = path.join(process.cwd(), 'public', 'remotion-assets', `${PROJECT_ID}_1080p_chunk${chunkIndex}`)
   if (!existsSync(publicDir)) await mkdir(publicDir, { recursive: true })
 
   // Map beat IDs to real asset paths
@@ -89,7 +89,7 @@ async function renderChunk(
       if (!existsSync(destPath)) {
         await writeFile(destPath, await readFile(realAsset.localPath))
       }
-      realAssetMap.set(beatId, `/remotion-assets/${PROJECT_ID}_v4_chunk${chunkIndex}/${destName}`)
+      realAssetMap.set(beatId, `/remotion-assets/${PROJECT_ID}_1080p_chunk${chunkIndex}/${destName}`)
     }
   }
 
@@ -100,7 +100,7 @@ async function renderChunk(
   }))
 
   // Concatenate audio
-  const chunkAudioPath = path.join(CHUNKS_DIR, `${PROJECT_ID}_v4_chunk${chunkIndex}_audio.mp3`)
+  const chunkAudioPath = path.join(CHUNKS_DIR, `${PROJECT_ID}_1080p_chunk${chunkIndex}_audio.mp3`)
   if (!existsSync(chunkAudioPath)) {
     const listPath = chunkAudioPath + '.txt'
     await writeFile(listPath, chunkAudio.map((a: any) => `file '${a.audioPath}'`).join('\n'))
@@ -109,7 +109,7 @@ async function renderChunk(
   }
 
   // Normalize audio
-  const chunkFinalAudioPath = path.join(CHUNKS_DIR, `${PROJECT_ID}_v4_chunk${chunkIndex}_final.aac`)
+  const chunkFinalAudioPath = path.join(CHUNKS_DIR, `${PROJECT_ID}_1080p_chunk${chunkIndex}_final.aac`)
   if (!existsSync(chunkFinalAudioPath)) {
     await exec('ffmpeg', ['-i', chunkAudioPath, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', chunkFinalAudioPath, '-y'])
   }
@@ -137,7 +137,7 @@ async function renderChunk(
   composition.width = WIDTH
   composition.height = HEIGHT
 
-  const outputPath = path.join(CHUNKS_DIR, `${PROJECT_ID}_v4_chunk${chunkIndex}.mp4`)
+  const outputPath = path.join(CHUNKS_DIR, `${PROJECT_ID}_1080p_chunk${chunkIndex}.mp4`)
   console.log(`  [chunk ${chunkIndex}] Rendering ${durationInFrames} frames, ${chunkShots.length} shots...`)
 
   const renderStart = Date.now()
@@ -252,7 +252,7 @@ async function main() {
 
   // Assemble
   console.log(`\n=== ASSEMBLING V4 MASTER ===`)
-  const finalPath = path.join(DATA_DIR, 'videos', 'nokia-documentary-review-v4.mp4')
+  const finalPath = path.join(DATA_DIR, 'videos', 'nokia-documentary-nokia-documentary-final-1080p.mp4')
   const chunkPaths = chunkState.chunks.map((c: any) => c.outputPath).filter(Boolean)
   const listPath = finalPath + '.concat.txt'
   await writeFile(listPath, chunkPaths.map((p: string) => `file '${p}'`).join('\n'))

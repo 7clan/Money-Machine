@@ -12,10 +12,9 @@
       ],
       "status": "COMPLETE",
       "verified": true,
-      "lastError": null,
-      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk0.mp4",
+      "outputPath": "/home/z/my-project/data/videos/chunks-1080p/cmt4yh4nf000bmajq976v6csn_1080p_chunk0.mp4",
       "frameCount": 838,
-      "renderMs": 73649
+      "renderMs": 112601
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -27,10 +26,9 @@
       ],
       "status": "COMPLETE",
       "verified": true,
-      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk1.mp4",
+      "outputPath": "/home/z/my-project/data/videos/chunks-1080p/cmt4yh4nf000bmajq976v6csn_1080p_chunk1.mp4",
       "frameCount": 851,
-      "renderMs": 67987,
-      "lastError": null
+      "renderMs": 101936
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -42,10 +40,9 @@
       ],
       "status": "COMPLETE",
       "verified": true,
-      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk2.mp4",
+      "outputPath": "/home/z/my-project/data/videos/chunks-1080p/cmt4yh4nf000bmajq976v6csn_1080p_chunk2.mp4",
       "frameCount": 827,
-      "renderMs": 68112,
-      "lastError": null
+      "renderMs": 116262
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -57,10 +54,9 @@
       ],
       "status": "COMPLETE",
       "verified": true,
-      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk3.mp4",
+      "outputPath": "/home/z/my-project/data/videos/chunks-1080p/cmt4yh4nf000bmajq976v6csn_1080p_chunk3.mp4",
       "frameCount": 796,
-      "renderMs": 64136,
-      "lastError": null
+      "renderMs": 139549
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -72,10 +68,9 @@
       ],
       "status": "COMPLETE",
       "verified": true,
-      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk4.mp4",
+      "outputPath": "/home/z/my-project/data/videos/chunks-1080p/cmt4yh4nf000bmajq976v6csn_1080p_chunk4.mp4",
       "frameCount": 786,
-      "renderMs": 61522,
-      "lastError": null
+      "renderMs": 177681
     },
     {
       "contentId": "cmt4yh4nf000bmajq976v6csn",
@@ -87,10 +82,9 @@
       ],
       "status": "COMPLETE",
       "verified": true,
-      "outputPath": "/home/z/my-project/data/videos/chunks-v4/cmt4yh4nf000bmajq976v6csn_v4_chunk5.mp4",
+      "outputPath": "/home/z/my-project/data/videos/chunks-1080p/cmt4yh4nf000bmajq976v6csn_1080p_chunk5.mp4",
       "frameCount": 659,
-      "renderMs": 57879,
-      "lastError": null
+      "renderMs": 98390
     }
   ]
 }
