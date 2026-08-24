@@ -1,0 +1,81 @@
+[
+  {
+    "id": "intro",
+    "type": "INTRO",
+    "narration": "Here are five Chrome DevTools features I use every single day. Let me show you what they do.",
+    "shots": [
+      {"type": "SCREEN_CAPTURE", "desc": "DevTools demo app loaded in browser", "dur": 2},
+      {"type": "SHORT_TYPOGRAPHY", "desc": "5 DevTools Tricks Every Developer Should Know", "dur": 3}
+    ]
+  },
+  {
+    "id": "trick1_css",
+    "type": "TRICK",
+    "narration": "You don't need to edit your source files just to test a design change. Open the Elements panel, find the CSS rule, and change the value directly. Watch — I'll change the border radius from twelve pixels to thirty-two. The page updates instantly. No save, no reload, no build step.",
+    "shots": [
+      {"type": "SCREEN_CAPTURE", "desc": "Demo app with cards at 12px border-radius", "dur": 3},
+      {"type": "UI_HIGHLIGHT", "desc": "Highlight Elements panel in DevTools", "dur": 2},
+      {"type": "CURSOR_ACTION", "desc": "Cursor moves to Styles panel, border-radius field", "dur": 2},
+      {"type": "CODE_ENTRY", "desc": "Value changes from 12px to 32px", "dur": 2},
+      {"type": "RESULT_CONFIRMATION", "desc": "Cards visibly become rounder", "dur": 3}
+    ]
+  },
+  {
+    "id": "trick2_console",
+    "type": "TRICK",
+    "narration": "The Console isn't just for reading logs. It's a live JavaScript REPL. You can run any code against the current page. For example, I can grab the title element and change its text right here. The page updates immediately. No editor required.",
+    "shots": [
+      {"type": "SCREEN_CAPTURE", "desc": "Demo app with original title 'DevTools Demo'", "dur": 3},
+      {"type": "UI_HIGHLIGHT", "desc": "Highlight Console tab in DevTools", "dur": 2},
+      {"type": "CODE_ENTRY", "desc": "Type: document.querySelector('h1').textContent = 'Hello from Console!'", "dur": 3},
+      {"type": "RESULT_CONFIRMATION", "desc": "Title changes to 'Hello from Console!'", "dur": 3}
+    ]
+  },
+  {
+    "id": "trick3_network",
+    "type": "TRICK",
+    "narration": "If an API call fails, the Network panel tells you exactly what happened. I'll click Load Users, which fetches data from a local API. The request appears here. Click it, and you can see the headers that were sent, the response body, and the timing breakdown. Everything you need to debug a failed request.",
+    "shots": [
+      {"type": "SCREEN_CAPTURE", "desc": "Demo app with empty user list", "dur": 3},
+      {"type": "CURSOR_ACTION", "desc": "Click 'Load Users' button", "dur": 2},
+      {"type": "SCREEN_CAPTURE", "desc": "Network panel shows /api/users request", "dur": 2},
+      {"type": "UI_HIGHLIGHT", "desc": "Highlight the /api/users request in Network panel", "dur": 2},
+      {"type": "UI_ZOOM", "desc": "Zoom to Headers tab showing request/response headers", "dur": 2},
+      {"type": "UI_ZOOM", "desc": "Zoom to Response tab showing JSON body", "dur": 2},
+      {"type": "RESULT_CONFIRMATION", "desc": "Return to page showing 6 loaded user cards", "dur": 2}
+    ]
+  },
+  {
+    "id": "trick4_offline",
+    "type": "TRICK",
+    "narration": "Want to test how your app handles no internet? The Network panel has a throttling dropdown. Set it to Offline, reload the page, and you can see exactly what happens when the connection drops. The page fails to load, and you can debug the error handling — all without pulling your ethernet cable.",
+    "shots": [
+      {"type": "SCREEN_CAPTURE", "desc": "Demo app loaded normally", "dur": 2},
+      {"type": "UI_HIGHLIGHT", "desc": "Highlight the throttling dropdown in Network panel", "dur": 2},
+      {"type": "CURSOR_ACTION", "desc": "Select 'Offline' from the dropdown", "dur": 2},
+      {"type": "SCREEN_CAPTURE", "desc": "Page reload triggered", "dur": 1},
+      {"type": "RESULT_CONFIRMATION", "desc": "ERR_INTERNET_DISCONNECTED error visible", "dur": 3}
+    ]
+  },
+  {
+    "id": "trick5_device",
+    "type": "TRICK",
+    "narration": "Testing responsive design doesn't require a pile of phones. Toggle the Device Toolbar, and you can simulate any viewport size. Watch the navbar collapse and the layout reflow as I switch from desktop to a mobile width. You can test breakpoints instantly.",
+    "shots": [
+      {"type": "SCREEN_CAPTURE", "desc": "Desktop layout at 1280px width", "dur": 2},
+      {"type": "UI_HIGHLIGHT", "desc": "Highlight the Device Toolbar toggle button", "dur": 2},
+      {"type": "CURSOR_ACTION", "desc": "Click toggle to enable Device Mode", "dur": 2},
+      {"type": "CURSOR_ACTION", "desc": "Change viewport width to 375px", "dur": 2},
+      {"type": "RESULT_CONFIRMATION", "desc": "Navbar stacks vertically, single-column layout", "dur": 3}
+    ]
+  },
+  {
+    "id": "outro",
+    "type": "OUTRO",
+    "narration": "Those are five DevTools features that save me time every day. Live CSS editing, the Console as a REPL, Network inspection, offline testing, and Device Mode. Try them in your next project.",
+    "shots": [
+      {"type": "SHORT_TYPOGRAPHY", "desc": "5 DevTools Tricks recap list", "dur": 4},
+      {"type": "SCREEN_CAPTURE", "desc": "DevTools demo app final state", "dur": 2}
+    ]
+  }
+]
