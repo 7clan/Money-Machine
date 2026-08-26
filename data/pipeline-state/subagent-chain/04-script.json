@@ -1,0 +1,64 @@
+{
+  "id": "script-procrastination-brain-time-hack",
+  "segments": [
+    {
+      "id": "seg-1",
+      "type": "HOOK",
+      "narration": "Why does future you feel like a stranger your brain is willing to betray?",
+      "screenAction": "Split screen showing present self enjoying distractions while future self looks increasingly stressed and overwhelmed",
+      "expectedResult": "Viewers recognize their own procrastination patterns and feel intrigued",
+      "visualPurpose": "Immediately establishes the core conflict between present and future self"
+    },
+    {
+      "id": "seg-2",
+      "type": "SETUP",
+      "narration": "Your brain's temporal discounting system makes immediate rewards feel more valuable than future ones.",
+      "screenAction": "Animation showing brain regions lighting up when presented with immediate vs delayed rewards",
+      "expectedResult": "Viewers understand the biological basis of procrastination",
+      "visualPurpose": "Visualizes the neuroscience concept in an accessible way"
+    },
+    {
+      "id": "seg-3",
+      "type": "TRICK",
+      "narration": "This isn't laziness—it's your brain's survival mechanism prioritizing the present.",
+      "screenAction": "Historical timeline showing how temporal discounting evolved in humans for survival",
+      "expectedResult": "Viewers reframe procrastination as a biological trait, not a character flaw",
+      "visualPurpose": "Provides evolutionary context to reduce self-blame"
+    },
+    {
+      "id": "seg-4",
+      "type": "SECTION",
+      "narration": "When we procrastinate, we're essentially mugging our future selves.",
+      "screenAction": "Metaphorical animation showing present self stealing resources from future self",
+      "expectedResult": "Viewers feel the consequences of their procrastination more personally",
+      "visualPurpose": "Makes abstract consequences tangible and relatable"
+    },
+    {
+      "id": "seg-5",
+      "type": "SECTION",
+      "narration": "The key is making your future self feel more present and real to your brain.",
+      "screenAction": "Interactive exercise where viewers visualize their future self in detail",
+      "expectedResult": "Viewers begin to develop empathy for their future selves",
+      "visualPurpose": "Engages viewers in a practical exercise to bridge the temporal gap"
+    },
+    {
+      "id": "seg-6",
+      "type": "PAYOFF",
+      "narration": "Implementation intentions: if-then planning bridges the present-future divide.",
+      "screenAction": "Before-and-after examples showing how specific if-then statements reduce procrastination",
+      "expectedResult": "Viewers learn a concrete technique to apply immediately",
+      "visualPurpose": "Demonstrates the solution with clear, actionable examples"
+    },
+    {
+      "id": "seg-7",
+      "type": "ENDING",
+      "narration": "Rewire your relationship with time by making your future self feel like someone worth helping today.",
+      "screenAction": "Present and future selves reaching across time to high-five, merging into one",
+      "expectedResult": "Viewers feel empowered to change their relationship with time",
+      "visualPurpose": "Provides a hopeful, actionable closing image"
+    }
+  ],
+  "archetype": "DEEP_DIVE_DOC",
+  "tone": "Reassuring scientific",
+  "targetDuration": 75
+}

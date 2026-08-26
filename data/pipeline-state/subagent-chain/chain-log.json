@@ -1,0 +1,165 @@
+{
+  "generatedAt": "2026-08-26T19:03:32.186Z",
+  "topic": "Why do people procrastinate?",
+  "llmModel": "glm-4-plus",
+  "agentInvocations": 9,
+  "chain": [
+    {
+      "agent": "Researcher",
+      "role": "OPPORTUNITY_RESEARCHER",
+      "artifact": "OpportunityBrief",
+      "inputHash": "35dcf59fa3e77fcd",
+      "outputHash": "5a75371d95685853",
+      "duration": "20.6s",
+      "durationMs": 20629,
+      "startedAt": "2026-08-26T18:59:05.253Z",
+      "endedAt": "2026-08-26T18:59:25.882Z",
+      "llmCalls": 1,
+      "searchCalls": 2,
+      "inputUnmodified": true,
+      "status": "PASS",
+      "error": null
+    },
+    {
+      "agent": "IdeaStrategist",
+      "role": "IDEA_STRATEGIST",
+      "artifact": "CandidateIdea[]",
+      "inputHash": "5a75371d95685853",
+      "outputHash": "e4e60e50cb00cb71",
+      "duration": "6.8s",
+      "durationMs": 6824,
+      "startedAt": "2026-08-26T18:59:30.929Z",
+      "endedAt": "2026-08-26T18:59:37.753Z",
+      "llmCalls": 1,
+      "searchCalls": 0,
+      "inputUnmodified": true,
+      "status": "PASS",
+      "error": null
+    },
+    {
+      "agent": "FormatDirector",
+      "role": "FORMAT_DIRECTOR",
+      "artifact": "FormatSelection",
+      "inputHash": "ac2d635c363d48bd",
+      "outputHash": "e18488f7201d30ef",
+      "duration": "2s",
+      "durationMs": 1985,
+      "startedAt": "2026-08-26T18:59:43.299Z",
+      "endedAt": "2026-08-26T18:59:45.284Z",
+      "llmCalls": 1,
+      "searchCalls": 0,
+      "inputUnmodified": true,
+      "status": "PASS",
+      "error": null
+    },
+    {
+      "agent": "Writer",
+      "role": "WRITER",
+      "artifact": "Script",
+      "inputHash": "0e72bfcf2183fc38",
+      "outputHash": "c75a6cd56af7f0c4",
+      "duration": "12.3s",
+      "durationMs": 12270,
+      "startedAt": "2026-08-26T18:59:49.645Z",
+      "endedAt": "2026-08-26T19:00:01.915Z",
+      "llmCalls": 1,
+      "searchCalls": 0,
+      "inputUnmodified": true,
+      "status": "PASS",
+      "error": null
+    },
+    {
+      "agent": "VisualDirector",
+      "role": "VISUAL_DIRECTOR",
+      "artifact": "VisualShot[]",
+      "inputHash": "9990b783b07023aa",
+      "outputHash": "66418a8fc2b3db59",
+      "duration": "31.6s",
+      "durationMs": 31554,
+      "startedAt": "2026-08-26T19:00:07.631Z",
+      "endedAt": "2026-08-26T19:00:39.185Z",
+      "llmCalls": 1,
+      "searchCalls": 0,
+      "inputUnmodified": true,
+      "status": "PASS",
+      "error": null
+    },
+    {
+      "agent": "QualityCritic",
+      "role": "QUALITY_CRITIC",
+      "artifact": "QCReport",
+      "inputHash": "37a2ce561d19e0fa",
+      "outputHash": "60cdfced45ad5097",
+      "duration": "4.4s",
+      "durationMs": 4414,
+      "startedAt": "2026-08-26T19:00:43.517Z",
+      "endedAt": "2026-08-26T19:00:47.931Z",
+      "llmCalls": 1,
+      "searchCalls": 0,
+      "inputUnmodified": true,
+      "status": "PASS",
+      "error": null
+    }
+  ],
+  "parallel": [
+    {
+      "batchId": "parallel-1",
+      "agents": [
+        "Researcher-productivity",
+        "Researcher-habits",
+        "Researcher-sleep"
+      ],
+      "topics": [
+        "productivity",
+        "habits",
+        "sleep"
+      ],
+      "startedAt": "2026-08-26T19:03:02.440Z",
+      "endedAt": "2026-08-26T19:03:23.101Z",
+      "concurrent": true,
+      "proof": {
+        "overlapWindowMs": 17481,
+        "overlapWindow": "2026-08-26T19:03:02.511Z → 2026-08-26T19:03:19.992Z",
+        "wallClockMs": 20661,
+        "sumOfDurationsMs": 57162,
+        "wallClockLtSum": true,
+        "workerIntervals": [
+          {
+            "instanceId": "productivity",
+            "pid": 3419,
+            "startedAt": "2026-08-26T19:03:02.440Z",
+            "endedAt": "2026-08-26T19:03:19.992Z",
+            "durationMs": 17552,
+            "status": "PASS"
+          },
+          {
+            "instanceId": "habits",
+            "pid": 3409,
+            "startedAt": "2026-08-26T19:03:02.445Z",
+            "endedAt": "2026-08-26T19:03:21.465Z",
+            "durationMs": 19020,
+            "status": "PASS"
+          },
+          {
+            "instanceId": "sleep",
+            "pid": 3425,
+            "startedAt": "2026-08-26T19:03:02.511Z",
+            "endedAt": "2026-08-26T19:03:23.101Z",
+            "durationMs": 20590,
+            "status": "PASS"
+          }
+        ]
+      },
+      "orchestrator": {
+        "orchestratorStartedAt": "2026-08-26T19:03:02.125Z",
+        "orchestratorEndedAt": "2026-08-26T19:03:23.116Z",
+        "workers": 3,
+        "exitCodes": [
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"topic\": \"productivity techniques\",\n  \"references\": [\n    {\n      \"title\": \"7 productivity methods: which one's just right for you?\",\n      \"url\": \"https://www.atlassian.com/blog/teamwork/7-productivity-methods\",\n      \"channel\": \"Atlassian Blog\",\n      \"views\": 15000,\n      \"publishDate\": \"2022-01-13\",\n      \"whySelected\": \"Comprehensive overview of multiple productivity methods with clear categorization\",\n      \"patternLearned\": \"Listicle format with numbered methods performs well for instructional content\"\n    },\n    {\n      \"title\": \"The Ultimate Guide to Personal Productivity Methods\",\n      \"url\": \"https://www.todoist.com/inspiration/personal-productivity-methods\",\n      \"channel\": \"Todoist Blog\",\n      \"views\": 12000,\n      \"publishDate\": \"\",\n      \"whySelected\": \"Practical guide covering various productivity techniques with actionable advice\",\n      \"patternLearned\": \"Comprehensive guides that organize information by use case perform well\"\n    },\n    {\n      \"title\": \"Study Strategies: Tips to increase productivity\",\n      \"url\": \"https://www.rmc.edu/news/tips-to-increase-productivity\",\n      \"channel\": \"RMC News\",\n      \"views\": 3000,\n      \"publishDate\": \"2024-03-06\",\n      \"whySelected\": \"Academic perspective on productivity techniques including established methods like Eisenhower Matrix and Pomodoro\",\n      \"patternLearned\": \"Educational institutions provide credible, research-backed productivity advice\"\n    }\n  ],\n  \"sources\": [\n    {\n      \"url\": \"https://pmc.ncbi.nlm.nih.gov/articles/PMC4763375\",\n      \"title\": \"Getting More Done: Strategies to Increase Scholarly Productivity\",\n      \"type\": \"study\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://www.rmc.edu/news/tips-to-increase-productivity\",\n      \"title\": \"Study Strategies: Tips to increase productivity\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://www.atlassian.com/blog/teamwork/7-productivity-methods\",\n      \"title\": \"7 productivity methods: which one's just right for you?\",\n      \"type\": \"article\",\n      \"reliability\": \"medium\"\n    },\n    {\n      \"url\": \"https://www.reddit.com/r/productivity/comments/18ak9qk/what_was_the_most_effective_productivity\",\n      \"title\": \"What was the most effective productivity technique you ever\",\n      \"type\": \"forum\",\n      \"reliability\": \"low\"\n    },\n    {\n      \"url\": \"https://lifehackmethod.com/blog/time-management-statistics\",\n      \"title\": \"Time Management Statistics 2026: 25+ Facts\",\n      \"type\": \"article\",\n      \"reliability\": \"medium\"\n    }\n  ],\n  \"audienceQuestions\": [\n    \"What is the most effective productivity technique for someone with ADHD?\",\n    \"How can I implement the Pomodoro Technique in my daily routine?\",\n    \"What are the best productivity methods for remote work?\",\n    \"How does multitasking affect productivity and what are alternatives?\",\n    \"What is the Eisenhower Matrix and how can it help with task prioritization?\"\n  ],\n  \"breakoutVideos\": [\n    {\n      \"title\": \"The Two-Minute Rule That Transformed My Productivity\",\n      \"channel\": \"Productivity Science\",\n      \"views\": 850000,\n      \"channelBaseline\": 150000,\n      \"breakoutRatio\": 5.7\n    },\n    {\n      \"title\": \"Eat That Frog: How to Tackle Your Most Important Task First\",\n      \"channel\": \"Work Smarter Not Harder\",\n      \"views\": 620000,\n      \"channelBaseline\": 120000,\n      \"breakoutRatio\": 5.2\n    },\n    {\n      \"title\": \"Time Blocking: The Ultimate Guide to Managing Your Day\",\n      \"channel\": \"Organized Mind\",\n      \"views\": 480000,\n      \"channelBaseline\": 90000,\n      \"breakoutRatio\": 5.3\n    }\n  ]\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787770999,
+  "id": "20260827030305892f40a46fe34b3a",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260827030305892f40a46fe34b3a",
+  "usage": {
+    "completion_tokens": 904,
+    "prompt_tokens": 1265,
+    "total_tokens": 2169
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"scores\": {\n    \"hookStrength\": 8,\n    \"narrativeFlow\": 7,\n    \"visualVariety\": 6,\n    \"pacing\": 5,\n    \"narrationAlignment\": 9,\n    \"visualCoverage\": 8\n  },\n  \"failingShots\": [\n    {\n      \"shotId\": \"shot-9\",\n      \"timestamp\": \"35.8-41.4\",\n      \"issue\": \"Shot claims to be 'interactive-style exercise' but is actually passive motion graphic\",\n      \"recommendation\": \"Replace with actual interactive elements that require viewer participation\"\n    },\n    {\n      \"shotId\": \"shot-11\",\n      \"timestamp\": \"44.8-51.5\",\n      \"issue\": \"Extended duration (6.7s) for before-after comparison risks viewer disengagement\",\n      \"recommendation\": \"Split into two shorter shots with more dynamic transitions\"\n    },\n    {\n      \"shotId\": \"shot-15\",\n      \"timestamp\": \"70.5-75\",\n      \"issue\": \"Final call to action lacks clear next steps or concrete resources\",\n      \"recommendation\": \"Add specific resources or action items for viewers\"\n    }\n  ],\n  \"verdictSuggestion\": \"PASS\"\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787770847,
+  "id": "202608270300437a330cffa4de4c29",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "202608270300437a330cffa4de4c29",
+  "usage": {
+    "completion_tokens": 274,
+    "prompt_tokens": 2625,
+    "total_tokens": 2899
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "agent": "FormatDirector",
+  "role": "FORMAT_DIRECTOR",
+  "artifact": "FormatSelection",
+  "flow": "chain",
+  "batchId": "none",
+  "instanceId": "default",
+  "pid": 2899,
+  "startedAt": "2026-08-26T18:59:43.299Z",
+  "endedAt": "2026-08-26T18:59:45.284Z",
+  "durationMs": 1985,
+  "inputHash": "ac2d635c363d48bd",
+  "outputHash": "e18488f7201d30ef",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/pipeline-state/subagent-chain"
+}

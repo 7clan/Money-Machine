@@ -3298,3 +3298,92 @@ Unresolved:
 - Full 18-beat render (~160s) timed out at 20% in this session — Remotion server-side rendering is slow (Chrome Headless Shell renders ~2 frames/sec on this hardware). The 3-beat minimal render (27.9s) completed successfully and proves the pipeline works end-to-end.
 - Z.ai video generation endpoint consistently returns 429 — video-asset beats fell back to Z.ai images. Not a blocker for the minimal render.
 - VLM noted the contact sheet still looks somewhat "slideshow-like" due to similar dark backgrounds — this is expected for a 3-beat test; the full 18-beat render would show more visual diversity across composition types.
+
+---
+## Task ID: D-ANIM-PROOF
+Agent: Animation Proof Builder
+Task: Build a 12-second GLOW HOUR animation proof (Remotion layered character animation) to fix TEST D's VLM "B = slideshow" verdict
+
+Work Log:
+- AUDIT: TEST D assets referenced by the briefing were MISSING in this environment (data/assets/test-d/, data/audio/test-d/, public/test-d/, test-d-series-bible.json, test-d-glow-hour-720p.mp4 — none exist; possibly owned by a parallel agent). Made the proof self-sufficient instead.
+- Generated the canonical GLOW HOUR scene background (empty cobblestone village street at twilight, glowing gas lamps, storybook style) via z-ai image generation → public/test-d/scene-01.png. Note: z-ai image sizes must be multiples of 32 in 512–2880px (1440x720 is invalid → used 1344x768). VLM-verified the street is EMPTY of characters.
+- Built reusable animation primitives in src/video/animation/characterMotion.ts: springEnter (bouncy overshoot), popIn (squash pop), idleBob (breathing), glowPulse, eyeOpenness (seeded blinks), surpriseShake (decaying), hop (parabolic arcs), speakingGlow (word-rhythm + envelope), exitSlide (easeIn accelerate-out), seededRandom + moteDrift (deterministic firefly drift).
+- Built three vector overlay characters in src/video/animation/GlowHourCharacters.tsx (pure inline styles, no external assets): Pip (cream mushroom kid, amber cap, blush, blinking eyes, mouth open/close), Bramble (green lantern creature, brass dome, glowing chest lamp window, amber eyes, speech arcs), Dot (red LED firefly, strobing core, antenna, motion trail). Glows use radial-gradient discs — no CSS blur (render speed on 2-core box).
+- Built AnimatedSceneProof composition (src/video/compositions/AnimatedSceneProof.tsx), 360 frames @ 30fps, 1920x1080, timeline: 0-2s empty scene + ambient glow + Bramble ignition; 2-4s Pip spring-enters from left with 3 decaying bounce hops + landing squash; 4-6s Bramble speaks (glow brightens + speech arcs) while Pip listens (tilt, wide eyes); 6-8s Dot pops in, Pip surprise-shakes then excited-hops; 8-10s all three glow-pulse in sync (group moment + scene flash); 10-12s Pip exits right, Dot follows with trail, Bramble dims to 45%.
+- Registered composition 'animation-proof' in src/video/Root.tsx (backgroundPath prop defaults to test-d/scene-01.png).
+- Rendered via render-animation-proof.ts (@remotion/bundler + @remotion/renderer): 360 frames in ONE chunk (12s ≪ 43s crash ceiling), 81s wall time (~4.4fps), output data/videos/test-d-animation-proof.mp4 (H.264 1920x1080 30fps, 12.05s, 8.51MB).
+- QC: 6 frames sampled at 1/3/5/7/9/11s → all unique MD5s (no static repeats); contact sheet built at data/benchmark/test-d/animation-proof-contact-sheet.jpg (2400x900, 3x2). VLM frame inspection at 7s correctly identified all three characters + caption with no broken shapes.
+
+VERIFICATION — VLM CONTACT-SHEET VERDICT (the point of this task):
+- Question: "Is this an intentionally animated scene with characters that move, react, and interact? A=animated, B=slideshow/static images"
+- VERDICT: **A — ANIMATED** ✅ ("The green character remains relatively stationary while the yellow mushroom enters from the left, moves toward the center, and then exits to the right, demonstrating intentional animation rather than a static slideshow.")
+- Verdict persisted to data/benchmark/test-d/animation-proof-vlm-verdict.json
+- bun run lint: 0 errors. src/video/* is not imported by any Next.js route (Remotion-only); dev.log @remotion/compositor-* warnings are pre-existing from the v3 engine.
+
+Stage Summary:
+- The "AI image generation slideshow" problem is SOLVED for TEST D: layered vector characters that visibly enter, bounce, blink, speak (glow + arcs), react, pulse in sync, and exit read as intentional animation to the VLM.
+- Reusable foundation delivered: characterMotion.ts primitives + GlowHourCharacters.tsx characters + AnimatedSceneProof.tsx timeline pattern + render-animation-proof.ts render path.
+- Work record: agent-ctx/D-ANIM-PROOF-animation-proof-builder.md
+
+Unresolved / next steps:
+- TEST D source assets (scene images, TTS clips, series bible, 58s pilot) still absent from this environment — whoever owns them should put scene images in public/test-d/ and can point backgroundPath at them.
+- Next agent for the full pilot rerender: chunk at ≤43s per render, reuse these characters/primitives, add walk cycles / mouth-flap driven by TTS timing (speakingGlow + hop patterns shown here are the template).
+
+---
+
+## H-SUBAGENT-TEST — Real subagent chain (Researcher → … → QualityCritic) + parallel proof
+
+Task ID: H-SUBAGENT-TEST. Goal: prove REAL isolated agent invocations chained by artifact handoff, plus parallel execution, in this environment.
+
+Delivered (src/agents/):
+- subagentChain.ts — shared invocation runtime: z-ai chat (`zaiChat`, retry+backoff), z-ai web_search (`zaiWebSearch`), robust `extractJson` (strips fences/prose), `zaiChatJson` (schema-validate + corrective retry), `runAgent` wrapper (reads input.json → executes → writes output.json → verifies input.json bit-identical after run → drops telemetry record in runs/).
+- invokeResearcher.ts / invokeIdeaStrategist.ts / invokeFormatDirector.ts / invokeWriter.ts / invokeVisualDirector.ts / invokeQualityCritic.ts — six standalone subagent scripts. Each: isolated process, own chain dir, artifact-only I/O (`bunx tsx src/agents/invokeXxx.ts`), real LLM reasoning (glm-4-plus) + real web search.
+- aggregateSubagentChain.ts — builds chain-log.json from run records with concurrency math (overlap window, wall clock vs sum-of-durations).
+- tmp-scripts/launch-parallel-researchers.sh — simultaneous 3-worker launcher with orchestrator timestamps.
+
+Chain executed end-to-end on topic "Why do people procrastinate?" — 6/6 PASS:
+- Researcher 20.6s (2 web searches, real URLs incl. apa.org) → OpportunityBrief (3 refs / 5 sources / 5 questions / 3 breakouts)
+- IdeaStrategist 6.8s → 3 CandidateIdea[]; LLM scores DETERMINISTICALLY feasibility-merged against live detectCapabilities() registry
+- FormatDirector 2.0s → FormatSelection: idea-2 "Procrastination: Your Brain's Time Perception Hack", DEEP_DIVE_DOC, 6 required caps all verified true on machine, blocked=false
+- Writer 12.3s → Script: 7 segments (HOOK…ENDING), targetDuration 75s
+- VisualDirector 31.6s → 16 VisualShots, timeline normalized contiguous 0→75.0s, every segment covered
+- QualityCritic 4.4s (READ ONLY) → QCReport verdict PASS, 0 fakeUI, 100% realUI, 3 adversarial failing-shot notes; inputUnmodified=true (hash-verified)
+- Artifact integrity: Researcher outputHash 5a75371d95685853 === IdeaStrategist inputHash (cryptographic handoff proof). All 9 invocations inputUnmodified=true.
+
+Parallel proof (parallel-1 batch): 3 Researcher subagents launched simultaneously (pids 3409/3419/3425, starts 19:03:02.440/.445/.511Z — within 71ms), overlap window 17.48s, wall clock 20.66s vs sum-of-durations 57.16s (wallClock < sum ⇒ concurrent=true). Topics: psychology of habits / productivity techniques / sleep science — all PASS with real sources (annualreviews.org, PMC, hopkinsmedicine.org).
+
+Notes/limitations (honest):
+- This environment did NOT expose a literal "Task" tool to me (I run as a subagent with Bash/Read/Write/etc. only). So agent isolation is at PROCESS level: each invocation = fresh process, fresh memory, sees only its input.json — real isolated agent reasoning (LLM per agent role), not orchestrator inlining. 9/9 invocations real; no Task-tool call could be made because no such tool exists here.
+- First parallel attempt hit z-ai HTTP 429 (3 concurrent searches); fixed with retry+backoff in execZai (2s/4s/6s), relaunch 3/3 PASS.
+- Chain artifacts in data/pipeline-state/subagent-chain/: 01-opportunity-brief.json … 06-qc-report.json, chain-log.json, parallel/{habits,productivity,sleep}-brief.json + per-worker dirs.
+- bun run lint: 0 errors (new files clean; pre-existing tsc errors elsewhere untouched).
+
+---
+
+## D-PILOT — GLOW HOUR 50s animated pilot composition + render
+
+Task ID D-PILOT. Goal: scale the proven 12s animation-proof pattern up to a 50-second animated pilot (1500 frames @ 30fps, 1920x1080, no audio — visual proof only) and verify with VLM that it still reads as intentional animation.
+
+Delivered:
+- src/video/compositions/AnimatedPilotComposition.tsx — 'animated-pilot' composition, 1500 frames, pure dark-gradient dusk background (no image asset): layered sky gradient, 22 seeded twinkling stars, breathing moon halo, warm ground pool, ambient lamp halo, group-moment flashes, vignette, 14 drifting motes, GLOW HOUR caption. All motion from the reusable characterMotion primitives + GlowHourCharacters (Pip/Bramble/Dot), no new character code.
+- 4-act structure with continuous visible motion (idle bob + blinks + glow breathing never stop):
+  - ACT 1 (0-12s): Bramble sprouts center stage, lamp flickers on via 7-keyframe ignition (0→0.65→0.15→0.85→0.3→1→1) + persistent jitter, weight-shift sway, 2 small hops, call-out speech (glow + arcs) at 9-11s.
+  - ACT 2 (12-25s): Pip spring-enters left at f390 (3 decaying bounce hops, 80/44/20px, squash-stretch on every landing), shuffles +55px closer; Bramble speaks f440-620 (word-rhythm glow, arcs, lean-in, open mouth); Pip listens (tilt 6°, widened eyes, 2 nod bursts); Pip replies f630-720 (5 hops of 36px, mouth flap).
+  - ACT 3 (25-38s): Dot pops in f780 (popIn spring + trail); Pip surprise-shakes (f786, decaying ±13px) then 5 excited hops of 44px; Dot flies a wide lissajous loop (±230px x / ±110px y) between the two, blended continuously excite→flight→settle; synchronized group glow-pulse f930-1140 (sin 0.42 rad/frame + synced bob + scene flash + mote boost).
+  - ACT 4 (38-50s): settle — Pip one last slow 30px hop (f1160), Dot eases (easeInOut) from flight position down to hover at (715,700) with ramped hover bob; gentle group glow-pulse f1260-1470 (sin 0.16); fade to black f1440-1497; opening 0.5s fade-in from black.
+- Chunk-continuity: all motion is a pure function of the absolute frame number, so the f750 chunk boundary is seamless by construction.
+- Registered in src/video/Root.tsx as 'animated-pilot' (defaultProps {}).
+- render-pilot.ts — bundles once, renders 2 chunks of 750 frames (f0-749, f750-1499; 25s each, safely under the ~43s crash ceiling), resume support (skips chunks already on disk >500KB), ffmpeg concat demuxer -c copy with libx264 re-encode fallback, duration assertion 49.5-51s.
+- Render: chunk 1 in 132s, chunk 2 in 138s (~5.7fps per chunk — faster than the 12s proof's 4.4fps because the background is pure CSS gradients, no image decode), concat clean. Output data/videos/test-d-pilot-animated.mp4: H.264 1920x1080 30fps, 50.09s, 8.88MB (+ silent AAC track Remotion muxes by default).
+
+QC / verification:
+- 6 frames sampled at 2/10/20/30/40/48s → all unique MD5s (no static repeats).
+- Contact sheet (3x2, 800x450 tiles, 2400x900): data/benchmark/test-d/pilot-animated-contact-sheet.jpg
+- VLM verdict (glm-4v-flash, tmp-scripts/vlm-verdict-pilot.ts): **A — ANIMATED** ✅ — "The mushroom character clearly moves from the left side of the screen to the right, and a red glowing orb appears and shifts position in the background. These changes in character location and the introduction of new elements indicate intentional animation rather than a static slideshow." VLM correctly identified Bramble (green lantern), Pip (orange mushroom), Dot (red glowing orb). Saved to data/benchmark/test-d/pilot-animated-vlm-verdict.json.
+- bun run lint: 0 errors. tsc: no new errors (Root.tsx FC-type errors on Documentary/Tutorial compositions are pre-existing, hash-verified via git stash).
+- Note: data/audio/test-d/ TTS clips mentioned in the briefing do not exist in this environment — pilot rendered without audio as specified (audio can be muxed in later).
+
+Stage summary:
+- The animation system is proven at pilot length: 50 seconds of sustained character motion (entrances, hops, shakes, speech, flight, group pulses) rendered in 2 chunks and verified A=animated by VLM.
+- Chunked render path (render-pilot.ts) is the template for any composition >43s: pure-function-of-frame timelines make chunk boundaries free.
+- Work record: agent-ctx/D-PILOT-pilot-composition-builder.md

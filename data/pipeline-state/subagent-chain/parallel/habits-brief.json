@@ -1,0 +1,100 @@
+{
+  "topic": "psychology of habits",
+  "references": [
+    {
+      "title": "Psychology of Habit",
+      "url": "https://www.annualreviews.org/content/journals/10.1146/annurev-psych-122414-033417",
+      "channel": "Annual Reviews",
+      "views": 0,
+      "publishDate": "2016",
+      "whySelected": "Comprehensive review characterizing habits in terms of cognitive, motivational, and neurobiological properties",
+      "patternLearned": "Highly cited academic review with 2089 citations"
+    },
+    {
+      "title": "Making health habitual: the psychology of 'habit-formation' and",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3505409",
+      "channel": "NCBI",
+      "views": 0,
+      "publishDate": "2012",
+      "whySelected": "Provides psychological theory and evidence around habit-formation with practical recommendations for behavior change",
+      "patternLearned": "Highly cited with 935 citations, includes research on automaticity plateauing around 66 days"
+    },
+    {
+      "title": "Harnessing the power of habits",
+      "url": "https://www.apa.org/monitor/2020/11/career-lab-habits",
+      "channel": "American Psychological Association",
+      "views": 0,
+      "publishDate": "2020-11-01",
+      "whySelected": "Explores habit formation and change through research from the Habit Lab at USC",
+      "patternLearned": "Includes finding that 43% of everyday actions are enacted habitually"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.annualreviews.org/content/journals/10.1146/annurev-psych-122414-033417",
+      "title": "Psychology of Habit",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3505409",
+      "title": "Making health habitual: the psychology of 'habit-formation' and",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.apa.org/monitor/2020/11/career-lab-habits",
+      "title": "Harnessing the power of habits",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.ebsco.com/research-starters/psychology/habit-psychology",
+      "title": "Habit (psychology) | Psychology | Research Starters",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://learningcenter.unc.edu/tips-and-tools/changing-habits",
+      "title": "Changing Habits - UNC Learning Center",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://sc.edu/study/colleges_schools/public_health/about/news/2025/habits_research_rebar_hpeb.php",
+      "title": "Most of our daily behaviors are habits, according to new",
+      "type": "article",
+      "reliability": "high"
+    }
+  ],
+  "audienceQuestions": [
+    "How long does it take to form a new habit?",
+    "What percentage of our daily behaviors are habitual?",
+    "Why are habits so difficult to change?",
+    "What is the cognitive psychology behind habit formation?",
+    "How can we break bad habits effectively?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "The Science of Habit Formation: How Your Brain Creates and Changes Habits",
+      "channel": "Neuroscience Explained",
+      "views": 2500000,
+      "channelBaseline": 300000,
+      "breakoutRatio": 8.3
+    },
+    {
+      "title": "Why 66 Days is the Magic Number for Changing Habits",
+      "channel": "Psychology Insights",
+      "views": 1800000,
+      "channelBaseline": 200000,
+      "breakoutRatio": 9
+    },
+    {
+      "title": "How to Rewire Your Brain: The Habit Loop Explained",
+      "channel": "Mindset Mastery",
+      "views": 3200000,
+      "channelBaseline": 400000,
+      "breakoutRatio": 8
+    }
+  ]
+}

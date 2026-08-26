@@ -494,3 +494,22 @@ model YPPProgress {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
+
+model LearningSignal {
+  id                 String   @id @default(cuid())
+  productionId       String?  // links to the production/project
+  videoId            String?  // links to a specific video/upload
+  targetType         String   // idea | format | script | story_beat | visual_shot | hook | title | thumbnail | topic
+  targetId           String?  // specific entity ID within targetType
+  metric             String   // e.g. "ctr", "avd", "retention_at_15s"
+  observation        String   // what was observed
+  evidence           String   // JSON evidence data
+  confidence         Float    @default(0.5) // 0-1
+  proposedAdjustment String   // what to do differently next time
+  source             String   @default("PLATFORM_REPORTED") // PLATFORM_REPORTED | MANUAL | ESTIMATED
+  createdAt          DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([productionId])
+  @@index([createdAt])
+}

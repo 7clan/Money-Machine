@@ -1,0 +1,9 @@
+{
+  "task": "D-ANIM-PROOF",
+  "video": "data/videos/test-d-animation-proof.mp4",
+  "contactSheet": "data/benchmark/test-d/animation-proof-contact-sheet.jpg",
+  "question": "This is a contact sheet of 6 frames sampled every 2 seconds from a short video.\nLook across the frames left-to-right, top-to-bottom (frames at 1s, 3s, 5s, 7s, 9s, 11s).\n\nQuestion: Is this an intentionally animated scene with characters that move, react, and interact?\nOr is it a slideshow of static images (e.g., only slow zoom/pan on stills)?\n\nCriteria: Do characters visibly CHANGE position, pose, expression, or glow between frames?\nDo characters enter and exit the frame? Do they react to each other?\n\nAnswer with exactly one letter first:\nA = animated (characters visibly move, react, and/or interact between frames)\nB = slideshow / static images (no meaningful character motion)\n\nThen explain your reasoning in 2-3 sentences, listing which characters you see and what changes across the frames.",
+  "verdict": "A\n\nThe scene features two characters—a green lantern-like figure and a yellow mushroom-like figure—that clearly move across the frames. The green character remains relatively stationary while the yellow mushroom enters from the left, moves toward the center, and then exits to the right, demonstrating intentional animation rather than a static slideshow.",
+  "firstLetter": "A",
+  "timestamp": "2026-08-26T18:48:40.789Z"
+}

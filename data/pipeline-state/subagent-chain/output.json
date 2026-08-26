@@ -1,0 +1,35 @@
+{
+  "verdict": "PASS",
+  "scores": {
+    "hookStrength": 8,
+    "narrativeFlow": 7,
+    "visualVariety": 6,
+    "pacing": 5,
+    "narrationAlignment": 9,
+    "visualCoverage": 8
+  },
+  "failingShots": [
+    {
+      "shotId": "shot-9",
+      "timestamp": 0,
+      "issue": "Shot claims to be 'interactive-style exercise' but is actually passive motion graphic",
+      "recommendation": "Replace with actual interactive elements that require viewer participation"
+    },
+    {
+      "shotId": "shot-11",
+      "timestamp": 0,
+      "issue": "Extended duration (6.7s) for before-after comparison risks viewer disengagement",
+      "recommendation": "Split into two shorter shots with more dynamic transitions"
+    },
+    {
+      "shotId": "shot-15",
+      "timestamp": 0,
+      "issue": "Final call to action lacks clear next steps or concrete resources",
+      "recommendation": "Add specific resources or action items for viewers"
+    }
+  ],
+  "fakeUICount": 0,
+  "realUIPercentage": 100,
+  "rawVideoPercentage": 0,
+  "staticScreenshotPercentage": 0
+}

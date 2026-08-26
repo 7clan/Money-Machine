@@ -1,0 +1,17 @@
+{
+  "task": "D-PILOT",
+  "video": "data/videos/test-d-pilot-animated.mp4",
+  "contactSheet": "data/benchmark/test-d/pilot-animated-contact-sheet.jpg",
+  "sampleTimesSec": [
+    2,
+    10,
+    20,
+    30,
+    40,
+    48
+  ],
+  "question": "This is a contact sheet of 6 frames sampled from a 50-second animated short.\nFrames read left-to-right, top-to-bottom (sampled at 2s, 10s, 20s, 30s, 40s, 48s).\n\nQuestion: Is this intentionally animated with characters that move?\n\nCriteria: Do characters visibly CHANGE position, pose, expression, or glow between frames?\nDo characters appear and multiply across the timeline (e.g., one character alone early,\nmore characters joining later)? Do they react to each other?\n\nAnswer with exactly one letter first:\nA = animated (characters visibly move, enter, react, and/or interact between frames)\nB = slideshow (static images with only slow zoom/pan, no meaningful character motion)\n\nThen explain your reasoning in 2-3 sentences, listing which characters you see and what changes across the frames.",
+  "verdict": "A\n\nThe video features two main characters: a green lantern-like robot and a small orange mushroom creature. Across the sampled frames, the mushroom character clearly moves from the left side of the screen to the right, and a red glowing orb appears and shifts position in the background. These changes in character location and the introduction of new elements indicate intentional animation rather than a static slideshow.",
+  "firstLetter": "A",
+  "timestamp": "2026-08-26T19:41:15.605Z"
+}

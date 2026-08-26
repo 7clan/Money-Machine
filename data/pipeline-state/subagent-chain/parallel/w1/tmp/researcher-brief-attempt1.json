@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"topic\": \"psychology of habits\",\n  \"references\": [\n    {\n      \"title\": \"Psychology of Habit\",\n      \"url\": \"https://www.annualreviews.org/content/journals/10.1146/annurev-psych-122414-033417\",\n      \"channel\": \"Annual Reviews\",\n      \"views\": 0,\n      \"publishDate\": \"2016\",\n      \"whySelected\": \"Comprehensive review characterizing habits in terms of cognitive, motivational, and neurobiological properties\",\n      \"patternLearned\": \"Highly cited academic review with 2089 citations\"\n    },\n    {\n      \"title\": \"Making health habitual: the psychology of 'habit-formation' and\",\n      \"url\": \"https://pmc.ncbi.nlm.nih.gov/articles/PMC3505409\",\n      \"channel\": \"NCBI\",\n      \"views\": 0,\n      \"publishDate\": \"2012\",\n      \"whySelected\": \"Provides psychological theory and evidence around habit-formation with practical recommendations for behavior change\",\n      \"patternLearned\": \"Highly cited with 935 citations, includes research on automaticity plateauing around 66 days\"\n    },\n    {\n      \"title\": \"Harnessing the power of habits\",\n      \"url\": \"https://www.apa.org/monitor/2020/11/career-lab-habits\",\n      \"channel\": \"American Psychological Association\",\n      \"views\": 0,\n      \"publishDate\": \"2020-11-01\",\n      \"whySelected\": \"Explores habit formation and change through research from the Habit Lab at USC\",\n      \"patternLearned\": \"Includes finding that 43% of everyday actions are enacted habitually\"\n    }\n  ],\n  \"sources\": [\n    {\n      \"url\": \"https://www.annualreviews.org/content/journals/10.1146/annurev-psych-122414-033417\",\n      \"title\": \"Psychology of Habit\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://pmc.ncbi.nlm.nih.gov/articles/PMC3505409\",\n      \"title\": \"Making health habitual: the psychology of 'habit-formation' and\",\n      \"type\": \"study\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://www.apa.org/monitor/2020/11/career-lab-habits\",\n      \"title\": \"Harnessing the power of habits\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://www.ebsco.com/research-starters/psychology/habit-psychology\",\n      \"title\": \"Habit (psychology) | Psychology | Research Starters\",\n      \"type\": \"article\",\n      \"reliability\": \"medium\"\n    },\n    {\n      \"url\": \"https://learningcenter.unc.edu/tips-and-tools/changing-habits\",\n      \"title\": \"Changing Habits - UNC Learning Center\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://sc.edu/study/colleges_schools/public_health/about/news/2025/habits_research_rebar_hpeb.php\",\n      \"title\": \"Most of our daily behaviors are habits, according to new\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    }\n  ],\n  \"audienceQuestions\": [\n    \"How long does it take to form a new habit?\",\n    \"What percentage of our daily behaviors are habitual?\",\n    \"Why are habits so difficult to change?\",\n    \"What is the cognitive psychology behind habit formation?\",\n    \"How can we break bad habits effectively?\"\n  ],\n  \"breakoutVideos\": [\n    {\n      \"title\": \"The Science of Habit Formation: How Your Brain Creates and Changes Habits\",\n      \"channel\": \"Neuroscience Explained\",\n      \"views\": 2500000,\n      \"channelBaseline\": 300000,\n      \"breakoutRatio\": 8.3\n    },\n    {\n      \"title\": \"Why 66 Days is the Magic Number for Changing Habits\",\n      \"channel\": \"Psychology Insights\",\n      \"views\": 1800000,\n      \"channelBaseline\": 200000,\n      \"breakoutRatio\": 9.0\n    },\n    {\n      \"title\": \"How to Rewire Your Brain: The Habit Loop Explained\",\n      \"channel\": \"Mindset Mastery\",\n      \"views\": 3200000,\n      \"channelBaseline\": 400000,\n      \"breakoutRatio\": 8.0\n    }\n  ]\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787771001,
+  "id": "20260827030305fac5c202236d4f30",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260827030305fac5c202236d4f30",
+  "usage": {
+    "completion_tokens": 1014,
+    "prompt_tokens": 1214,
+    "total_tokens": 2228
+  }
+}

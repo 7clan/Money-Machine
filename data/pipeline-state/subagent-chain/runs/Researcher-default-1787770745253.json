@@ -1,0 +1,20 @@
+{
+  "agent": "Researcher",
+  "role": "OPPORTUNITY_RESEARCHER",
+  "artifact": "OpportunityBrief",
+  "flow": "chain",
+  "batchId": "none",
+  "instanceId": "default",
+  "pid": 2782,
+  "startedAt": "2026-08-26T18:59:05.253Z",
+  "endedAt": "2026-08-26T18:59:25.882Z",
+  "durationMs": 20629,
+  "inputHash": "35dcf59fa3e77fcd",
+  "outputHash": "5a75371d95685853",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 2,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/pipeline-state/subagent-chain"
+}

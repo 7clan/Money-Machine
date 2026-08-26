@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "{\n  \"selectedIdeaId\": \"idea-2\",\n  \"archetype\": \"DEEP_DIVE_DOC\",\n  \"reason\": \"This idea offers high neuroscience novelty with strong visual potential and channel fit, and can be fully produced with the available capabilities including ZAI_TEXT and ZAI_IMAGE for compelling visuals.\",\n  \"capabilitiesRequired\": [\"ZAI_TEXT\", \"ZAI_IMAGE\", \"TTS\", \"FFMPEG\", \"WEB_RESEARCH\", \"DEVTOOLS_CAPTURE\"]\n}",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787770785,
+  "id": "202608270259436618c3f61a5f4eb8",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "202608270259436618c3f61a5f4eb8",
+  "usage": {
+    "completion_tokens": 101,
+    "prompt_tokens": 934,
+    "total_tokens": 1035
+  }
+}

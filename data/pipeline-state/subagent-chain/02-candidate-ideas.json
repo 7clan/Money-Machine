@@ -1,0 +1,70 @@
+[
+  {
+    "id": "idea-1",
+    "subject": "The Emotional Roots of Procrastination",
+    "angle": "Procrastination isn't laziness but an emotional regulation strategy gone wrong",
+    "viewerPromise": "Discover how understanding your emotions can transform your relationship with time",
+    "scores": {
+      "novelty": 8,
+      "visualPotential": 7,
+      "productionFeasibility": 9,
+      "monetization": 6,
+      "channelFit": 8
+    },
+    "requiredCapabilities": [
+      "ZAI_TEXT",
+      "TTS",
+      "FFMPEG",
+      "WEB_RESEARCH",
+      "SCREENSHOT_CAPTURE"
+    ],
+    "productionFeasible": true,
+    "feasibilityBlocked": []
+  },
+  {
+    "id": "idea-2",
+    "subject": "Procrastination: Your Brain's Time Perception Hack",
+    "angle": "Why your brain's temporal discounting system makes future you feel like a stranger",
+    "viewerPromise": "Learn neuroscience-backed techniques to rewire your relationship with future rewards",
+    "scores": {
+      "novelty": 9,
+      "visualPotential": 8,
+      "productionFeasibility": 7,
+      "monetization": 7,
+      "channelFit": 9
+    },
+    "requiredCapabilities": [
+      "ZAI_TEXT",
+      "ZAI_IMAGE",
+      "TTS",
+      "FFMPEG",
+      "WEB_RESEARCH",
+      "DEVTOOLS_CAPTURE"
+    ],
+    "productionFeasible": true,
+    "feasibilityBlocked": []
+  },
+  {
+    "id": "idea-3",
+    "subject": "The Procrastination Paradox",
+    "angle": "Why productive people often procrastinate more than chronic procrastinators",
+    "viewerPromise": "Understand the surprising psychological patterns that link high achievement with last-minute action",
+    "scores": {
+      "novelty": 7,
+      "visualPotential": 6,
+      "productionFeasibility": 8,
+      "monetization": 8,
+      "channelFit": 7
+    },
+    "requiredCapabilities": [
+      "ZAI_TEXT",
+      "TTS",
+      "FFMPEG",
+      "WEB_RESEARCH",
+      "PLAYWRIGHT",
+      "BROWSER_PAGE_CAPTURE"
+    ],
+    "productionFeasible": true,
+    "feasibilityBlocked": []
+  }
+]

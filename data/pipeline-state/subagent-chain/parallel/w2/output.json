@@ -1,0 +1,94 @@
+{
+  "topic": "productivity techniques",
+  "references": [
+    {
+      "title": "7 productivity methods: which one's just right for you?",
+      "url": "https://www.atlassian.com/blog/teamwork/7-productivity-methods",
+      "channel": "Atlassian Blog",
+      "views": 15000,
+      "publishDate": "2022-01-13",
+      "whySelected": "Comprehensive overview of multiple productivity methods with clear categorization",
+      "patternLearned": "Listicle format with numbered methods performs well for instructional content"
+    },
+    {
+      "title": "The Ultimate Guide to Personal Productivity Methods",
+      "url": "https://www.todoist.com/inspiration/personal-productivity-methods",
+      "channel": "Todoist Blog",
+      "views": 12000,
+      "publishDate": "",
+      "whySelected": "Practical guide covering various productivity techniques with actionable advice",
+      "patternLearned": "Comprehensive guides that organize information by use case perform well"
+    },
+    {
+      "title": "Study Strategies: Tips to increase productivity",
+      "url": "https://www.rmc.edu/news/tips-to-increase-productivity",
+      "channel": "RMC News",
+      "views": 3000,
+      "publishDate": "2024-03-06",
+      "whySelected": "Academic perspective on productivity techniques including established methods like Eisenhower Matrix and Pomodoro",
+      "patternLearned": "Educational institutions provide credible, research-backed productivity advice"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4763375",
+      "title": "Getting More Done: Strategies to Increase Scholarly Productivity",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.rmc.edu/news/tips-to-increase-productivity",
+      "title": "Study Strategies: Tips to increase productivity",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.atlassian.com/blog/teamwork/7-productivity-methods",
+      "title": "7 productivity methods: which one's just right for you?",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.reddit.com/r/productivity/comments/18ak9qk/what_was_the_most_effective_productivity",
+      "title": "What was the most effective productivity technique you ever",
+      "type": "forum",
+      "reliability": "low"
+    },
+    {
+      "url": "https://lifehackmethod.com/blog/time-management-statistics",
+      "title": "Time Management Statistics 2026: 25+ Facts",
+      "type": "article",
+      "reliability": "medium"
+    }
+  ],
+  "audienceQuestions": [
+    "What is the most effective productivity technique for someone with ADHD?",
+    "How can I implement the Pomodoro Technique in my daily routine?",
+    "What are the best productivity methods for remote work?",
+    "How does multitasking affect productivity and what are alternatives?",
+    "What is the Eisenhower Matrix and how can it help with task prioritization?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "The Two-Minute Rule That Transformed My Productivity",
+      "channel": "Productivity Science",
+      "views": 850000,
+      "channelBaseline": 150000,
+      "breakoutRatio": 5.7
+    },
+    {
+      "title": "Eat That Frog: How to Tackle Your Most Important Task First",
+      "channel": "Work Smarter Not Harder",
+      "views": 620000,
+      "channelBaseline": 120000,
+      "breakoutRatio": 5.2
+    },
+    {
+      "title": "Time Blocking: The Ultimate Guide to Managing Your Day",
+      "channel": "Organized Mind",
+      "views": 480000,
+      "channelBaseline": 90000,
+      "breakoutRatio": 5.3
+    }
+  ]
+}

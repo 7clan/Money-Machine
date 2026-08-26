@@ -1,0 +1,20 @@
+{
+  "agent": "Researcher",
+  "role": "OPPORTUNITY_RESEARCHER",
+  "artifact": "OpportunityBrief",
+  "flow": "parallel",
+  "batchId": "parallel-1",
+  "instanceId": "habits",
+  "pid": 3409,
+  "startedAt": "2026-08-26T19:03:02.445Z",
+  "endedAt": "2026-08-26T19:03:21.465Z",
+  "durationMs": 19020,
+  "inputHash": "3935a91f80fd3494",
+  "outputHash": "42a62601ed8ee5f2",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 2,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/pipeline-state/subagent-chain/parallel/w1"
+}

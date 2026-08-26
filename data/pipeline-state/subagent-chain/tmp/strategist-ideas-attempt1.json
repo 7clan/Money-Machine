@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "[\n  {\n    \"id\": \"idea-1\",\n    \"subject\": \"The Emotional Roots of Procrastination\",\n    \"angle\": \"Procrastination isn't laziness but an emotional regulation strategy gone wrong\",\n    \"viewerPromise\": \"Discover how understanding your emotions can transform your relationship with time\",\n    \"scores\": {\n      \"novelty\": 8,\n      \"visualPotential\": 7,\n      \"productionFeasibility\": 9,\n      \"monetization\": 6,\n      \"channelFit\": 8\n    },\n    \"requiredCapabilities\": [\"ZAI_TEXT\", \"TTS\", \"FFMPEG\", \"WEB_RESEARCH\", \"SCREENSHOT_CAPTURE\"],\n    \"productionFeasible\": true,\n    \"feasibilityBlocked\": null\n  },\n  {\n    \"id\": \"idea-2\",\n    \"subject\": \"Procrastination: Your Brain's Time Perception Hack\",\n    \"angle\": \"Why your brain's temporal discounting system makes future you feel like a stranger\",\n    \"viewerPromise\": \"Learn neuroscience-backed techniques to rewire your relationship with future rewards\",\n    \"scores\": {\n      \"novelty\": 9,\n      \"visualPotential\": 8,\n      \"productionFeasibility\": 7,\n      \"monetization\": 7,\n      \"channelFit\": 9\n    },\n    \"requiredCapabilities\": [\"ZAI_TEXT\", \"ZAI_IMAGE\", \"TTS\", \"FFMPEG\", \"WEB_RESEARCH\", \"DEVTOOLS_CAPTURE\"],\n    \"productionFeasible\": true,\n    \"feasibilityBlocked\": null\n  },\n  {\n    \"id\": \"idea-3\",\n    \"subject\": \"The Procrastination Paradox\",\n    \"angle\": \"Why productive people often procrastinate more than chronic procrastinators\",\n    \"viewerPromise\": \"Understand the surprising psychological patterns that link high achievement with last-minute action\",\n    \"scores\": {\n      \"novelty\": 7,\n      \"visualPotential\": 6,\n      \"productionFeasibility\": 8,\n      \"monetization\": 8,\n      \"channelFit\": 7\n    },\n    \"requiredCapabilities\": [\"ZAI_TEXT\", \"TTS\", \"FFMPEG\", \"WEB_RESEARCH\", \"PLAYWRIGHT\", \"BROWSER_PAGE_CAPTURE\"],\n    \"productionFeasible\": true,\n    \"feasibilityBlocked\": null\n  }\n]",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787770777,
+  "id": "20260827025931090aeab26a524c5f",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260827025931090aeab26a524c5f",
+  "usage": {
+    "completion_tokens": 502,
+    "prompt_tokens": 1388,
+    "total_tokens": 1890
+  }
+}

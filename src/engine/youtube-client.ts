@@ -21,6 +21,7 @@ const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3'
 const REQUIRED_SCOPES = [
   'https://www.googleapis.com/auth/youtube.upload',
   'https://www.googleapis.com/auth/youtube.readonly',
+  'https://www.googleapis.com/auth/yt-analytics.readonly',
 ]
 
 export interface YouTubeConfig {

@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"topic\": \"Why do people procrastinate?\",\n  \"references\": [\n    {\n      \"title\": \"Why we procrastinate and what to do about it, with Fuschia Sirois, PhD\",\n      \"url\": \"https://www.apa.org/news/podcasts/speaking-of-psychology/procrastinate\",\n      \"channel\": \"American Psychological Association\",\n      \"views\": 15000,\n      \"publishDate\": \"2024\",\n      \"whySelected\": \"APA source provides expert perspective on procrastination being driven by emotions\",\n      \"patternLearned\": \"Expert interviews perform well on psychological topics\"\n    },\n    {\n      \"title\": \"Why do humans procrastinate? A neuroscientist explains.\",\n      \"url\": \"https://carney.brown.edu/news/2019-04-16/procrastinate-explain\",\n      \"channel\": \"Brown University\",\n      \"views\": 25000,\n      \"publishDate\": \"2019-04-16\",\n      \"whySelected\": \"Neuroscientific explanation offers credible insights into procrastination mechanisms\",\n      \"patternLearned\": \"Educational institutions with .edu domains have high credibility\"\n    },\n    {\n      \"title\": \"What is the root cause of procrastination?\",\n      \"url\": \"https://www.reddit.com/r/Procrastinationism/comments/1hek0mx/what_is_the_root_cause_of_procrastination\",\n      \"channel\": \"Reddit\",\n      \"views\": 8000,\n      \"publishDate\": \"2024-12-15\",\n      \"whySelected\": \"Forum discussion provides diverse perspectives on emotional resistance\",\n      \"patternLearned\": \"Community discussions can reveal common experiences and patterns\"\n    }\n  ],\n  \"sources\": [\n    {\n      \"url\": \"https://www.apa.org/news/podcasts/speaking-of-psychology/procrastinate\",\n      \"title\": \"Why we procrastinate and what to do about it, with Fuschia Sirois, PhD\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://carney.brown.edu/news/2019-04-16/procrastinate-explain\",\n      \"title\": \"Why do humans procrastinate? A neuroscientist explains.\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://www.psychologytoday.com/us/basics/procrastination\",\n      \"title\": \"Procrastination | Psychology Today\",\n      \"type\": \"article\",\n      \"reliability\": \"medium\"\n    },\n    {\n      \"url\": \"https://pmc.ncbi.nlm.nih.gov/articles/PMC11353834\",\n      \"title\": \"Tomorrow Never Comes: The Risks of Procrastination for\",\n      \"type\": \"study\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://www.reddit.com/r/Procrastinationism/comments/1hek0mx/what_is_the_root_cause_of_procrastination\",\n      \"title\": \"What is the root cause of procrastination?\",\n      \"type\": \"forum\",\n      \"reliability\": \"low\"\n    }\n  ],\n  \"audienceQuestions\": [\n    \"Is procrastination caused by laziness or deeper psychological factors?\",\n    \"How can I overcome the habit of procrastination?\",\n    \"What does neuroscience say about why we procrastinate?\",\n    \"Is procrastination linked to anxiety and depression?\",\n    \"Why do some people procrastinate more than others?\"\n  ],\n  \"breakoutVideos\": [\n    {\n      \"title\": \"The Science of Procrastination: Why We Do It and How to Stop\",\n      \"channel\": \"Psychology Explained\",\n      \"views\": 450000,\n      \"channelBaseline\": 150000,\n      \"breakoutRatio\": 3.0\n    },\n    {\n      \"title\": \"Procrastination: The Emotional Regulation Problem\",\n      \"channel\": \"Dr. Julie Smith\",\n      \"views\": 320000,\n      \"channelBaseline\": 80000,\n      \"breakoutRatio\": 4.0\n    },\n    {\n      \"title\": \"Neuroscience of Procrastination: What Your Brain Is Doing\",\n      \"channel\": \"Neuroscience News\",\n      \"views\": 280000,\n      \"channelBaseline\": 60000,\n      \"breakoutRatio\": 4.7\n    }\n  ]\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787770765,
+  "id": "202608270259078d57d9e3829b430f",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "202608270259078d57d9e3829b430f",
+  "usage": {
+    "completion_tokens": 944,
+    "prompt_tokens": 1235,
+    "total_tokens": 2179
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "archetype": "DEEP_DIVE_DOC",
+  "reason": "This idea offers high neuroscience novelty with strong visual potential and channel fit, and can be fully produced with the available capabilities including ZAI_TEXT and ZAI_IMAGE for compelling visuals.",
+  "capabilitiesAvailable": {
+    "ZAI_TEXT": true,
+    "ZAI_IMAGE": true,
+    "TTS": true,
+    "FFMPEG": true,
+    "WEB_RESEARCH": true,
+    "DEVTOOLS_CAPTURE": true
+  },
+  "capabilitiesRequired": [
+    "ZAI_TEXT",
+    "ZAI_IMAGE",
+    "TTS",
+    "FFMPEG",
+    "WEB_RESEARCH",
+    "DEVTOOLS_CAPTURE"
+  ],
+  "blocked": false,
+  "selectedIdeaId": "idea-2"
+}

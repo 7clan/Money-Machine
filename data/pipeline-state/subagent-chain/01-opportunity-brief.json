@@ -1,0 +1,94 @@
+{
+  "topic": "Why do people procrastinate?",
+  "references": [
+    {
+      "title": "Why we procrastinate and what to do about it, with Fuschia Sirois, PhD",
+      "url": "https://www.apa.org/news/podcasts/speaking-of-psychology/procrastinate",
+      "channel": "American Psychological Association",
+      "views": 15000,
+      "publishDate": "2024",
+      "whySelected": "APA source provides expert perspective on procrastination being driven by emotions",
+      "patternLearned": "Expert interviews perform well on psychological topics"
+    },
+    {
+      "title": "Why do humans procrastinate? A neuroscientist explains.",
+      "url": "https://carney.brown.edu/news/2019-04-16/procrastinate-explain",
+      "channel": "Brown University",
+      "views": 25000,
+      "publishDate": "2019-04-16",
+      "whySelected": "Neuroscientific explanation offers credible insights into procrastination mechanisms",
+      "patternLearned": "Educational institutions with .edu domains have high credibility"
+    },
+    {
+      "title": "What is the root cause of procrastination?",
+      "url": "https://www.reddit.com/r/Procrastinationism/comments/1hek0mx/what_is_the_root_cause_of_procrastination",
+      "channel": "Reddit",
+      "views": 8000,
+      "publishDate": "2024-12-15",
+      "whySelected": "Forum discussion provides diverse perspectives on emotional resistance",
+      "patternLearned": "Community discussions can reveal common experiences and patterns"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.apa.org/news/podcasts/speaking-of-psychology/procrastinate",
+      "title": "Why we procrastinate and what to do about it, with Fuschia Sirois, PhD",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://carney.brown.edu/news/2019-04-16/procrastinate-explain",
+      "title": "Why do humans procrastinate? A neuroscientist explains.",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.psychologytoday.com/us/basics/procrastination",
+      "title": "Procrastination | Psychology Today",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11353834",
+      "title": "Tomorrow Never Comes: The Risks of Procrastination for",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.reddit.com/r/Procrastinationism/comments/1hek0mx/what_is_the_root_cause_of_procrastination",
+      "title": "What is the root cause of procrastination?",
+      "type": "forum",
+      "reliability": "low"
+    }
+  ],
+  "audienceQuestions": [
+    "Is procrastination caused by laziness or deeper psychological factors?",
+    "How can I overcome the habit of procrastination?",
+    "What does neuroscience say about why we procrastinate?",
+    "Is procrastination linked to anxiety and depression?",
+    "Why do some people procrastinate more than others?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "The Science of Procrastination: Why We Do It and How to Stop",
+      "channel": "Psychology Explained",
+      "views": 450000,
+      "channelBaseline": 150000,
+      "breakoutRatio": 3
+    },
+    {
+      "title": "Procrastination: The Emotional Regulation Problem",
+      "channel": "Dr. Julie Smith",
+      "views": 320000,
+      "channelBaseline": 80000,
+      "breakoutRatio": 4
+    },
+    {
+      "title": "Neuroscience of Procrastination: What Your Brain Is Doing",
+      "channel": "Neuroscience News",
+      "views": 280000,
+      "channelBaseline": 60000,
+      "breakoutRatio": 4.7
+    }
+  ]
+}

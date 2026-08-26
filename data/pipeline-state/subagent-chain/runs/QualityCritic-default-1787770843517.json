@@ -1,0 +1,20 @@
+{
+  "agent": "QualityCritic",
+  "role": "QUALITY_CRITIC",
+  "artifact": "QCReport",
+  "flow": "chain",
+  "batchId": "none",
+  "instanceId": "default",
+  "pid": 3052,
+  "startedAt": "2026-08-26T19:00:43.517Z",
+  "endedAt": "2026-08-26T19:00:47.931Z",
+  "durationMs": 4414,
+  "inputHash": "37a2ce561d19e0fa",
+  "outputHash": "60cdfced45ad5097",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/pipeline-state/subagent-chain"
+}

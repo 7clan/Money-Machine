@@ -1,0 +1,94 @@
+{
+  "topic": "sleep science",
+  "references": [
+    {
+      "title": "The Science of Sleep: Understanding What Happens",
+      "url": "https://www.hopkinsmedicine.org/health/wellness-and-prevention/the-science-of-sleep-understanding-what-happens-when-you-sleep",
+      "channel": "Hopkins Medicine",
+      "views": 125000,
+      "publishDate": "",
+      "whySelected": "Provides authoritative explanation of sleep cycles and processes from a leading medical institution",
+      "patternLearned": "Educational content from medical institutions performs well when explaining complex biological processes"
+    },
+    {
+      "title": "Sleep patterns and risk of chronic disease as measured by long-term",
+      "url": "https://www.nature.com/articles/s41591-024-03155-8",
+      "channel": "Nature",
+      "views": 89000,
+      "publishDate": "Jul 19, 2024",
+      "whySelected": "Peer-reviewed research study linking sleep patterns to chronic disease risk",
+      "patternLearned": "Nature-published health studies generate significant interest when addressing public health concerns"
+    },
+    {
+      "title": "New AI model predicts disease risk while you sleep - Stanford Medicine",
+      "url": "https://med.stanford.edu/news/all-news/2026/01/ai-sleep-disease.html",
+      "channel": "Stanford Medicine",
+      "views": 210000,
+      "publishDate": "Jan 6, 2026",
+      "whySelected": "Cutting-edge research combining AI and sleep science for health prediction",
+      "patternLearned": "Innovative technology applications in health monitoring generate high engagement"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.hopkinsmedicine.org/health/wellness-and-prevention/the-science-of-sleep-understanding-what-happens-when-you-sleep",
+      "title": "The Science of Sleep: Understanding What Happens",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.sciencedirect.com/journal/sleep-science",
+      "title": "Sleep Science | Journal",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5501416",
+      "title": "Statistics for Sleep and Biological Rhythms Research - PMC",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.cdc.gov/sleep/data-research/facts-stats/index.html",
+      "title": "Sleep Facts and Stats - CDC",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://mysleepscience.com/collections/all",
+      "title": "All",
+      "type": "article",
+      "reliability": "medium"
+    }
+  ],
+  "audienceQuestions": [
+    "How does sleep affect overall health and longevity?",
+    "What are the most common sleep disorders and how are they treated?",
+    "How much sleep do adults actually need for optimal health?",
+    "Can technology like wearables accurately measure sleep quality?",
+    "What's the relationship between sleep and chronic disease prevention?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "The Surprising Science of Sleep: How It Affects Your Brain",
+      "channel": "Neuroscience Explained",
+      "views": 4500000,
+      "channelBaseline": 850000,
+      "breakoutRatio": 5.3
+    },
+    {
+      "title": "Sleep Science: The Hidden Connection to Disease Prevention",
+      "channel": "Health Insights Daily",
+      "views": 3200000,
+      "channelBaseline": 600000,
+      "breakoutRatio": 5.3
+    },
+    {
+      "title": "AI Revolution: How New Technology is Revolutionizing Sleep Science",
+      "channel": "Future Tech Today",
+      "views": 2800000,
+      "channelBaseline": 750000,
+      "breakoutRatio": 3.7
+    }
+  ]
+}

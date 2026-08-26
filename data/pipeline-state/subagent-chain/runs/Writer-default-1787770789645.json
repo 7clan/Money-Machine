@@ -1,0 +1,20 @@
+{
+  "agent": "Writer",
+  "role": "WRITER",
+  "artifact": "Script",
+  "flow": "chain",
+  "batchId": "none",
+  "instanceId": "default",
+  "pid": 2953,
+  "startedAt": "2026-08-26T18:59:49.645Z",
+  "endedAt": "2026-08-26T19:00:01.915Z",
+  "durationMs": 12270,
+  "inputHash": "0e72bfcf2183fc38",
+  "outputHash": "c75a6cd56af7f0c4",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/pipeline-state/subagent-chain"
+}

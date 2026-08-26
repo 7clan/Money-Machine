@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"id\": \"script-procrastination-brain-time-hack\",\n  \"segments\": [\n    {\n      \"id\": \"seg-1\",\n      \"type\": \"HOOK\",\n      \"narration\": \"Why does future you feel like a stranger your brain is willing to betray?\",\n      \"screenAction\": \"Split screen showing present self enjoying distractions while future self looks increasingly stressed and overwhelmed\",\n      \"expectedResult\": \"Viewers recognize their own procrastination patterns and feel intrigued\",\n      \"visualPurpose\": \"Immediately establishes the core conflict between present and future self\"\n    },\n    {\n      \"id\": \"seg-2\",\n      \"type\": \"SETUP\",\n      \"narration\": \"Your brain's temporal discounting system makes immediate rewards feel more valuable than future ones.\",\n      \"screenAction\": \"Animation showing brain regions lighting up when presented with immediate vs delayed rewards\",\n      \"expectedResult\": \"Viewers understand the biological basis of procrastination\",\n      \"visualPurpose\": \"Visualizes the neuroscience concept in an accessible way\"\n    },\n    {\n      \"id\": \"seg-3\",\n      \"type\": \"TRICK\",\n      \"narration\": \"This isn't laziness—it's your brain's survival mechanism prioritizing the present.\",\n      \"screenAction\": \"Historical timeline showing how temporal discounting evolved in humans for survival\",\n      \"expectedResult\": \"Viewers reframe procrastination as a biological trait, not a character flaw\",\n      \"visualPurpose\": \"Provides evolutionary context to reduce self-blame\"\n    },\n    {\n      \"id\": \"seg-4\",\n      \"type\": \"SECTION\",\n      \"narration\": \"When we procrastinate, we're essentially mugging our future selves.\",\n      \"screenAction\": \"Metaphorical animation showing present self stealing resources from future self\",\n      \"expectedResult\": \"Viewers feel the consequences of their procrastination more personally\",\n      \"visualPurpose\": \"Makes abstract consequences tangible and relatable\"\n    },\n    {\n      \"id\": \"seg-5\",\n      \"type\": \"SECTION\",\n      \"narration\": \"The key is making your future self feel more present and real to your brain.\",\n      \"screenAction\": \"Interactive exercise where viewers visualize their future self in detail\",\n      \"expectedResult\": \"Viewers begin to develop empathy for their future selves\",\n      \"visualPurpose\": \"Engages viewers in a practical exercise to bridge the temporal gap\"\n    },\n    {\n      \"id\": \"seg-6\",\n      \"type\": \"PAYOFF\",\n      \"narration\": \"Implementation intentions: if-then planning bridges the present-future divide.\",\n      \"screenAction\": \"Before-and-after examples showing how specific if-then statements reduce procrastination\",\n      \"expectedResult\": \"Viewers learn a concrete technique to apply immediately\",\n      \"visualPurpose\": \"Demonstrates the solution with clear, actionable examples\"\n    },\n    {\n      \"id\": \"seg-7\",\n      \"type\": \"ENDING\",\n      \"narration\": \"Rewire your relationship with time by making your future self feel like someone worth helping today.\",\n      \"screenAction\": \"Present and future selves reaching across time to high-five, merging into one\",\n      \"expectedResult\": \"Viewers feel empowered to change their relationship with time\",\n      \"visualPurpose\": \"Provides a hopeful, actionable closing image\"\n    }\n  ],\n  \"archetype\": \"DEEP_DIVE_DOC\",\n  \"tone\": \"Reassuring scientific\",\n  \"targetDuration\": 75\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1787770801,
+  "id": "20260827025949af32890b277c4596",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260827025949af32890b277c4596",
+  "usage": {
+    "completion_tokens": 738,
+    "prompt_tokens": 585,
+    "total_tokens": 1323
+  }
+}
