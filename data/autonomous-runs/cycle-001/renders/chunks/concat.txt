@@ -1,3 +1,0 @@
-file 'chunk-0.mp4'
-file 'chunk-1.mp4'
-file 'chunk-2.mp4'

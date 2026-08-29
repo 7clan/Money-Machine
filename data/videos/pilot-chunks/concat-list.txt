@@ -1,2 +1,0 @@
-file '/home/z/my-project/data/videos/pilot-chunks/pilot-chunk-1.mp4'
-file '/home/z/my-project/data/videos/pilot-chunks/pilot-chunk-2.mp4'
