@@ -171,9 +171,11 @@ export default function ReviewPage() {
     )
   }
 
-  const approved = inventory.entries.filter((e) => e.category === 'APPROVED')
+  // Approved = category APPROVED AND file physically exists on disk
+  const approved = inventory.entries.filter((e) => e.category === 'APPROVED' && e.exists)
   const superseded = inventory.entries.filter((e) => e.category === 'SUPERSEDED')
   const development = inventory.entries.filter((e) => e.category === 'DEVELOPMENT')
+  // Missing = file doesn't exist AND it's not a development regression test
   const missing = inventory.entries.filter((e) => !e.exists && e.category !== 'DEVELOPMENT')
 
   return (
@@ -191,7 +193,11 @@ export default function ReviewPage() {
           APPROVED PRODUCTIONS
         </h2>
         {approved.length === 0 ? (
-          <p style={{ color: '#94a3b8', marginBottom: '32px' }}>No approved productions found on disk.</p>
+          <div style={{ background: '#1a1a1a', border: '1px dashed #475569', borderRadius: '8px', padding: '20px', marginBottom: '32px' }}>
+            <p style={{ color: '#94a3b8', margin: 0 }}>
+              No playable video files found on disk. All productions were either uploaded to YouTube (watch via links below) or removed during workspace cleanup. See MISSING section for details.
+            </p>
+          </div>
         ) : (
           approved.map((e) => <VideoCard key={e.id} entry={e} />)
         )}
