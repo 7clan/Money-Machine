@@ -14,27 +14,32 @@ export async function GET(request: NextRequest) {
     const state = searchParams.get('state')
     const error = searchParams.get('error')
 
+    const baseUrl = process.env.APP_PUBLIC_URL || new URL(request.url).origin
+
     // Handle user denial
     if (error) {
       const errorDesc = searchParams.get('error_description') || error
       return NextResponse.redirect(
-        new URL(`/?youtube_auth=error&message=${encodeURIComponent(errorDesc)}`, request.url)
+        `${baseUrl}/?youtube_auth=error&message=${encodeURIComponent(errorDesc)}`
       )
     }
 
     if (!code || !state) {
       return NextResponse.redirect(
-        new URL('/?youtube_auth=error&message=Missing%20authorization%20code', request.url)
+        `${baseUrl}/?youtube_auth=error&message=Missing%20authorization%20code`
       )
     }
 
-    // Validate CSRF state
+    // Validate CSRF state — the state is a cryptographic nonce persisted by getAuthUrl.
+    // The state format is: <nonceHex>:<purpose> (e.g., "a1b2...:reconnect-analytics")
     const conn = await db.oAuthConnection.findFirst({ where: { provider: 'google' } })
-    if (!conn || conn.csrfState !== state) {
+    if (!conn || !conn.csrfState || conn.csrfState !== state) {
       return NextResponse.redirect(
-        new URL('/?youtube_auth=error&message=Invalid%20state%20token', request.url)
+        `${baseUrl}/?youtube_auth=error&message=Invalid%20state%20nonce`
       )
     }
+    // Extract the purpose from the validated state (for analytics scope verification)
+    const statePurpose = state.includes(':') ? state.split(':').slice(1).join(':') : ''
 
     // Exchange code for tokens
     const tokens = await exchangeCode(code)
@@ -59,7 +64,7 @@ export async function GET(request: NextRequest) {
       console.error('Failed to fetch channel info:', e)
     }
 
-    // Store tokens and mark as connected
+    // Store tokens + scope + mark as connected
     await db.oAuthConnection.upsert({
       where: { id: conn.id },
       create: {
@@ -68,6 +73,7 @@ export async function GET(request: NextRequest) {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         tokenExpiry: new Date(Date.now() + tokens.expiresIn * 1000),
+        scope: tokens.scope,
         isConnected: true,
         channelTitle,
         channelId,
@@ -76,11 +82,19 @@ export async function GET(request: NextRequest) {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         tokenExpiry: new Date(Date.now() + tokens.expiresIn * 1000),
+        scope: tokens.scope,
         isConnected: true,
         channelTitle,
         channelId,
       },
     })
+
+    // If this was a reconnect-analytics flow, verify the granted scope includes yt-analytics.readonly
+    let analyticsScopeOk: boolean | null = null
+    if (statePurpose === 'reconnect-analytics') {
+      const requiredAnalytics = 'https://www.googleapis.com/auth/yt-analytics.readonly'
+      analyticsScopeOk = (tokens.scope || '').split(/\s+/).some((s: string) => s === requiredAnalytics || s === 'yt-analytics.readonly')
+    }
 
     // Audit log
     await db.auditLog.create({
@@ -88,7 +102,7 @@ export async function GET(request: NextRequest) {
         action: 'token_refresh',
         actor: 'owner',
         target: channelId || 'youtube',
-        details: JSON.stringify({ channelTitle, action: 'oauth_connected' }),
+        details: JSON.stringify({ channelTitle, action: 'oauth_connected', scope: tokens.scope, analyticsScopeOk }),
       },
     })
 
@@ -106,17 +120,16 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Redirect back to app with success indicator
-    return NextResponse.redirect(
-      new URL(
-        `/?youtube_auth=success${channelTitle ? '&channel=' + encodeURIComponent(channelTitle) : ''}`,
-        request.url
-      )
-    )
+    // Redirect back to app with success indicator.
+    // baseUrl was set at the top of the try block (APP_PUBLIC_URL-aware).
+    const analyticsParam = analyticsScopeOk === null ? '' : `&analytics_scope=${analyticsScopeOk ? 'granted' : 'missing'}`
+    const successUrl = `${baseUrl}/?youtube_auth=success${channelTitle ? '&channel=' + encodeURIComponent(channelTitle) : ''}${analyticsParam}`
+    return NextResponse.redirect(successUrl)
   } catch (e: any) {
     console.error('YouTube callback error:', e)
+    const errBaseUrl = process.env.APP_PUBLIC_URL || new URL(request.url).origin
     return NextResponse.redirect(
-      new URL(`/?youtube_auth=error&message=${encodeURIComponent(e.message || 'Unknown error')}`, request.url)
+      `${errBaseUrl}/?youtube_auth=error&message=${encodeURIComponent(e.message || 'Unknown error')}`
     )
   }
 }

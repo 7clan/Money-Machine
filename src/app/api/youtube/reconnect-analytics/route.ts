@@ -10,7 +10,7 @@ import { getAuthUrl } from '@/engine/youtube-client'
 
 export async function POST() {
   try {
-    const url = getAuthUrl('reconnect-analytics')
+    const url = await getAuthUrl('reconnect-analytics')
     return NextResponse.json({
       action: 'open_consent',
       authUrl: url,

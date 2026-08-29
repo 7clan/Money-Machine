@@ -11,7 +11,7 @@ import { getAuthUrl } from '@/engine/youtube-client'
 export async function GET() {
   try {
     const { hasScope, grantedScopes } = await verifyAnalyticsScope()
-    const reconnectUrl = getAuthUrl('reconnect-analytics')
+    const reconnectUrl = await getAuthUrl('reconnect-analytics')
     return NextResponse.json({
       hasAnalyticsScope: hasScope,
       grantedScopes,

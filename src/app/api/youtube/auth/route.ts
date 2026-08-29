@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthUrl, getYouTubeConfig } from '@/engine/youtube-client'
 import { db } from '@/lib/db'
-import { randomUUID } from 'crypto'
 
 /**
  * GET /api/youtube/auth?redirect_uri=<optional override>
@@ -48,27 +47,12 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Generate CSRF state token
-    const state = randomUUID()
-
-    // Store state for validation in callback
-    await db.oAuthConnection.upsert({
-      where: { id: 'google_oauth' },
-      create: {
-        id: 'google_oauth',
-        provider: 'google',
-        csrfState: state,
-        isConnected: false,
-      },
-      update: { csrfState: state },
-    })
-
-    // Generate the Google authorization URL (with optional redirect URI override)
-    const authUrl = getAuthUrl(state, overrideRedirectUri)
+    // getAuthUrl now generates its own cryptographic nonce + persists it as csrfState.
+    // We just pass the purpose label + optional redirect URI override.
+    const authUrl = await getAuthUrl('initial-connect', overrideRedirectUri)
 
     return NextResponse.json({
       authUrl,
-      state,
       redirectUri: overrideRedirectUri || config.redirectUri,
     })
   } catch (e: any) {

@@ -8,6 +8,7 @@
  * OAuth tokens are encrypted at rest.
  */
 
+import { randomBytes } from 'crypto'
 import { db } from '@/lib/db'
 import { getOperatingMode } from './emergency-stop'
 
@@ -35,18 +36,40 @@ export function getYouTubeConfig(): YouTubeConfig {
   return {
     clientId: process.env.YOUTUBE_CLIENT_ID || '',
     clientSecret: process.env.YOUTUBE_CLIENT_SECRET || '',
-    redirectUri: process.env.YOUTUBE_REDIRECT_URI || 'http://localhost:3000/api/youtube/callback',
+    // Environment-aware redirect URI:
+    //   APP_PUBLIC_URL set → ${APP_PUBLIC_URL}/api/youtube/callback (ZAI_WEB / production)
+    //   APP_PUBLIC_URL unset → http://localhost:3000/api/youtube/callback (LOCAL_DESKTOP)
+    // YOUTUBE_REDIRECT_URI is kept for backward-compat but APP_PUBLIC_URL takes precedence.
+    redirectUri: process.env.APP_PUBLIC_URL
+      ? `${process.env.APP_PUBLIC_URL.replace(/\/$/, '')}/api/youtube/callback`
+      : (process.env.YOUTUBE_REDIRECT_URI || 'http://localhost:3000/api/youtube/callback'),
   }
 }
 
 /**
- * Generate the OAuth authorization URL.
- * If `redirectUriOverride` is provided, it's used instead of the env value —
- * this lets the wizard send exactly the URI the user registered in Google Cloud Console.
+ * Generate the OAuth authorization URL with a cryptographic state nonce.
+ *
+ * OAUTH STATE SECURITY:
+ *   The `purpose` parameter is an INTERNAL label (e.g., 'reconnect-analytics').
+ *   The actual OAuth state sent to Google is: <randomHexNonce>:<purpose>
+ *   The nonce is persisted in OAuthConnection.csrfState and validated on callback.
+ *   This prevents CSRF attacks — an attacker cannot forge a callback without the nonce.
+ *
+ * ASYNC: persists the nonce to the DB before returning the URL.
+ * If no OAuthConnection row exists, creates one with just the csrfState.
  */
-export function getAuthUrl(state: string, redirectUriOverride?: string): string {
+export async function getAuthUrl(purpose: string, redirectUriOverride?: string): Promise<string> {
   const config = getYouTubeConfig()
   const redirectUri = redirectUriOverride || config.redirectUri
+  // Generate a cryptographic nonce (256 bits) + append the purpose
+  const nonce = randomBytes(32).toString('hex')
+  const state = `${nonce}:${purpose}`
+  // Persist the state so the callback can validate it
+  await db.oAuthConnection.upsert({
+    where: { id: 'google_oauth' },
+    create: { id: 'google_oauth', provider: 'google', csrfState: state },
+    update: { csrfState: state },
+  })
   const params = new URLSearchParams({
     client_id: config.clientId,
     redirect_uri: redirectUri,
@@ -54,7 +77,7 @@ export function getAuthUrl(state: string, redirectUriOverride?: string): string 
     scope: REQUIRED_SCOPES.join(' '),
     access_type: 'offline',
     prompt: 'consent',
-    state, // CSRF protection
+    state, // CSRF protection — cryptographic nonce
   })
   return `${YOUTUBE_AUTH_URL}?${params.toString()}`
 }
