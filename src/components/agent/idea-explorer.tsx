@@ -124,7 +124,7 @@ export interface Idea {
   productionEffort?: number | null
   riskScore?: number | null
   compositeScore?: number | null
-  tags?: string[] | null
+  tags?: string[] | string | null
   scheduledDate?: string | Date | null
   createdAt?: string | Date | null
   updatedAt?: string | Date | null
@@ -1357,7 +1357,20 @@ function IdeaDrawerContent({
         </section>
 
         {/* Tags */}
-        {idea.tags && idea.tags.length > 0 && (
+        {(() => {
+          // Defensive: tags may arrive as a JSON string (Prisma stores as String?)
+          // or as a parsed array (if the API already parsed it).
+          let tagsArr: string[] = []
+          if (Array.isArray(idea.tags)) {
+            tagsArr = idea.tags
+          } else if (typeof idea.tags === 'string' && idea.tags.trim()) {
+            try {
+              const parsed = JSON.parse(idea.tags)
+              if (Array.isArray(parsed)) tagsArr = parsed.map(String)
+            } catch { /* ignore parse errors */ }
+          }
+          if (tagsArr.length === 0) return null
+          return (
           <>
             <Separator className="bg-slate-800/60" />
             <section>
@@ -1366,7 +1379,7 @@ function IdeaDrawerContent({
                 Tags
               </h5>
               <div className="flex flex-wrap gap-1.5">
-                {idea.tags.map((tag, idx) => (
+                {tagsArr.map((tag, idx) => (
                   <Badge
                     key={`${tag}-${idx}`}
                     variant="outline"
@@ -1379,7 +1392,8 @@ function IdeaDrawerContent({
               </div>
             </section>
           </>
-        )}
+          )
+        })()}
 
         {/* Description */}
         {idea.pillar?.description && (
