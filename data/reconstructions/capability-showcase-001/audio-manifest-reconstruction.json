@@ -1,0 +1,47 @@
+{
+  "segments": [
+    {
+      "segmentId": "seg-1",
+      "mp3Path": "/home/z/my-project/data/reconstructions/capability-showcase-001/audio/seg-1.mp3",
+      "durationSec": 5.088,
+      "words": 11
+    },
+    {
+      "segmentId": "seg-2",
+      "mp3Path": "/home/z/my-project/data/reconstructions/capability-showcase-001/audio/seg-2.mp3",
+      "durationSec": 8.688,
+      "words": 12
+    },
+    {
+      "segmentId": "seg-3",
+      "mp3Path": "/home/z/my-project/data/reconstructions/capability-showcase-001/audio/seg-3.mp3",
+      "durationSec": 8.832,
+      "words": 15
+    },
+    {
+      "segmentId": "seg-4",
+      "mp3Path": "/home/z/my-project/data/reconstructions/capability-showcase-001/audio/seg-4.mp3",
+      "durationSec": 6.24,
+      "words": 9
+    },
+    {
+      "segmentId": "seg-5",
+      "mp3Path": "/home/z/my-project/data/reconstructions/capability-showcase-001/audio/seg-5.mp3",
+      "durationSec": 5.328,
+      "words": 8
+    },
+    {
+      "segmentId": "seg-6",
+      "mp3Path": "/home/z/my-project/data/reconstructions/capability-showcase-001/audio/seg-6.mp3",
+      "durationSec": 5.952,
+      "words": 11
+    },
+    {
+      "segmentId": "seg-7",
+      "mp3Path": "/home/z/my-project/data/reconstructions/capability-showcase-001/audio/seg-7.mp3",
+      "durationSec": 5.64,
+      "words": 10
+    }
+  ],
+  "totalDuration": 45.768
+}

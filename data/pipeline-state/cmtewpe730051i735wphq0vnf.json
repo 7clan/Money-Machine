@@ -1,0 +1,1342 @@
+{
+  "videoProjectId": "cmtewpe730051i735wphq0vnf",
+  "stage": "init",
+  "startedAt": "2026-08-29T21:42:36.851Z",
+  "completedStages": [
+    "reference_research",
+    "master_plan",
+    "tts",
+    "edl"
+  ],
+  "errors": [
+    {
+      "stage": "init",
+      "error": "ENOENT: no such file or directory, open '/home/z/my-project/data/videos/cmtewpe730051i735wphq0vnf.srt'",
+      "timestamp": "2026-08-29T21:45:50.400Z"
+    }
+  ],
+  "researchPack": [
+    {
+      "url": "https://www.notion.com",
+      "title": "",
+      "snippet": "Build Custom Agents, search across all your apps, and automate busywork. The AI workspace where teams get more done, faster."
+    },
+    {
+      "url": "https://www.taskade.com/blog/notion-ai-history",
+      "title": "",
+      "snippet": "Jan 29, 2026 — \"We want to build a tool that connects everyday work into one space. A place where you can think, write, and plan—powered by AI to help you work ... Read more"
+    },
+    {
+      "url": "https://www.probackup.io/blog/how-notion-ai-can-boost-your-productivity",
+      "title": "",
+      "snippet": "How Notion AI works in 2026 , from writing and summarisation to autonomous Agents and Custom Agents. Expert tips, use cases, pricing and a feature comparison ..."
+    },
+    {
+      "url": "https://www.linkedin.com/posts/optemization_can-you-go-from-a-blank-canvas-to-an-ai-powered-activity-7493047358759272448-w41f",
+      "title": "",
+      "snippet": "You can build anything in it. No fixed structure, no rules, just every person and every team making their own calls, building ad hoc databases ... Read more"
+    },
+    {
+      "url": "https://thehnsolutions.com/how-to-use-notion-ai",
+      "title": "",
+      "snippet": "May 15, 2026 — In this complete guide on how to use Notion AI, you'll learn how to build a powerful Notion AI productivity system that helps you organize tasks ... Read more"
+    }
+  ],
+  "masterPlan": {
+    "archetype": "TECH_EXPLAINER",
+    "reportingBrief": {
+      "subject": "Building a Complete Notion AI Workspace",
+      "angle": "Transforming a blank canvas into an AI-powered productivity powerhouse",
+      "centralQuestion": "How can you build a complete Notion AI workspace from scratch?",
+      "viewerPromise": "Learn step-by-step how to transform Notion from a blank canvas into an AI-powered productivity powerhouse",
+      "whyNow": "With Notion AI's rapid evolution in 2026, many users are unaware of its full potential beyond basic note-taking",
+      "targetViewer": "Knowledge workers, students, and teams looking to optimize their productivity with AI tools",
+      "whatViewerProbablyKnows": [
+        "Notion is a digital workspace",
+        "Basic note-taking features",
+        "AI assistants exist"
+      ],
+      "whatIsSurprising": [
+        "Notion AI can build custom agents",
+        "It can search across all your apps",
+        "It can automate busywork"
+      ],
+      "mainConflict": "Users struggle to move beyond basic Notion functionality to unlock its AI potential",
+      "mainPayoff": "A personalized, AI-enhanced workspace that adapts to your specific needs and workflows",
+      "requiredEvidence": [
+        "Notion AI capabilities",
+        "Implementation steps",
+        "Real-world use cases",
+        "Before/after transformation"
+      ],
+      "possibleVisualOpportunities": [
+        "Screen recordings of setup process",
+        "Comparative workspace layouts",
+        "AI agent demonstrations"
+      ],
+      "risks": [
+        "Information overload for beginners",
+        "Potential over-reliance on AI",
+        "Steep learning curve for advanced features"
+      ],
+      "sources": [
+        {
+          "url": "https://www.notion.com",
+          "title": "Notion Official Site",
+          "type": "web"
+        },
+        {
+          "url": "https://www.taskade.com/blog/notion-ai-history",
+          "title": "Notion AI History",
+          "type": "web"
+        },
+        {
+          "url": "https://www.probackup.io/blog/how-notion-ai-can-boost-your-productivity",
+          "title": "Notion AI Productivity Guide",
+          "type": "web"
+        },
+        {
+          "url": "https://www.linkedin.com/posts/optemization_can-you-go-from-a-blank-canvas-to-an-ai-powered-activity-7493047358759272448-w41f",
+          "title": "Notion AI Capabilities",
+          "type": "web"
+        },
+        {
+          "url": "https://thehnsolutions.com/how-to-use-notion-ai",
+          "title": "Complete Notion AI Guide",
+          "type": "web"
+        }
+      ]
+    },
+    "angle": {
+      "subject": "Building a Complete Notion AI Workspace",
+      "angle": "Transforming a blank canvas into an AI-powered productivity powerhouse",
+      "centralQuestion": "How can you build a complete Notion AI workspace from scratch?",
+      "viewerPromise": "Learn step-by-step how to transform Notion from a blank canvas into an AI-powered productivity powerhouse"
+    },
+    "story": {
+      "hook": [
+        {
+          "id": "beat_1",
+          "order": 1,
+          "narration": "What if your workspace could think, write, and plan for you?",
+          "purpose": "HOOK",
+          "viewerQuestion": null,
+          "newQuestion": "How can you transform Notion from a blank canvas into an AI powerhouse?",
+          "newInformation": "Notion AI has evolved beyond simple note-taking",
+          "emotionalIntent": "intrigue",
+          "visualIntent": "show empty Notion workspace transforming",
+          "preferredAssetType": "ZAI_VIDEO",
+          "evidenceSourceIds": [
+            "1"
+          ],
+          "soundIntent": "mysterious tech sound"
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat_2",
+          "order": 2,
+          "narration": "Notion began as a simple digital workspace in 2013.",
+          "purpose": "SETUP",
+          "viewerQuestion": "What is Notion?",
+          "newQuestion": "How has Notion evolved with AI?",
+          "newInformation": "Notion started as a basic digital workspace",
+          "emotionalIntent": "informative",
+          "visualIntent": "timeline of Notion evolution",
+          "preferredAssetType": "ORIGINAL_CHART",
+          "evidenceSourceIds": [
+            "2"
+          ],
+          "soundIntent": "neutral background music"
+        },
+        {
+          "id": "beat_3",
+          "order": 3,
+          "narration": "By 2026, Notion has transformed into an AI-powered productivity platform.",
+          "purpose": "QUESTION",
+          "viewerQuestion": "How has Notion evolved with AI?",
+          "newQuestion": "What makes Notion AI different from other AI tools?",
+          "newInformation": "Notion now integrates AI throughout its platform",
+          "emotionalIntent": "surprise",
+          "visualIntent": "comparison of old vs new Notion interface",
+          "preferredAssetType": "ZAI_IMAGE",
+          "evidenceSourceIds": [
+            "1"
+          ],
+          "soundIntent": "tech transition sound"
+        },
+        {
+          "id": "beat_4",
+          "order": 4,
+          "narration": "Unlike standalone AI assistants, Notion AI lives within your workspace.",
+          "purpose": "EVIDENCE",
+          "viewerQuestion": "What makes Notion AI different from other AI tools?",
+          "newQuestion": "How does this integration benefit users?",
+          "newInformation": "Notion AI is embedded within your workspace",
+          "emotionalIntent": "clarity",
+          "visualIntent": "diagram showing AI integration points",
+          "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+          "evidenceSourceIds": [
+            "1"
+          ],
+          "soundIntent": "subtle tech hum"
+        },
+        {
+          "id": "beat_5",
+          "order": 5,
+          "narration": "This integration means AI understands your context, not just commands.",
+          "purpose": "REVEAL",
+          "viewerQuestion": "How does this integration benefit users?",
+          "newQuestion": "What specific AI capabilities does Notion offer?",
+          "newInformation": "Notion AI understands context within your workspace",
+          "emotionalIntent": "understanding",
+          "visualIntent": "demonstration of context-aware AI suggestions",
+          "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+          "evidenceSourceIds": [
+            "3"
+          ],
+          "soundIntent": "positive chime"
+        },
+        {
+          "id": "beat_6",
+          "order": 6,
+          "narration": "Notion AI can write, summarize, and organize your content automatically.",
+          "purpose": "EVIDENCE",
+          "viewerQuestion": "What specific AI capabilities does Notion offer?",
+          "newQuestion": "How do these features work in practice?",
+          "newInformation": "Notion AI handles content creation and organization",
+          "emotionalIntent": "impressed",
+          "visualIntent": "side-by-side of manual vs AI-assisted content creation",
+          "preferredAssetType": "ZAI_VIDEO",
+          "evidenceSourceIds": [
+            "3"
+          ],
+          "soundIntent": "typing sounds with AI enhancement"
+        },
+        {
+          "id": "beat_7",
+          "order": 7,
+          "narration": "It can transform meeting notes into action items with a single click.",
+          "purpose": "REVEAL",
+          "viewerQuestion": "How do these features work in practice?",
+          "newQuestion": "What about more advanced AI capabilities?",
+          "newInformation": "Notion AI automates task creation from notes",
+          "emotionalIntent": "practical",
+          "visualIntent": "screen recording of meeting notes transformation",
+          "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+          "evidenceSourceIds": [
+            "5"
+          ],
+          "soundIntent": "satisfying click sound"
+        },
+        {
+          "id": "beat_8",
+          "order": 8,
+          "narration": "Beyond basic features, Notion AI now supports custom agents.",
+          "purpose": "QUESTION",
+          "viewerQuestion": "What about more advanced AI capabilities?",
+          "newQuestion": "How do these custom agents work?",
+          "newInformation": "Notion AI supports customizable AI agents",
+          "emotionalIntent": "curious",
+          "visualIntent": "visual representation of custom agent creation",
+          "preferredAssetType": "ZAI_IMAGE",
+          "evidenceSourceIds": [
+            "3"
+          ],
+          "soundIntent": "intriguing tech sound"
+        },
+        {
+          "id": "beat_9",
+          "order": 9,
+          "narration": "These agents can automate specific workflows unique to your needs.",
+          "purpose": "EVIDENCE",
+          "viewerQuestion": "How do these custom agents work?",
+          "newQuestion": "What kind of workflows can they automate?",
+          "newInformation": "Custom agents automate personalized workflows",
+          "emotionalIntent": "empowered",
+          "visualIntent": "diagram of automated workflow example",
+          "preferredAssetType": "ORIGINAL_CHART",
+          "evidenceSourceIds": [
+            "3"
+          ],
+          "soundIntent": "efficient workflow sounds"
+        },
+        {
+          "id": "beat_10",
+          "order": 10,
+          "narration": "Imagine an agent that automatically summarizes research articles or tracks project deadlines.",
+          "purpose": "REVEAL",
+          "viewerQuestion": "What kind of workflows can they automate?",
+          "newQuestion": "How do I start building my AI workspace?",
+          "newInformation": "Specific examples of custom agent applications",
+          "emotionalIntent": "inspired",
+          "visualIntent": "animated example of custom agent in action",
+          "preferredAssetType": "ZAI_VIDEO",
+          "evidenceSourceIds": [
+            "4"
+          ],
+          "soundIntent": "inspiring music"
+        },
+        {
+          "id": "beat_11",
+          "order": 11,
+          "narration": "Building your AI workspace begins with understanding your core needs.",
+          "purpose": "TRANSITION",
+          "viewerQuestion": "How do I start building my AI workspace?",
+          "newQuestion": "What should I consider first?",
+          "newInformation": "Start by identifying your core needs",
+          "emotionalIntent": "thoughtful",
+          "visualIntent": "mind map of productivity needs",
+          "preferredAssetType": "ZAI_IMAGE",
+          "evidenceSourceIds": [
+            "5"
+          ],
+          "soundIntent": "calm thinking sounds"
+        },
+        {
+          "id": "beat_12",
+          "order": 12,
+          "narration": "Map out your daily, weekly, and monthly activities to identify automation opportunities.",
+          "purpose": "EVIDENCE",
+          "viewerQuestion": "What should I consider first?",
+          "newQuestion": "How do I structure my workspace?",
+          "newInformation": "Mapping activities reveals automation opportunities",
+          "emotionalIntent": "analytical",
+          "visualIntent": "visual workflow mapping example",
+          "preferredAssetType": "ORIGINAL_CHART",
+          "evidenceSourceIds": [
+            "5"
+          ],
+          "soundIntent": "planning sounds"
+        },
+        {
+          "id": "beat_13",
+          "order": 13,
+          "narration": "Start with a simple template that can grow with your needs.",
+          "purpose": "REVEAL",
+          "viewerQuestion": "How do I structure my workspace?",
+          "newQuestion": "What templates work best?",
+          "newInformation": "Begin with flexible, expandable templates",
+          "emotionalIntent": "practical",
+          "visualIntent": "example of evolving template structure",
+          "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+          "evidenceSourceIds": [
+            "5"
+          ],
+          "soundIntent": "satisfying template selection"
+        },
+        {
+          "id": "beat_14",
+          "order": 14,
+          "narration": "Notion's flexibility allows you to build databases that adapt to your workflow.",
+          "purpose": "EVIDENCE",
+          "viewerQuestion": "What templates work best?",
+          "newQuestion": "How do I integrate AI into these structures?",
+          "newInformation": "Notion databases are highly customizable",
+          "emotionalIntent": "adaptable",
+          "visualIntent": "database customization examples",
+          "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+          "evidenceSourceIds": [
+            "4"
+          ],
+          "soundIntent": "adaptable tech sounds"
+        },
+        {
+          "id": "beat_15",
+          "order": 15,
+          "narration": "Add AI-powered views that automatically organize your information.",
+          "purpose": "REVEAL",
+          "viewerQuestion": "How do I integrate AI into these structures?",
+          "newQuestion": "What are some advanced AI features I should know?",
+          "newInformation": "AI views automatically organize information",
+          "emotionalIntent": "efficient",
+          "visualIntent": "demonstration of AI-powered views",
+          "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+          "evidenceSourceIds": [
+            "3"
+          ],
+          "soundIntent": "efficient organization sounds"
+        },
+        {
+          "id": "beat_16",
+          "order": 16,
+          "narration": "Set up custom agents that handle repetitive tasks like email summarization.",
+          "purpose": "EVIDENCE",
+          "viewerQuestion": "What are some advanced AI features I should know?",
+          "newQuestion": "How do I ensure my workspace stays effective?",
+          "newInformation": "Custom agents automate repetitive tasks",
+          "emotionalIntent": "empowered",
+          "visualIntent": "agent configuration example",
+          "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+          "evidenceSourceIds": [
+            "3"
+          ],
+          "soundIntent": "automation sounds"
+        },
+        {
+          "id": "beat_17",
+          "order": 17,
+          "narration": "Regularly review and refine your AI workspace based on what actually works.",
+          "purpose": "REVEAL",
+          "viewerQuestion": "How do I ensure my workspace stays effective?",
+          "newQuestion": "What's the ultimate benefit of this approach?",
+          "newInformation": "Continuous improvement is key to effectiveness",
+          "emotionalIntent": "thoughtful",
+          "visualIntent": "workspace evolution timeline",
+          "preferredAssetType": "ORIGINAL_CHART",
+          "evidenceSourceIds": [
+            "5"
+          ],
+          "soundIntent": "reflective music"
+        }
+      ],
+      "payoff": [
+        {
+          "id": "beat_18",
+          "order": 18,
+          "narration": "Your Notion AI workspace becomes a living system that learns and adapts to your unique workflow.",
+          "purpose": "ENDING",
+          "viewerQuestion": "What's the ultimate benefit of this approach?",
+          "newQuestion": null,
+          "newInformation": "AI workspace becomes adaptive and personalized",
+          "emotionalIntent": "empowered",
+          "visualIntent": "final transformed workspace visualization",
+          "preferredAssetType": "ZAI_IMAGE",
+          "evidenceSourceIds": [],
+          "soundIntent": "uplifting resolution"
+        }
+      ]
+    },
+    "visualScript": [
+      {
+        "beatId": "beat_1",
+        "voiceover": "What if your workspace could think, write, and plan for you?",
+        "visual": "Empty Notion workspace transforming into an AI-powered interface with animated elements",
+        "purpose": "Visualize the transformation from basic to AI-enhanced workspace",
+        "source": "Original animation",
+        "edit": "hard_cut",
+        "sound": "mysterious tech sound"
+      },
+      {
+        "beatId": "beat_2",
+        "voiceover": "Notion began as a simple digital workspace in 2013.",
+        "visual": "Timeline showing Notion's evolution from 2013 to present",
+        "purpose": "Establish historical context for Notion",
+        "source": "Historical data from Notion",
+        "edit": "crossfade",
+        "sound": "neutral background music"
+      },
+      {
+        "beatId": "beat_3",
+        "voiceover": "By 2026, Notion has transformed into an AI-powered productivity platform.",
+        "visual": "Split screen showing old Notion interface vs new AI-enhanced version",
+        "purpose": "Highlight the transformation with AI integration",
+        "source": "Notion interface evolution",
+        "edit": "hard_cut",
+        "sound": "tech transition sound"
+      },
+      {
+        "beatId": "beat_4",
+        "voiceover": "Unlike standalone AI assistants, Notion AI lives within your workspace.",
+        "visual": "Diagram showing how AI is integrated throughout Notion's interface",
+        "purpose": "Illustrate the unique integration approach",
+        "source": "Notion architecture documentation",
+        "edit": "crossfade",
+        "sound": "subtle tech hum"
+      },
+      {
+        "beatId": "beat_5",
+        "voiceover": "This integration means AI understands your context, not just commands.",
+        "visual": "Screen recording showing AI making context-aware suggestions based on existing content",
+        "purpose": "Demonstrate contextual understanding",
+        "source": "Notion AI demonstration",
+        "edit": "hard_cut",
+        "sound": "positive chime"
+      },
+      {
+        "beatId": "beat_6",
+        "voiceover": "Notion AI can write, summarize, and organize your content automatically.",
+        "visual": "Side-by-side comparison of manual content creation vs AI-assisted creation",
+        "purpose": "Showcase AI content capabilities",
+        "source": "Notion AI feature demonstration",
+        "edit": "crossfade",
+        "sound": "typing sounds with AI enhancement"
+      },
+      {
+        "beatId": "beat_7",
+        "voiceover": "It can transform meeting notes into action items with a single click.",
+        "visual": "Screen recording of meeting notes being automatically converted to actionable tasks",
+        "purpose": "Demonstrate practical automation",
+        "source": "Notion AI workflow example",
+        "edit": "hard_cut",
+        "sound": "satisfying click sound"
+      },
+      {
+        "beatId": "beat_8",
+        "voiceover": "Beyond basic features, Notion AI now supports custom agents.",
+        "visual": "Visual representation of creating and configuring a custom AI agent",
+        "purpose": "Introduce advanced AI capabilities",
+        "source": "Notion agent creation interface",
+        "edit": "crossfade",
+        "sound": "intriguing tech sound"
+      },
+      {
+        "beatId": "beat_9",
+        "voiceover": "These agents can automate specific workflows unique to your needs.",
+        "visual": "Diagram showing how custom agents connect different parts of a workflow",
+        "purpose": "Explain agent functionality",
+        "source": "Notion agent documentation",
+        "edit": "hard_cut",
+        "sound": "efficient workflow sounds"
+      },
+      {
+        "beatId": "beat_10",
+        "voiceover": "Imagine an agent that automatically summarizes research articles or tracks project deadlines.",
+        "visual": "Animated example of a custom agent in action, summarizing articles and updating deadlines",
+        "purpose": "Inspire with concrete examples",
+        "source": "Conceptual visualization",
+        "edit": "crossfade",
+        "sound": "inspiring music"
+      },
+      {
+        "beatId": "beat_11",
+        "voiceover": "Building your AI workspace begins with understanding your core needs.",
+        "visual": "Mind map showing different productivity needs and how they might be addressed",
+        "purpose": "Guide the planning process",
+        "source": "Productivity methodology",
+        "edit": "hard_cut",
+        "sound": "calm thinking sounds"
+      },
+      {
+        "beatId": "beat_12",
+        "voiceover": "Map out your daily, weekly, and monthly activities to identify automation opportunities.",
+        "visual": "Visual workflow mapping example showing how activities can be organized and automated",
+        "purpose": "Demonstrate planning approach",
+        "source": "Productivity workflow examples",
+        "edit": "crossfade",
+        "sound": "planning sounds"
+      },
+      {
+        "beatId": "beat_13",
+        "voiceover": "Start with a simple template that can grow with your needs.",
+        "visual": "Screen recording showing how to create a basic template and expand it over time",
+        "purpose": "Show template evolution",
+        "source": "Notion template demonstration",
+        "edit": "hard_cut",
+        "sound": "satisfying template selection"
+      },
+      {
+        "beatId": "beat_14",
+        "voiceover": "Notion's flexibility allows you to build databases that adapt to your workflow.",
+        "visual": "Example of database customization with different views and properties",
+        "purpose": "Highlight database flexibility",
+        "source": "Notion database examples",
+        "edit": "crossfade",
+        "sound": "adaptable tech sounds"
+      },
+      {
+        "beatId": "beat_15",
+        "voiceover": "Add AI-powered views that automatically organize your information.",
+        "visual": "Screen recording showing AI-powered views organizing information automatically",
+        "purpose": "Demonstrate AI organization capabilities",
+        "source": "Notion AI view demonstration",
+        "edit": "hard_cut",
+        "sound": "efficient organization sounds"
+      },
+      {
+        "beatId": "beat_16",
+        "voiceover": "Set up custom agents that handle repetitive tasks like email summarization.",
+        "visual": "agent configuration example",
+        "purpose": "empowered",
+        "source": "",
+        "edit": "hard cut",
+        "sound": "automation sounds"
+      },
+      {
+        "beatId": "beat_17",
+        "voiceover": "Regularly review and refine your AI workspace based on what actually works.",
+        "visual": "workspace evolution timeline",
+        "purpose": "thoughtful",
+        "source": "",
+        "edit": "hard cut",
+        "sound": "reflective music"
+      },
+      {
+        "beatId": "beat_18",
+        "voiceover": "Your Notion AI workspace becomes a living system that learns and adapts to your unique workflow.",
+        "visual": "final transformed workspace visualization",
+        "purpose": "empowered",
+        "source": "",
+        "edit": "hard cut",
+        "sound": "uplifting resolution"
+      }
+    ],
+    "voiceDirection": [],
+    "assetRequirements": [
+      {
+        "beatId": "beat_1",
+        "assetType": "ZAI_VIDEO",
+        "visualDescription": "show empty Notion workspace transforming",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_2",
+        "assetType": "ORIGINAL_CHART",
+        "visualDescription": "timeline of Notion evolution",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_3",
+        "assetType": "ZAI_IMAGE",
+        "visualDescription": "comparison of old vs new Notion interface",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_4",
+        "assetType": "ORIGINAL_SCREEN_RECORDING",
+        "visualDescription": "diagram showing AI integration points",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_5",
+        "assetType": "ORIGINAL_SCREEN_RECORDING",
+        "visualDescription": "demonstration of context-aware AI suggestions",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_6",
+        "assetType": "ZAI_VIDEO",
+        "visualDescription": "side-by-side of manual vs AI-assisted content creation",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_7",
+        "assetType": "ORIGINAL_SCREEN_RECORDING",
+        "visualDescription": "screen recording of meeting notes transformation",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_8",
+        "assetType": "ZAI_IMAGE",
+        "visualDescription": "visual representation of custom agent creation",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_9",
+        "assetType": "ORIGINAL_CHART",
+        "visualDescription": "diagram of automated workflow example",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_10",
+        "assetType": "ZAI_VIDEO",
+        "visualDescription": "animated example of custom agent in action",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_11",
+        "assetType": "ZAI_IMAGE",
+        "visualDescription": "mind map of productivity needs",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_12",
+        "assetType": "ORIGINAL_CHART",
+        "visualDescription": "visual workflow mapping example",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_13",
+        "assetType": "ORIGINAL_SCREEN_RECORDING",
+        "visualDescription": "example of evolving template structure",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_14",
+        "assetType": "ORIGINAL_SCREEN_RECORDING",
+        "visualDescription": "database customization examples",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_15",
+        "assetType": "ORIGINAL_SCREEN_RECORDING",
+        "visualDescription": "demonstration of AI-powered views",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_16",
+        "assetType": "ORIGINAL_SCREEN_RECORDING",
+        "visualDescription": "agent configuration example",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_17",
+        "assetType": "ORIGINAL_CHART",
+        "visualDescription": "workspace evolution timeline",
+        "sourceHint": "",
+        "priority": "medium"
+      },
+      {
+        "beatId": "beat_18",
+        "assetType": "ZAI_IMAGE",
+        "visualDescription": "final transformed workspace visualization",
+        "sourceHint": "",
+        "priority": "medium"
+      }
+    ],
+    "soundDirection": [],
+    "thumbnailConcepts": [],
+    "titleCandidates": []
+  },
+  "archetype": "TECH_EXPLAINER",
+  "beats": [
+    {
+      "id": "beat_1",
+      "order": 1,
+      "narration": "What if your workspace could think, write, and plan for you?",
+      "purpose": "HOOK",
+      "viewerQuestion": null,
+      "newQuestion": "How can you transform Notion from a blank canvas into an AI powerhouse?",
+      "newInformation": "Notion AI has evolved beyond simple note-taking",
+      "emotionalIntent": "intrigue",
+      "visualIntent": "show empty Notion workspace transforming",
+      "preferredAssetType": "ZAI_VIDEO",
+      "evidenceSourceIds": [
+        "1"
+      ],
+      "soundIntent": "mysterious tech sound"
+    },
+    {
+      "id": "beat_2",
+      "order": 2,
+      "narration": "Notion began as a simple digital workspace in 2013.",
+      "purpose": "SETUP",
+      "viewerQuestion": "What is Notion?",
+      "newQuestion": "How has Notion evolved with AI?",
+      "newInformation": "Notion started as a basic digital workspace",
+      "emotionalIntent": "informative",
+      "visualIntent": "timeline of Notion evolution",
+      "preferredAssetType": "ORIGINAL_CHART",
+      "evidenceSourceIds": [
+        "2"
+      ],
+      "soundIntent": "neutral background music"
+    },
+    {
+      "id": "beat_3",
+      "order": 3,
+      "narration": "By 2026, Notion has transformed into an AI-powered productivity platform.",
+      "purpose": "QUESTION",
+      "viewerQuestion": "How has Notion evolved with AI?",
+      "newQuestion": "What makes Notion AI different from other AI tools?",
+      "newInformation": "Notion now integrates AI throughout its platform",
+      "emotionalIntent": "surprise",
+      "visualIntent": "comparison of old vs new Notion interface",
+      "preferredAssetType": "ZAI_IMAGE",
+      "evidenceSourceIds": [
+        "1"
+      ],
+      "soundIntent": "tech transition sound"
+    },
+    {
+      "id": "beat_4",
+      "order": 4,
+      "narration": "Unlike standalone AI assistants, Notion AI lives within your workspace.",
+      "purpose": "EVIDENCE",
+      "viewerQuestion": "What makes Notion AI different from other AI tools?",
+      "newQuestion": "How does this integration benefit users?",
+      "newInformation": "Notion AI is embedded within your workspace",
+      "emotionalIntent": "clarity",
+      "visualIntent": "diagram showing AI integration points",
+      "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+      "evidenceSourceIds": [
+        "1"
+      ],
+      "soundIntent": "subtle tech hum"
+    },
+    {
+      "id": "beat_5",
+      "order": 5,
+      "narration": "This integration means AI understands your context, not just commands.",
+      "purpose": "REVEAL",
+      "viewerQuestion": "How does this integration benefit users?",
+      "newQuestion": "What specific AI capabilities does Notion offer?",
+      "newInformation": "Notion AI understands context within your workspace",
+      "emotionalIntent": "understanding",
+      "visualIntent": "demonstration of context-aware AI suggestions",
+      "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+      "evidenceSourceIds": [
+        "3"
+      ],
+      "soundIntent": "positive chime"
+    },
+    {
+      "id": "beat_6",
+      "order": 6,
+      "narration": "Notion AI can write, summarize, and organize your content automatically.",
+      "purpose": "EVIDENCE",
+      "viewerQuestion": "What specific AI capabilities does Notion offer?",
+      "newQuestion": "How do these features work in practice?",
+      "newInformation": "Notion AI handles content creation and organization",
+      "emotionalIntent": "impressed",
+      "visualIntent": "side-by-side of manual vs AI-assisted content creation",
+      "preferredAssetType": "ZAI_VIDEO",
+      "evidenceSourceIds": [
+        "3"
+      ],
+      "soundIntent": "typing sounds with AI enhancement"
+    },
+    {
+      "id": "beat_7",
+      "order": 7,
+      "narration": "It can transform meeting notes into action items with a single click.",
+      "purpose": "REVEAL",
+      "viewerQuestion": "How do these features work in practice?",
+      "newQuestion": "What about more advanced AI capabilities?",
+      "newInformation": "Notion AI automates task creation from notes",
+      "emotionalIntent": "practical",
+      "visualIntent": "screen recording of meeting notes transformation",
+      "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+      "evidenceSourceIds": [
+        "5"
+      ],
+      "soundIntent": "satisfying click sound"
+    },
+    {
+      "id": "beat_8",
+      "order": 8,
+      "narration": "Beyond basic features, Notion AI now supports custom agents.",
+      "purpose": "QUESTION",
+      "viewerQuestion": "What about more advanced AI capabilities?",
+      "newQuestion": "How do these custom agents work?",
+      "newInformation": "Notion AI supports customizable AI agents",
+      "emotionalIntent": "curious",
+      "visualIntent": "visual representation of custom agent creation",
+      "preferredAssetType": "ZAI_IMAGE",
+      "evidenceSourceIds": [
+        "3"
+      ],
+      "soundIntent": "intriguing tech sound"
+    },
+    {
+      "id": "beat_9",
+      "order": 9,
+      "narration": "These agents can automate specific workflows unique to your needs.",
+      "purpose": "EVIDENCE",
+      "viewerQuestion": "How do these custom agents work?",
+      "newQuestion": "What kind of workflows can they automate?",
+      "newInformation": "Custom agents automate personalized workflows",
+      "emotionalIntent": "empowered",
+      "visualIntent": "diagram of automated workflow example",
+      "preferredAssetType": "ORIGINAL_CHART",
+      "evidenceSourceIds": [
+        "3"
+      ],
+      "soundIntent": "efficient workflow sounds"
+    },
+    {
+      "id": "beat_10",
+      "order": 10,
+      "narration": "Imagine an agent that automatically summarizes research articles or tracks project deadlines.",
+      "purpose": "REVEAL",
+      "viewerQuestion": "What kind of workflows can they automate?",
+      "newQuestion": "How do I start building my AI workspace?",
+      "newInformation": "Specific examples of custom agent applications",
+      "emotionalIntent": "inspired",
+      "visualIntent": "animated example of custom agent in action",
+      "preferredAssetType": "ZAI_VIDEO",
+      "evidenceSourceIds": [
+        "4"
+      ],
+      "soundIntent": "inspiring music"
+    },
+    {
+      "id": "beat_11",
+      "order": 11,
+      "narration": "Building your AI workspace begins with understanding your core needs.",
+      "purpose": "TRANSITION",
+      "viewerQuestion": "How do I start building my AI workspace?",
+      "newQuestion": "What should I consider first?",
+      "newInformation": "Start by identifying your core needs",
+      "emotionalIntent": "thoughtful",
+      "visualIntent": "mind map of productivity needs",
+      "preferredAssetType": "ZAI_IMAGE",
+      "evidenceSourceIds": [
+        "5"
+      ],
+      "soundIntent": "calm thinking sounds"
+    },
+    {
+      "id": "beat_12",
+      "order": 12,
+      "narration": "Map out your daily, weekly, and monthly activities to identify automation opportunities.",
+      "purpose": "EVIDENCE",
+      "viewerQuestion": "What should I consider first?",
+      "newQuestion": "How do I structure my workspace?",
+      "newInformation": "Mapping activities reveals automation opportunities",
+      "emotionalIntent": "analytical",
+      "visualIntent": "visual workflow mapping example",
+      "preferredAssetType": "ORIGINAL_CHART",
+      "evidenceSourceIds": [
+        "5"
+      ],
+      "soundIntent": "planning sounds"
+    },
+    {
+      "id": "beat_13",
+      "order": 13,
+      "narration": "Start with a simple template that can grow with your needs.",
+      "purpose": "REVEAL",
+      "viewerQuestion": "How do I structure my workspace?",
+      "newQuestion": "What templates work best?",
+      "newInformation": "Begin with flexible, expandable templates",
+      "emotionalIntent": "practical",
+      "visualIntent": "example of evolving template structure",
+      "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+      "evidenceSourceIds": [
+        "5"
+      ],
+      "soundIntent": "satisfying template selection"
+    },
+    {
+      "id": "beat_14",
+      "order": 14,
+      "narration": "Notion's flexibility allows you to build databases that adapt to your workflow.",
+      "purpose": "EVIDENCE",
+      "viewerQuestion": "What templates work best?",
+      "newQuestion": "How do I integrate AI into these structures?",
+      "newInformation": "Notion databases are highly customizable",
+      "emotionalIntent": "adaptable",
+      "visualIntent": "database customization examples",
+      "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+      "evidenceSourceIds": [
+        "4"
+      ],
+      "soundIntent": "adaptable tech sounds"
+    },
+    {
+      "id": "beat_15",
+      "order": 15,
+      "narration": "Add AI-powered views that automatically organize your information.",
+      "purpose": "REVEAL",
+      "viewerQuestion": "How do I integrate AI into these structures?",
+      "newQuestion": "What are some advanced AI features I should know?",
+      "newInformation": "AI views automatically organize information",
+      "emotionalIntent": "efficient",
+      "visualIntent": "demonstration of AI-powered views",
+      "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+      "evidenceSourceIds": [
+        "3"
+      ],
+      "soundIntent": "efficient organization sounds"
+    },
+    {
+      "id": "beat_16",
+      "order": 16,
+      "narration": "Set up custom agents that handle repetitive tasks like email summarization.",
+      "purpose": "EVIDENCE",
+      "viewerQuestion": "What are some advanced AI features I should know?",
+      "newQuestion": "How do I ensure my workspace stays effective?",
+      "newInformation": "Custom agents automate repetitive tasks",
+      "emotionalIntent": "empowered",
+      "visualIntent": "agent configuration example",
+      "preferredAssetType": "ORIGINAL_SCREEN_RECORDING",
+      "evidenceSourceIds": [
+        "3"
+      ],
+      "soundIntent": "automation sounds"
+    },
+    {
+      "id": "beat_17",
+      "order": 17,
+      "narration": "Regularly review and refine your AI workspace based on what actually works.",
+      "purpose": "REVEAL",
+      "viewerQuestion": "How do I ensure my workspace stays effective?",
+      "newQuestion": "What's the ultimate benefit of this approach?",
+      "newInformation": "Continuous improvement is key to effectiveness",
+      "emotionalIntent": "thoughtful",
+      "visualIntent": "workspace evolution timeline",
+      "preferredAssetType": "ORIGINAL_CHART",
+      "evidenceSourceIds": [
+        "5"
+      ],
+      "soundIntent": "reflective music"
+    },
+    {
+      "id": "beat_18",
+      "order": 18,
+      "narration": "Your Notion AI workspace becomes a living system that learns and adapts to your unique workflow.",
+      "purpose": "ENDING",
+      "viewerQuestion": "What's the ultimate benefit of this approach?",
+      "newQuestion": null,
+      "newInformation": "AI workspace becomes adaptive and personalized",
+      "emotionalIntent": "empowered",
+      "visualIntent": "final transformed workspace visualization",
+      "preferredAssetType": "ZAI_IMAGE",
+      "evidenceSourceIds": [],
+      "soundIntent": "uplifting resolution"
+    }
+  ],
+  "perBeatAudio": [
+    {
+      "beatId": "beat_1",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_1.mp3",
+      "duration": 5.928
+    },
+    {
+      "beatId": "beat_2",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_2.mp3",
+      "duration": 5.52
+    },
+    {
+      "beatId": "beat_3",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_3.mp3",
+      "duration": 8.688
+    },
+    {
+      "beatId": "beat_4",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_4.mp3",
+      "duration": 7.152
+    },
+    {
+      "beatId": "beat_5",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_5.mp3",
+      "duration": 6.96
+    },
+    {
+      "beatId": "beat_6",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_6.mp3",
+      "duration": 7.92
+    },
+    {
+      "beatId": "beat_7",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_7.mp3",
+      "duration": 5.088
+    },
+    {
+      "beatId": "beat_8",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_8.mp3",
+      "duration": 5.928
+    },
+    {
+      "beatId": "beat_9",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_9.mp3",
+      "duration": 6.048
+    },
+    {
+      "beatId": "beat_10",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_10.mp3",
+      "duration": 8.952
+    },
+    {
+      "beatId": "beat_11",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_11.mp3",
+      "duration": 4.752
+    },
+    {
+      "beatId": "beat_12",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_12.mp3",
+      "duration": 7.992
+    },
+    {
+      "beatId": "beat_13",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_13.mp3",
+      "duration": 4.248
+    },
+    {
+      "beatId": "beat_14",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_14.mp3",
+      "duration": 6.6
+    },
+    {
+      "beatId": "beat_15",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_15.mp3",
+      "duration": 7.08
+    },
+    {
+      "beatId": "beat_16",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_16.mp3",
+      "duration": 2
+    },
+    {
+      "beatId": "beat_17",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_17.mp3",
+      "duration": 2
+    },
+    {
+      "beatId": "beat_18",
+      "audioPath": "/home/z/my-project/data/audio/cmtewpe730051i735wphq0vnf_beat_18.mp3",
+      "duration": 2
+    }
+  ],
+  "edl": [
+    {
+      "id": "edl_1",
+      "start": 0,
+      "end": 5.928,
+      "narrationText": "What if your workspace could think, write, and plan for you?",
+      "assetId": "",
+      "visualPurpose": "Visualize the transformation from basic to AI-enhanced workspace",
+      "movement": "static",
+      "overlay": "What if your workspace could think, write, and pla",
+      "transitionIn": "fade_in",
+      "transitionOut": "hard_cut",
+      "musicCue": "mysterious tech sound",
+      "reason": "Visualize the transformation from basic to AI-enhanced workspace"
+    },
+    {
+      "id": "edl_2",
+      "start": 5.928,
+      "end": 11.448,
+      "narrationText": "Notion began as a simple digital workspace in 2013.",
+      "assetId": "",
+      "visualPurpose": "Establish historical context for Notion",
+      "movement": "pan_right",
+      "overlay": "Notion began as a simple digital workspace in 2013",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "neutral background music",
+      "reason": "Establish historical context for Notion"
+    },
+    {
+      "id": "edl_3",
+      "start": 11.448,
+      "end": 20.136000000000003,
+      "narrationText": "By 2026, Notion has transformed into an AI-powered productivity platform.",
+      "assetId": "",
+      "visualPurpose": "Highlight the transformation with AI integration",
+      "movement": "static",
+      "overlay": "By 2026, Notion has transformed into an AI-powered",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "tech transition sound",
+      "reason": "Highlight the transformation with AI integration"
+    },
+    {
+      "id": "edl_4",
+      "start": 20.136000000000003,
+      "end": 27.288000000000004,
+      "narrationText": "Unlike standalone AI assistants, Notion AI lives within your workspace.",
+      "assetId": "",
+      "visualPurpose": "Illustrate the unique integration approach",
+      "movement": "pan_left",
+      "overlay": "Unlike standalone AI assistants, Notion AI lives w",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "subtle tech hum",
+      "reason": "Illustrate the unique integration approach"
+    },
+    {
+      "id": "edl_5",
+      "start": 27.288000000000004,
+      "end": 34.248000000000005,
+      "narrationText": "This integration means AI understands your context, not just commands.",
+      "assetId": "",
+      "visualPurpose": "Demonstrate contextual understanding",
+      "movement": "static",
+      "overlay": "This integration means AI understands your context",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "positive chime",
+      "reason": "Demonstrate contextual understanding"
+    },
+    {
+      "id": "edl_6",
+      "start": 34.248000000000005,
+      "end": 42.168000000000006,
+      "narrationText": "Notion AI can write, summarize, and organize your content automatically.",
+      "assetId": "",
+      "visualPurpose": "Showcase AI content capabilities",
+      "movement": "zoom_in",
+      "overlay": "Notion AI can write, summarize, and organize your ",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "typing sounds with AI enhancement",
+      "reason": "Showcase AI content capabilities"
+    },
+    {
+      "id": "edl_7",
+      "start": 42.168000000000006,
+      "end": 47.25600000000001,
+      "narrationText": "It can transform meeting notes into action items with a single click.",
+      "assetId": "",
+      "visualPurpose": "Demonstrate practical automation",
+      "movement": "static",
+      "overlay": "It can transform meeting notes into action items w",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "satisfying click sound",
+      "reason": "Demonstrate practical automation"
+    },
+    {
+      "id": "edl_8",
+      "start": 47.25600000000001,
+      "end": 53.184000000000005,
+      "narrationText": "Beyond basic features, Notion AI now supports custom agents.",
+      "assetId": "",
+      "visualPurpose": "Introduce advanced AI capabilities",
+      "movement": "pan_right",
+      "overlay": "Beyond basic features, Notion AI now supports cust",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "intriguing tech sound",
+      "reason": "Introduce advanced AI capabilities"
+    },
+    {
+      "id": "edl_9",
+      "start": 53.184000000000005,
+      "end": 59.232000000000006,
+      "narrationText": "These agents can automate specific workflows unique to your needs.",
+      "assetId": "",
+      "visualPurpose": "Explain agent functionality",
+      "movement": "static",
+      "overlay": "These agents can automate specific workflows uniqu",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "efficient workflow sounds",
+      "reason": "Explain agent functionality"
+    },
+    {
+      "id": "edl_10",
+      "start": 59.232000000000006,
+      "end": 68.18400000000001,
+      "narrationText": "Imagine an agent that automatically summarizes research articles or tracks project deadlines.",
+      "assetId": "",
+      "visualPurpose": "Inspire with concrete examples",
+      "movement": "pan_left",
+      "overlay": "Imagine an agent that automatically summarizes res",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "inspiring music",
+      "reason": "Inspire with concrete examples"
+    },
+    {
+      "id": "edl_11",
+      "start": 68.18400000000001,
+      "end": 72.936,
+      "narrationText": "Building your AI workspace begins with understanding your core needs.",
+      "assetId": "",
+      "visualPurpose": "Guide the planning process",
+      "movement": "static",
+      "overlay": "Building your AI workspace begins with understandi",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "calm thinking sounds",
+      "reason": "Guide the planning process"
+    },
+    {
+      "id": "edl_12",
+      "start": 72.936,
+      "end": 80.92800000000001,
+      "narrationText": "Map out your daily, weekly, and monthly activities to identify automation opportunities.",
+      "assetId": "",
+      "visualPurpose": "Demonstrate planning approach",
+      "movement": "zoom_in",
+      "overlay": "Map out your daily, weekly, and monthly activities",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "planning sounds",
+      "reason": "Demonstrate planning approach"
+    },
+    {
+      "id": "edl_13",
+      "start": 80.92800000000001,
+      "end": 85.17600000000002,
+      "narrationText": "Start with a simple template that can grow with your needs.",
+      "assetId": "",
+      "visualPurpose": "Show template evolution",
+      "movement": "static",
+      "overlay": "Start with a simple template that can grow with yo",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "satisfying template selection",
+      "reason": "Show template evolution"
+    },
+    {
+      "id": "edl_14",
+      "start": 85.17600000000002,
+      "end": 91.77600000000001,
+      "narrationText": "Notion's flexibility allows you to build databases that adapt to your workflow.",
+      "assetId": "",
+      "visualPurpose": "Highlight database flexibility",
+      "movement": "pan_right",
+      "overlay": "Notion's flexibility allows you to build databases",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "adaptable tech sounds",
+      "reason": "Highlight database flexibility"
+    },
+    {
+      "id": "edl_15",
+      "start": 91.77600000000001,
+      "end": 98.85600000000001,
+      "narrationText": "Add AI-powered views that automatically organize your information.",
+      "assetId": "",
+      "visualPurpose": "Demonstrate AI organization capabilities",
+      "movement": "static",
+      "overlay": "Add AI-powered views that automatically organize y",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "efficient organization sounds",
+      "reason": "Demonstrate AI organization capabilities"
+    },
+    {
+      "id": "edl_16",
+      "start": 98.85600000000001,
+      "end": 100.85600000000001,
+      "narrationText": "Set up custom agents that handle repetitive tasks like email summarization.",
+      "assetId": "",
+      "visualPurpose": "empowered",
+      "movement": "pan_left",
+      "overlay": "Set up custom agents that handle repetitive tasks ",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "automation sounds",
+      "reason": "empowered"
+    },
+    {
+      "id": "edl_17",
+      "start": 100.85600000000001,
+      "end": 102.85600000000001,
+      "narrationText": "Regularly review and refine your AI workspace based on what actually works.",
+      "assetId": "",
+      "visualPurpose": "thoughtful",
+      "movement": "static",
+      "overlay": "Regularly review and refine your AI workspace base",
+      "transitionIn": "hard_cut",
+      "transitionOut": "hard_cut",
+      "musicCue": "reflective music",
+      "reason": "thoughtful"
+    },
+    {
+      "id": "edl_18",
+      "start": 102.85600000000001,
+      "end": 104.85600000000001,
+      "narrationText": "Your Notion AI workspace becomes a living system that learns and adapts to your unique workflow.",
+      "assetId": "",
+      "visualPurpose": "empowered",
+      "movement": "zoom_in",
+      "overlay": "Your Notion AI workspace becomes a living system t",
+      "transitionIn": "hard_cut",
+      "transitionOut": "fade_out",
+      "musicCue": "uplifting resolution",
+      "reason": "empowered"
+    }
+  ]
+}

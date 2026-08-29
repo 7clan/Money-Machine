@@ -1,0 +1,15 @@
+{
+  "RECONSTRUCTION_CREATIVE_LOCK": true,
+  "originalProductionId": "capability-showcase-001",
+  "originalScriptHash": "0fb195ee5acd3c73",
+  "originalVisualShotHash": "676ca6ec36a4a1af",
+  "newAudioManifestHash": "31c5109489de0b95",
+  "newAssetManifestHash": "0757e82db4bede11",
+  "newCompositionHash": "a4586561046b2fc3",
+  "newRenderHash": "62f45a86de4d177123fd461686e09c2078b7c3e61cd4f9ef71404eeeaf6e8e55",
+  "newThumbnailHash": "210695ee6f9554d32e552671a726c73edeb1f77a47945396c4ebc7a4849f6bf7",
+  "creativeIntentPreserved": true,
+  "binaryIdentical": false,
+  "creativelyEquivalent": true,
+  "lockedAt": "2026-08-29T22:13:48.967Z"
+}

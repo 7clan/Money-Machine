@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "{\n  \"scores\": {\n    \"hookStrength\": 7,\n    \"narrativeFlow\": 6,\n    \"visualVariety\": 8,\n    \"pacing\": 5,\n    \"narrationAlignment\": 8,\n    \"visualCoverage\": 7\n  },\n  \"failingShots\": [\n    {\n      \"shotId\": \"shot-8\",\n      \"timestamp\": \"28-32\",\n      \"issue\": \"Static text card breaks visual momentum in middle of explanation\",\n      \"recommendation\": \"Replace with animated transition between storage and battery concepts\"\n    },\n    {\n      \"shotId\": \"shot-14\",\n      \"timestamp\": \"52-56\",\n      \"issue\": \"Text card duplicates narration, creating redundancy rather than reinforcement\",\n      \"recommendation\": \"Use visual metaphor instead of repeating the exact text\"\n    },\n    {\n      \"shotId\": \"shot-17\",\n      \"timestamp\": \"64-68\",\n      \"issue\": \"End screen with handles feels abrupt and commercial after the peaceful ending\",\n      \"recommendation\": \"Integrate handles more subtly or move them earlier in the sequence\"\n    }\n  ],\n  \"verdictSuggestion\": \"PASS\"\n}",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788041628,
+  "id": "20260830061345eb75179f61e54592",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260830061345eb75179f61e54592",
+  "usage": {
+    "completion_tokens": 253,
+    "prompt_tokens": 2822,
+    "total_tokens": 3075
+  }
+}

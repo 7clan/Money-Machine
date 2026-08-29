@@ -1,6 +1,31 @@
 {
-  "generatedAt": "2026-08-29T21:31:35.653Z",
+  "generatedAt": "2026-08-29T22:15:49.931Z",
   "entries": [
+    {
+      "id": "capability-showcase-001-reconstructed",
+      "name": "CAPABILITY SHOWCASE 001 — RECONSTRUCTED",
+      "format": "EXPLAINER_ESSAY",
+      "category": "APPROVED",
+      "status": "APPROVED (RECONSTRUCTED)",
+      "path": "/home/z/my-project/data/reconstructions/capability-showcase-001/final.mp4",
+      "exists": true,
+      "duration": 45.868,
+      "resolution": "1920x1080",
+      "sizeBytes": 21990468,
+      "sizeMB": 20.97,
+      "factCheckStatus": "PASS",
+      "qcStatus": "PASS",
+      "youtubeVideoId": null,
+      "youtubePrivacy": null,
+      "thumbnailPath": "/home/z/my-project/data/reconstructions/capability-showcase-001/thumbnail/thumbnail-1280x720.png",
+      "contactSheetPath": null,
+      "superseded": false,
+      "supersededBy": null,
+      "notes": "Reconstructed from preserved artifacts. Creative intent preserved (scriptHash + visualShotHash match original). FINAL_MASTER_DURABLE=true. Download: https://github.com/7clan/Money-Machine/releases/download/media-capability-showcase-001-reconstructed/FINAL_VIDEO-final.mp4",
+      "playbackSource": "OFF_MACHINE",
+      "storageStatus": "OFF_MACHINE_PERSISTED",
+      "artifactId": "art-62f45a86de4d1771"
+    },
     {
       "id": "capability-showcase-001",
       "name": "Capability Showcase 001 — Your Mind's Renewable Energy",

@@ -35,7 +35,90 @@
         "privacyStatus": "private",
         "externalCopy": true
       }
+    },
+    {
+      "artifactId": "art-62f45a86de4d1771",
+      "productionId": "capability-showcase-001-reconstructed",
+      "type": "FINAL_VIDEO",
+      "localPath": "/home/z/my-project/data/reconstructions/capability-showcase-001/final.mp4",
+      "mediaStorePath": "/home/z/my-project/data/media-store/capability-showcase-001-reconstructed/FINAL_VIDEO/final.mp4",
+      "offMachinePath": "https://github.com/7clan/Money-Machine/releases/download/media-capability-showcase-001-reconstructed/FINAL_VIDEO-final.mp4",
+      "size": 21990468,
+      "sha256": "62f45a86de4d177123fd461686e09c2078b7c3e61cd4f9ef71404eeeaf6e8e55",
+      "createdAt": "2026-08-29T22:13:48.996Z",
+      "storageStatus": "OFF_MACHINE_PERSISTED",
+      "mimeType": "video/mp4",
+      "backend": "OFF_MACHINE",
+      "metadata": {
+        "duration": 45.930667,
+        "resolution": "1920x1080"
+      }
+    },
+    {
+      "artifactId": "art-210695ee6f9554d3",
+      "productionId": "capability-showcase-001-reconstructed",
+      "type": "THUMBNAIL",
+      "localPath": "/home/z/my-project/data/reconstructions/capability-showcase-001/thumbnail/thumbnail-1280x720.png",
+      "mediaStorePath": "/home/z/my-project/data/media-store/capability-showcase-001-reconstructed/THUMBNAIL/thumbnail-1280x720.png",
+      "offMachinePath": "https://github.com/7clan/Money-Machine/releases/download/media-capability-showcase-001-reconstructed/THUMBNAIL-thumbnail-1280x720.png",
+      "size": 709692,
+      "sha256": "210695ee6f9554d32e552671a726c73edeb1f77a47945396c4ebc7a4849f6bf7",
+      "createdAt": "2026-08-29T22:13:55.856Z",
+      "storageStatus": "OFF_MACHINE_PERSISTED",
+      "mimeType": "image/png",
+      "backend": "OFF_MACHINE"
+    },
+    {
+      "artifactId": "art-2de0e15f949ef569",
+      "productionId": "capability-showcase-001-reconstructed",
+      "type": "SOURCE_ASSET",
+      "localPath": "/home/z/my-project/data/reconstructions/capability-showcase-001/reconstruction-creative-lock.json",
+      "mediaStorePath": "/home/z/my-project/data/media-store/capability-showcase-001-reconstructed/SOURCE_ASSET/reconstruction-creative-lock.json",
+      "offMachinePath": "https://github.com/7clan/Money-Machine/releases/download/media-capability-showcase-001-reconstructed/SOURCE_ASSET-reconstruction-creative-lock.json",
+      "size": 638,
+      "sha256": "2de0e15f949ef5693ff09c079e1f2672eadf063565e2766890146d76fd6249b7",
+      "createdAt": "2026-08-29T22:13:59.605Z",
+      "storageStatus": "OFF_MACHINE_PERSISTED",
+      "mimeType": "application/octet-stream",
+      "backend": "OFF_MACHINE",
+      "metadata": {
+        "artifactType": "RECONSTRUCTION_CREATIVE_LOCK"
+      }
+    },
+    {
+      "artifactId": "art-e7a0731b3e29319a",
+      "productionId": "capability-showcase-001-reconstructed",
+      "type": "SOURCE_ASSET",
+      "localPath": "/home/z/my-project/data/reconstructions/capability-showcase-001/qc-reconstruction.json",
+      "mediaStorePath": "/home/z/my-project/data/media-store/capability-showcase-001-reconstructed/SOURCE_ASSET/qc-reconstruction.json",
+      "offMachinePath": "https://github.com/7clan/Money-Machine/releases/download/media-capability-showcase-001-reconstructed/SOURCE_ASSET-qc-reconstruction.json",
+      "size": 1048,
+      "sha256": "e7a0731b3e29319ace083393eddfba72ae7f216150be8c3613dc673b81094d9a",
+      "createdAt": "2026-08-29T22:14:01.886Z",
+      "storageStatus": "OFF_MACHINE_PERSISTED",
+      "mimeType": "application/octet-stream",
+      "backend": "OFF_MACHINE",
+      "metadata": {
+        "artifactType": "QC_REPORT"
+      }
+    },
+    {
+      "artifactId": "art-f1241a76eb75bb9c",
+      "productionId": "capability-showcase-001-reconstructed",
+      "type": "SOURCE_ASSET",
+      "localPath": "/home/z/my-project/data/reconstructions/capability-showcase-001/fact-check-reconstruction.json",
+      "mediaStorePath": "/home/z/my-project/data/media-store/capability-showcase-001-reconstructed/SOURCE_ASSET/fact-check-reconstruction.json",
+      "offMachinePath": "https://github.com/7clan/Money-Machine/releases/download/media-capability-showcase-001-reconstructed/SOURCE_ASSET-fact-check-reconstruction.json",
+      "size": 391,
+      "sha256": "f1241a76eb75bb9cee9ba7a1500a8132c2e502a8c7564e287f0ed3990879eb5e",
+      "createdAt": "2026-08-29T22:14:04.641Z",
+      "storageStatus": "OFF_MACHINE_PERSISTED",
+      "mimeType": "application/octet-stream",
+      "backend": "OFF_MACHINE",
+      "metadata": {
+        "artifactType": "FACT_CHECK_REPORT"
+      }
     }
   ],
-  "updatedAt": "2026-08-29T21:37:14.962508"
+  "updatedAt": "2026-08-29T22:14:07.308Z"
 }

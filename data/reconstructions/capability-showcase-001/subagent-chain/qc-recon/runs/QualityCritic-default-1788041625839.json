@@ -1,0 +1,20 @@
+{
+  "agent": "QualityCritic",
+  "role": "QUALITY_CRITIC",
+  "artifact": "QCReport",
+  "flow": "reconstruction",
+  "batchId": "qc-recon",
+  "instanceId": "default",
+  "pid": 5302,
+  "startedAt": "2026-08-29T22:13:45.839Z",
+  "endedAt": "2026-08-29T22:13:48.919Z",
+  "durationMs": 3080,
+  "inputHash": "41691cf7fad5b2aa",
+  "outputHash": "ec2e72a702299106",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/reconstructions/capability-showcase-001/subagent-chain/qc-recon"
+}

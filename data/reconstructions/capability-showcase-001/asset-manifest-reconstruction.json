@@ -1,0 +1,67 @@
+{
+  "images": [
+    {
+      "shotId": "shot-2",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-2-304ebf2b744814ff.png",
+      "prompt": "Visualize digital fatigue as a real energy drain. Close-up of person rubbing tired eyes with digital notification icons floating around them. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-3",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-3-cc644f0b3f6e1915.png",
+      "prompt": "Introduce the core concept of renewable energy powering mental wellbeing. Animation showing renewable energy flowing into phone, then transforming into mental energy filling a person's silhouette. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-5",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-5-4458bd2594babae5.png",
+      "prompt": "Create parallel between digital overloads and environmental pollution. Split screen showing social media notifications flooding one side, factory emissions on the other. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-7",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-7-d89db431a4fa8e49.png",
+      "prompt": "Explain the relationship between digital storage and energy concepts. Animation showing data storage filling up, then transitioning to battery storage visualization. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-9",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-9-a9858c0e7477844f.png",
+      "prompt": "Demonstrate digital mindfulness in practice. Person meditating with phone in another room, peaceful energy radiating from them. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-10",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-10-9e4d1a0f50fb0b09.png",
+      "prompt": "Show mental renewal through digital detox. Person's silhouette gradually filling with calm energy as phone dims in distance. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-12",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-12-a91bdbb92454d1d6.png",
+      "prompt": "Show the benefits of digital energy management. Person surrounded by growing renewable energy symbols as they become more centered. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-13",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-13-facf9212cafda617.png",
+      "prompt": "Leave viewer with peaceful connection to nature. Person looking peacefully at nature, with digital devices minimized in the background. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-16",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-16-b9f68887edc5b065.png",
+      "prompt": "Final reinforcing visual. Peaceful nature scene with digital devices gradually fading away. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    },
+    {
+      "shotId": "shot-19",
+      "imagePath": "/home/z/my-project/data/reconstructions/capability-showcase-001/images/shot-19-8f7e779c736a50b5.png",
+      "prompt": "Final fade out. Screen fading to black with subtle energy particles. Cinematic, high detail, 16:9, no text overlay.",
+      "promptSource": "derived_from_preserved_visualshot"
+    }
+  ],
+  "originalPromptAvailable": true,
+  "generatedCount": 10,
+  "fallbackCount": 0
+}

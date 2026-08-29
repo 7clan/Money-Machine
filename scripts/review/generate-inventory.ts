@@ -84,7 +84,42 @@ function getPlayback(productionId: string): { playbackSource: 'OFF_MACHINE' | 'L
 async function main() {
   const entries: VideoEntry[] = []
 
-  // ===== CAPABILITY SHOWCASE 001 =====
+  // ===== CAPABILITY SHOWCASE 001 RECONSTRUCTED =====
+  const reconDir = path.join(ROOT, 'data', 'reconstructions', 'capability-showcase-001')
+  const reconVideo = path.join(reconDir, 'final.mp4')
+  const reconExists = existsSync(reconVideo)
+  const reconProbe = reconExists ? await probeVideo(reconVideo) : { duration: null, resolution: null, codec: null, audioCodec: null }
+  const reconStat = reconExists ? statSync(reconVideo) : null
+  const reconReport = readJson(path.join(reconDir, 'reconstruction-report.json'))
+  const reconLock = readJson(path.join(reconDir, 'reconstruction-creative-lock.json'))
+  const reconThumb = path.join(reconDir, 'thumbnail', 'thumbnail-1280x720.png')
+  const reconQC = readJson(path.join(reconDir, 'qc-reconstruction.json'))
+  const reconFC = readJson(path.join(reconDir, 'fact-check-reconstruction.json'))
+  entries.push({
+    id: 'capability-showcase-001-reconstructed',
+    name: 'CAPABILITY SHOWCASE 001 — RECONSTRUCTED',
+    format: reconReport?.finalMaster?.resolution === '1920x1080' ? 'EXPLAINER_ESSAY' : 'EXPLAINER_ESSAY',
+    category: 'APPROVED',
+    status: reconExists ? 'APPROVED (RECONSTRUCTED)' : 'MISSING',
+    path: reconVideo,
+    exists: reconExists,
+    duration: reconProbe.duration,
+    resolution: reconProbe.resolution,
+    sizeBytes: reconStat?.size ?? null,
+    sizeMB: reconStat ? Math.round(reconStat.size / 1024 / 1024 * 100) / 100 : null,
+    factCheckStatus: reconFC?.verdict || null,
+    qcStatus: reconQC?.verdict || null,
+    youtubeVideoId: null,
+    youtubePrivacy: null,
+    thumbnailPath: existsSync(reconThumb) ? reconThumb : null,
+    contactSheetPath: null,
+    superseded: false,
+    supersededBy: null,
+    notes: `Reconstructed from preserved artifacts. Creative intent preserved (scriptHash + visualShotHash match original). FINAL_MASTER_DURABLE=${reconReport?.durability?.finalMasterDurable}. Download: ${reconReport?.durability?.downloadUrl || 'N/A'}`,
+    ...getPlayback('capability-showcase-001-reconstructed'),
+  })
+
+  // ===== CAPABILITY SHOWCASE 001 (ORIGINAL — missing local MP4) =====
   const showcaseDir = path.join(ROOT, 'data', 'autonomous-runs', 'capability-showcase-001')
   const showcaseVideo = path.join(showcaseDir, 'renders', 'final.mp4')
   const showcaseExists = existsSync(showcaseVideo)

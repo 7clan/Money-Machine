@@ -1,0 +1,9 @@
+{
+  "verdict": "PASS",
+  "narrationUnchanged": true,
+  "originalVerdict": "PASS",
+  "reason": "Preserved narration unchanged (scriptHash matches original creative lock). No new factual claims introduced. Generated images are illustrative (not factual evidence). No fake product UI, no invented charts/documents.",
+  "imagesChecked": 10,
+  "fakeProductUI": false,
+  "inventedCharts": false
+}

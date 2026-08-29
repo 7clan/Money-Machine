@@ -1,0 +1,35 @@
+{
+  "verdict": "PASS",
+  "scores": {
+    "hookStrength": 7,
+    "narrativeFlow": 6,
+    "visualVariety": 8,
+    "pacing": 5,
+    "narrationAlignment": 8,
+    "visualCoverage": 7
+  },
+  "failingShots": [
+    {
+      "shotId": "shot-8",
+      "timestamp": 0,
+      "issue": "Static text card breaks visual momentum in middle of explanation",
+      "recommendation": "Replace with animated transition between storage and battery concepts"
+    },
+    {
+      "shotId": "shot-14",
+      "timestamp": 0,
+      "issue": "Text card duplicates narration, creating redundancy rather than reinforcement",
+      "recommendation": "Use visual metaphor instead of repeating the exact text"
+    },
+    {
+      "shotId": "shot-17",
+      "timestamp": 0,
+      "issue": "End screen with handles feels abrupt and commercial after the peaceful ending",
+      "recommendation": "Integrate handles more subtly or move them earlier in the sequence"
+    }
+  ],
+  "fakeUICount": 0,
+  "realUIPercentage": 100,
+  "rawVideoPercentage": 0,
+  "staticScreenshotPercentage": 0
+}

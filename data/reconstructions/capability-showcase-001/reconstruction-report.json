@@ -1,0 +1,89 @@
+{
+  "productionId": "capability-showcase-001-reconstructed",
+  "originalProductionId": "capability-showcase-001",
+  "reconstructedAt": "2026-08-29T22:14:07.529Z",
+  "creativeSource": {
+    "originalScriptHash": "0fb195ee5acd3c73",
+    "reconstructionScriptHash": "0fb195ee5acd3c73",
+    "match": true,
+    "originalVisualShotHash": "676ca6ec36a4a1af",
+    "reconstructionVisualShotHash": "676ca6ec36a4a1af",
+    "visualShotMatch": true,
+    "creativeIntentPreserved": true
+  },
+  "regenerated": {
+    "tts": {
+      "segments": 7,
+      "totalDuration": 45.768
+    },
+    "images": {
+      "generated": 10,
+      "failed": 0,
+      "originalPromptAvailable": true
+    },
+    "visualShots": 19
+  },
+  "factCheck": {
+    "preservedNarration": "UNCHANGED",
+    "reconstructionFactChecker": "PASS"
+  },
+  "quality": {
+    "qualityCritic": "PASS",
+    "scores": {
+      "hookStrength": 7,
+      "narrativeFlow": 6,
+      "visualVariety": 8,
+      "pacing": 5,
+      "narrationAlignment": 8,
+      "visualCoverage": 7
+    },
+    "weakTimestamps": [
+      {
+        "shotId": "shot-8",
+        "timestamp": 0,
+        "issue": "Static text card breaks visual momentum in middle of explanation"
+      },
+      {
+        "shotId": "shot-14",
+        "timestamp": 0,
+        "issue": "Text card duplicates narration, creating redundancy rather than reinforcement"
+      },
+      {
+        "shotId": "shot-17",
+        "timestamp": 0,
+        "issue": "End screen with handles feels abrupt and commercial after the peaceful ending"
+      }
+    ],
+    "repairs": 0
+  },
+  "duration": {
+    "narrationSum": 45.768,
+    "timelineTotal": 45.768,
+    "finalVideoDur": 45.931,
+    "videoStreamDur": 45.868,
+    "audioStreamDur": 45.930667,
+    "verdict": "PASS"
+  },
+  "finalMaster": {
+    "path": "/home/z/my-project/data/reconstructions/capability-showcase-001/final.mp4",
+    "duration": 45.930667,
+    "resolution": "1920x1080",
+    "codec": "h264",
+    "audioCodec": "aac",
+    "size": 21990468,
+    "sha256": "62f45a86de4d177123fd461686e09c2078b7c3e61cd4f9ef71404eeeaf6e8e55"
+  },
+  "thumbnail": {
+    "path": "/home/z/my-project/data/reconstructions/capability-showcase-001/thumbnail/thumbnail-1280x720.png",
+    "qc": "PASS",
+    "sha256": "210695ee6f9554d32e552671a726c73edeb1f77a47945396c4ebc7a4849f6bf7"
+  },
+  "durability": {
+    "localMediaStore": "PASS",
+    "githubRelease": "PASS",
+    "remoteVerification": "PASS",
+    "finalMasterDurable": true,
+    "downloadUrl": "https://github.com/7clan/Money-Machine/releases/download/media-capability-showcase-001-reconstructed/FINAL_VIDEO-final.mp4"
+  },
+  "finalStatus": "PASS"
+}
