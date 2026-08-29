@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Daemon launcher — fully detaches the cycle-001 orchestrator so it survives
  * the parent bash session exit. Uses child_process.spawn(detached:true) + unref().

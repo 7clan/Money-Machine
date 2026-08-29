@@ -1,0 +1,20 @@
+{
+  "agent": "QualityCritic",
+  "role": "QUALITY_CRITIC",
+  "artifact": "QCReport",
+  "flow": "cycle-001-repair",
+  "batchId": "qc-r2",
+  "instanceId": "default",
+  "pid": 7071,
+  "startedAt": "2026-08-29T12:25:22.790Z",
+  "endedAt": "2026-08-29T12:25:26.351Z",
+  "durationMs": 3561,
+  "inputHash": "5b39859e67b08dde",
+  "outputHash": "2a0229075f3c3c3d",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/cycle-001/subagent-chain/qc-r2-default"
+}

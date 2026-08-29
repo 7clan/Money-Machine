@@ -25,7 +25,8 @@ function isReportShape(v: unknown): boolean {
     !!r &&
     (r.verdict === 'PASS' || r.verdict === 'FAIL') &&
     Array.isArray(r.claims) &&
-    r.claims.length >= 1
+    // claims may be empty when verdict=PASS (no unsupported claims found)
+    (r.verdict === 'PASS' || r.claims.length >= 1)
   )
 }
 

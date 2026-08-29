@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Daemon launcher for `bun run dev` — fully detaches the Next.js dev server.
  */

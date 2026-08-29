@@ -1,0 +1,21 @@
+{
+  "agent": "FactChecker",
+  "role": "FACT_CHECKER",
+  "artifact": "FactCheckReport",
+  "flow": "cycle-001-repair",
+  "batchId": "fact-check-r2",
+  "instanceId": "default",
+  "pid": 6842,
+  "startedAt": "2026-08-29T12:23:47.401Z",
+  "endedAt": "2026-08-29T12:23:57.310Z",
+  "durationMs": 9909,
+  "inputHash": "8392580ebfc8ec30",
+  "outputHash": "none",
+  "status": "FAIL",
+  "error": "LLM failed to produce valid JSON after 3 attempts: schema validation failed",
+  "llmCalls": 3,
+  "searchCalls": 1,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": false,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/cycle-001/subagent-chain/fact-check-r2-default"
+}

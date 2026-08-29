@@ -233,6 +233,15 @@ async function renderChunked(shotsWithTime: any[], segmentsWithStart: any[], img
       id: 'cycle-001',
       inputProps: localInputProps,
     })
+    // CRITICAL FIX: override the composition's durationInFrames to match this chunk's
+    // actual duration. The registered Composition in Root.tsx has a hardcoded default
+    // (300 frames = 10s) — without this override every chunk renders only 10s
+    // regardless of its real duration, truncating the final video.
+    composition.durationInFrames = durationInFrames
+    composition.fps = FPS
+    composition.width = WIDTH
+    composition.height = HEIGHT
+    log(`RENDER: chunk ${chunk.index} overridden durationInFrames=${durationInFrames} (was ${composition.durationInFrames === durationInFrames ? 'same' : 'default'})`)
     await renderMedia({
       composition,
       serveUrl: bundlePath,

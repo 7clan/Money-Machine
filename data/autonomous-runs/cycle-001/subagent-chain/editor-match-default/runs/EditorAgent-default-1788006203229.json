@@ -1,0 +1,20 @@
+{
+  "agent": "EditorAgent",
+  "role": "EDITOR_AGENT",
+  "artifact": "RepairedShots",
+  "flow": "cycle-001-repair",
+  "batchId": "editor-match",
+  "instanceId": "default",
+  "pid": 6790,
+  "startedAt": "2026-08-29T12:23:23.229Z",
+  "endedAt": "2026-08-29T12:23:47.091Z",
+  "durationMs": 23862,
+  "inputHash": "0dcca28f67d96e0d",
+  "outputHash": "f595c3e475891af9",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/cycle-001/subagent-chain/editor-match-default"
+}

@@ -1,0 +1,65 @@
+{
+  "id": "script-open-source-ai-minimalist-toolkit",
+  "segments": [
+    {
+      "id": "seg-1",
+      "type": "HOOK",
+      "narration": "What if you could harness AI's power without drowning in digital clutter?",
+      "screenAction": "Split screen showing messy desktop with multiple apps vs clean minimalist interface",
+      "expectedResult": "Viewer feels intrigued by the possibility of AI without overwhelm",
+      "visualPurpose": "Immediately presents the core tension between AI capability and digital minimalism"
+    },
+    {
+      "id": "seg-2",
+      "type": "SETUP",
+      "narration": "Open-source AI tools offer powerful alternatives without the bloat.",
+      "screenAction": "Quick montage of popular open-source AI tools with clean interfaces",
+      "expectedResult": "Viewer understands open-source AI as a viable minimalist option",
+      "visualPurpose": "Establishes the solution to the problem posed in the hook"
+    },
+    {
+      "id": "seg-3",
+      "type": "TRICK",
+      "narration": "The secret? Focus on tools that do one thing exceptionally well.",
+      "screenAction": "Zoom into a single, focused AI tool interface with minimal features",
+      "expectedResult": "Viewer grasps the minimalist approach to tool selection",
+      "visualPurpose": "Introduces the core principle of the minimalist approach"
+    },
+    {
+      "id": "seg-4",
+      "type": "SECTION",
+      "narration": "Begin with text generation using lightweight open-source models.",
+      "screenAction": "Demonstration of GPT4All running on a clean interface",
+      "expectedResult": "Viewer sees how powerful text generation can be without heavy software",
+      "visualPurpose": "First concrete example of minimalist AI in action"
+    },
+    {
+      "id": "seg-5",
+      "type": "SECTION",
+      "narration": "For images, local AI generation gives you control without cloud subscriptions.",
+      "screenAction": "Local Stable Diffusion interface generating images with minimal UI",
+      "expectedResult": "Viewer understands local AI image generation as a privacy-conscious option",
+      "visualPurpose": "Shows another powerful tool that respects digital minimalism"
+    },
+    {
+      "id": "seg-6",
+      "type": "PAYOFF",
+      "narration": "This approach gives you AI power without the digital baggage.",
+      "screenAction": "Clean workspace with just three essential AI tools running",
+      "expectedResult": "Viewer feels empowered to implement their own minimalist AI setup",
+      "visualPurpose": "Demonstrates the successful implementation of the approach"
+    },
+    {
+      "id": "seg-7",
+      "type": "ENDING",
+      "narration": "Choose tools that serve you, not the other way around.",
+      "screenAction": "Final shot of minimalist workspace with a subtle 'AI enabled' indicator",
+      "expectedResult": "Viewer feels motivated to curate their own digital AI experience",
+      "visualPurpose": "Leaves viewer with a clear call to action for their own digital minimalism"
+    }
+  ],
+  "archetype": "EXPLAINER_ESSAY",
+  "tone": "Empowering, practical, minimalist",
+  "targetDuration": 75,
+  "repairSummary": "Removed specific product names (GPT4All and Stable Diffusion) from seg-4 and seg-5 narrations and replaced with general terms about lightweight open-source models and local AI generation."
+}

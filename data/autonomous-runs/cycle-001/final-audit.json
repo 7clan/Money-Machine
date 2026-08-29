@@ -1,0 +1,246 @@
+{
+  "audit": {
+    "cycleId": "AUTONOMOUS_CYCLE_001",
+    "repairVersion": "v2",
+    "repairedAt": "2026-08-29T12:28:51.695Z",
+    "factCheck": {
+      "before": {
+        "verdict": "FAIL",
+        "unsupportedCount": 2,
+        "claims": [
+          {
+            "claim": "Start with text generation using lightweight models like GPT4All.",
+            "supported": false,
+            "source": "",
+            "issue": "No evidence in the provided web search mentions GPT4All specifically."
+          },
+          {
+            "claim": "For images, Stable Diffusion gives you control without cloud subscriptions.",
+            "supported": false,
+            "source": "",
+            "issue": "No evidence in the provided web search mentions Stable Diffusion specifically."
+          }
+        ]
+      },
+      "after": {
+        "verdict": "PASS",
+        "unsupportedCount": 0,
+        "claims": []
+      },
+      "unsupportedClaimsRemaining": 0
+    },
+    "duration": {
+      "narrationSum": 41.232,
+      "timelineTotal": 41.232,
+      "finalVideoStream": 41.313333,
+      "finalAudioStream": 41.365333,
+      "finalFormatDuration": 41.365333,
+      "missingContent": 0,
+      "verdict": "PASS"
+    },
+    "subagents": {
+      "totalInvocations": 15,
+      "parallel": 3,
+      "sequential": 12,
+      "runs": [
+        {
+          "agent": "EditorAgent",
+          "invocationId": "editor-match-default",
+          "start": "2026-08-29T12:23:23.229Z",
+          "end": "2026-08-29T12:23:47.091Z",
+          "inputHash": "0dcca28f67d96e0d",
+          "outputHash": "f595c3e475891af9",
+          "status": "PASS"
+        },
+        {
+          "agent": "FactChecker",
+          "invocationId": "fact-check-default",
+          "start": "2026-08-29T11:35:25.078Z",
+          "end": "2026-08-29T11:35:30.295Z",
+          "inputHash": "7ec389c43f6fe34b",
+          "outputHash": "3ba4caaa6f2ab8db",
+          "status": "PASS"
+        },
+        {
+          "agent": "FactChecker",
+          "invocationId": "fact-check-r2-default",
+          "start": "2026-08-29T12:23:47.401Z",
+          "end": "2026-08-29T12:23:57.310Z",
+          "inputHash": "8392580ebfc8ec30",
+          "outputHash": "none",
+          "status": "FAIL"
+        },
+        {
+          "agent": "FactChecker",
+          "invocationId": "fact-check-r2-default-r1",
+          "start": "2026-08-29T12:25:19.395Z",
+          "end": "2026-08-29T12:25:22.429Z",
+          "inputHash": "8392580ebfc8ec30",
+          "outputHash": "3564508b37a5eacc",
+          "status": "PASS"
+        },
+        {
+          "agent": "FormatDirector",
+          "invocationId": "format-default",
+          "start": "2026-08-29T11:24:06.915Z",
+          "end": "2026-08-29T11:24:09.529Z",
+          "inputHash": "45726072ae545f6e",
+          "outputHash": "9413f927706fc1e9",
+          "status": "PASS"
+        },
+        {
+          "agent": "IdeaStrategist",
+          "invocationId": "idea-strategy-default",
+          "start": "2026-08-29T11:23:19.628Z",
+          "end": "2026-08-29T11:24:06.647Z",
+          "inputHash": "d1ca816d3a48a1f7",
+          "outputHash": "a00c9f2181d3a788",
+          "status": "PASS"
+        },
+        {
+          "agent": "QualityCritic",
+          "invocationId": "qc-r2-default",
+          "start": "2026-08-29T12:25:22.790Z",
+          "end": "2026-08-29T12:25:26.351Z",
+          "inputHash": "5b39859e67b08dde",
+          "outputHash": "2a0229075f3c3c3d",
+          "status": "PASS"
+        },
+        {
+          "agent": "QualityCritic",
+          "invocationId": "qc-round-1-default",
+          "start": "2026-08-29T11:35:30.523Z",
+          "end": "2026-08-29T11:35:33.845Z",
+          "inputHash": "94f7d986b5899997",
+          "outputHash": "b96144cc9e6fd11b",
+          "status": "PASS"
+        },
+        {
+          "agent": "Researcher",
+          "invocationId": "research-r1",
+          "start": "2026-08-29T11:22:57.007Z",
+          "end": "2026-08-29T11:23:19.377Z",
+          "inputHash": "b4880e29af8c5d80",
+          "outputHash": "777825c6c6eb2f53",
+          "status": "PASS"
+        },
+        {
+          "agent": "Researcher",
+          "invocationId": "research-r2",
+          "start": "2026-08-29T11:22:57.184Z",
+          "end": "2026-08-29T11:23:16.886Z",
+          "inputHash": "362ec63e52c892e4",
+          "outputHash": "f778cc21286d2554",
+          "status": "PASS"
+        },
+        {
+          "agent": "Researcher",
+          "invocationId": "research-r3",
+          "start": "2026-08-29T11:22:57.109Z",
+          "end": "2026-08-29T11:23:17.714Z",
+          "inputHash": "637e0591a82c1380",
+          "outputHash": "3e05bd2c34d96b18",
+          "status": "PASS"
+        },
+        {
+          "agent": "TitleThumbnailDirector",
+          "invocationId": "title-thumb-default",
+          "start": "2026-08-29T11:35:34.069Z",
+          "end": "2026-08-29T11:35:49.799Z",
+          "inputHash": "3864880dadc35d3e",
+          "outputHash": "cb1a54c5c503281a",
+          "status": "PASS"
+        },
+        {
+          "agent": "VisualDirector",
+          "invocationId": "visual-default",
+          "start": "2026-08-29T11:24:24.049Z",
+          "end": "2026-08-29T11:24:48.525Z",
+          "inputHash": "66925a4c1eea1d00",
+          "outputHash": "1b71535ee5630ce3",
+          "status": "PASS"
+        },
+        {
+          "agent": "Writer",
+          "invocationId": "writer-default",
+          "start": "2026-08-29T11:24:09.838Z",
+          "end": "2026-08-29T11:24:23.785Z",
+          "inputHash": "b46ecc866c223c1f",
+          "outputHash": "201a2f33fe63f2db",
+          "status": "PASS"
+        },
+        {
+          "agent": "WriterRepair",
+          "invocationId": "writer-repair-default",
+          "start": "2026-08-29T12:23:10.520Z",
+          "end": "2026-08-29T12:23:22.754Z",
+          "inputHash": "eb159826cc260a0d",
+          "outputHash": "6bd90a65f6c95584",
+          "status": "PASS"
+        }
+      ]
+    },
+    "thumbnail": {
+      "concept": "PASS",
+      "actualFile": "/home/z/my-project/data/autonomous-runs/cycle-001/renders/thumbnail/thumbnail-1280x720.png",
+      "dimensions": "1280x720",
+      "qc": "PASS",
+      "upload": "BLOCKED_PERMISSION",
+      "uploadError": "Thumbnail upload failed: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"The authenticated user doesn't have permissions to upload and set custom video thumbnails.\",\n    \"errors\": [\n      {\n        \"message\": \"The authenticated user doesn't have permissions to upload and set custom video thumbnails.\",\n        \"domain\": \"youtube.thumbnail\",\n        \"reason\": \"forbidden\",\n        \"location\": \"Authorization\",\n        \"locationType\": \"header\"\n      }\n    ]\n  }\n}\n"
+    },
+    "cron": {
+      "jobId": 344262,
+      "status": "REMOVED"
+    },
+    "correctedMaster": {
+      "path": "/home/z/my-project/data/autonomous-runs/cycle-001/renders/final.mp4",
+      "duration": 41.365333,
+      "resolution": "1920x1080",
+      "videoCodec": "h264",
+      "audioCodec": "aac",
+      "qualityCritic": "PASS",
+      "factChecker": "PASS"
+    },
+    "privatePublish": {
+      "oldVideo": {
+        "videoId": "LP1QgQwBN5o",
+        "label": "CYCLE_001_PRE_REPAIR",
+        "preserved": true
+      },
+      "correctedUpload": {
+        "videoId": "BkntTZ2rsmU",
+        "privacy": "private",
+        "uploadStatus": "completed",
+        "title": "The Minimalist AI Toolkit: Open Source Solutions (v2 - Fact-Verified)"
+      }
+    },
+    "autonomy": {
+      "humanTopicSelections": 0,
+      "humanFormatSelections": 0,
+      "humanScriptEdits": 0,
+      "humanShotEdits": 0,
+      "humanRenderCommands": 0,
+      "humanQCCorrections": 0,
+      "humanPublishingCommands": 0,
+      "note": "All repairs performed by autonomous subagents (WriterRepair + EditorAgent + FactChecker re-run + QualityCritic re-run). User only reclassified the audit — did not select replacement claims or shots."
+    },
+    "finalStatus": "PASS"
+  },
+  "gates": {
+    "research": true,
+    "ideaSelection": true,
+    "formatSelection": true,
+    "script": true,
+    "visualPlanning": true,
+    "production": true,
+    "factChecker": true,
+    "qualityCritic": true,
+    "durationIntegrity": true,
+    "finalRender": true,
+    "title": true,
+    "thumbnailCreation": true,
+    "privatePublishing": true,
+    "dbPersistence": true,
+    "auditTrailIntegrity": true
+  }
+}

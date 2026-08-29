@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"verdict\": \"PASS\",\n  \"claims\": [],\n  \"unsupportedCount\": 0\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788006236,
+  "id": "20260829202355712c1020b66844c2",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260829202355712c1020b66844c2",
+  "usage": {
+    "completion_tokens": 28,
+    "prompt_tokens": 1567,
+    "total_tokens": 1595
+  }
+}

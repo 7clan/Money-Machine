@@ -1,0 +1,6 @@
+{
+  "stage": "editor-match",
+  "summary": "Modified shot-7 purpose and animation to remove specific reference to 'GPT4All' and replaced with general 'lightweight open-source text generation model'. Modified shot-9 purpose and animation to remove specific reference to 'Stable Diffusion' and replaced with general 'local AI image generation tool'. These changes align with the repaired script's more general approach to AI tools without naming specific products.",
+  "originalShotsHash": "1b71535ee5630ce3",
+  "repairedShotsHash": "53dd4fc0ee8bdfa2"
+}

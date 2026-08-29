@@ -1,0 +1,6 @@
+{
+  "stage": "writer-repair",
+  "summary": "Removed specific product names (GPT4All and Stable Diffusion) from seg-4 and seg-5 narrations and replaced with general terms about lightweight open-source models and local AI generation.",
+  "originalScriptHash": "201a2f33fe63f2db",
+  "repairedScriptHash": "475b55fb8647a22a"
+}

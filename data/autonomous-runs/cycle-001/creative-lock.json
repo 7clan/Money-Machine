@@ -1,10 +1,13 @@
 {
-  "lockedAt": "2026-08-29T11:35:33.864Z",
-  "scriptHash": "201a2f33fe63f2db",
-  "visualShotHash": "1b71535ee5630ce3",
+  "lockedAt": "2026-08-29T12:28:50.705Z",
+  "scriptHash": "475b55fb8647a22a",
+  "visualShotHash": "53dd4fc0ee8bdfa2",
   "assetManifestHash": "3515eedb079fe29b",
-  "audioManifestHash": "4e2125daf3d4f3e6",
-  "compositionHash": "ab74d0ba4e22a98b",
-  "QCReportHash": "b96144cc9e6fd11b",
-  "CREATIVE_LOCK": true
+  "audioManifestHash": "9731c111fe85438b",
+  "compositionHash": "1865c894b4fe1f09",
+  "QCReportHash": "2a0229075f3c3c3d",
+  "FactCheckHash": "3564508b37a5eacc",
+  "CREATIVE_LOCK": true,
+  "repairVersion": "v2",
+  "previousLockFile": "creative-lock.json (preserved as creative-lock-v1.json)"
 }

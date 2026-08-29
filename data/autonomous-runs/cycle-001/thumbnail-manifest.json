@@ -1,0 +1,28 @@
+{
+  "creationStatus": "PASS",
+  "qcStatus": "PASS",
+  "uploadStatus": "BLOCKED_PERMISSION",
+  "uploadError": "Thumbnail upload failed: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"The authenticated user doesn't have permissions to upload and set custom video thumbnails.\",\n    \"errors\": [\n      {\n        \"message\": \"The authenticated user doesn't have permissions to upload and set custom video thumbnails.\",\n        \"domain\": \"youtube.thumbnail\",\n        \"reason\": \"forbidden\",\n        \"location\": \"Authorization\",\n        \"locationType\": \"header\"\n      }\n    ]\n  }\n}\n",
+  "thumbnailPath": "/home/z/my-project/data/autonomous-runs/cycle-001/renders/thumbnail/thumbnail-1280x720.png",
+  "thumbnailHash": "5881c2223ab5af7d",
+  "videoId": "BkntTZ2rsmU",
+  "qc": {
+    "conceptHash": "cb1a54c5c503281a",
+    "fileHash": "5881c2223ab5af7d",
+    "filePath": "/home/z/my-project/data/autonomous-runs/cycle-001/renders/thumbnail/thumbnail-1280x720.png",
+    "width": 1280,
+    "height": 720,
+    "format": "png",
+    "sizeBytes": 515967,
+    "sizeKB": 504,
+    "expectedWidth": 1280,
+    "expectedHeight": 720,
+    "dimensionsOk": true,
+    "sizeUnder2MB": true,
+    "noDeceptiveProductUI": true,
+    "textOverlayPresent": true,
+    "verdict": "PASS",
+    "notes": "Generated from approved concept. Dimensions 1280x720. Size 504KB."
+  },
+  "finishedAt": "2026-08-29T12:31:08.478Z"
+}

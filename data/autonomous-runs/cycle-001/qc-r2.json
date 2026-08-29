@@ -1,0 +1,35 @@
+{
+  "verdict": "PASS",
+  "scores": {
+    "hookStrength": 8,
+    "narrativeFlow": 7,
+    "visualVariety": 6,
+    "pacing": 5,
+    "narrationAlignment": 8,
+    "visualCoverage": 7
+  },
+  "failingShots": [
+    {
+      "shotId": "shot-3",
+      "timestamp": 0,
+      "issue": "Quick montage may feel rushed and overwhelming, contradicting the minimalist message",
+      "recommendation": "Slow transitions between tools to reinforce the calm, focused aesthetic"
+    },
+    {
+      "shotId": "shot-8",
+      "timestamp": 0,
+      "issue": "Resource usage indicator feels technical and breaks the minimalist aesthetic",
+      "recommendation": "Replace with a more subtle visual cue that maintains the clean interface focus"
+    },
+    {
+      "shotId": "shot-12",
+      "timestamp": 0,
+      "issue": "Animation showing elements disappearing feels redundant after establishing the minimalist theme",
+      "recommendation": "Replace with a more elegant transition that reinforces the positive aspect of the minimalist approach"
+    }
+  ],
+  "fakeUICount": 0,
+  "realUIPercentage": 100,
+  "rawVideoPercentage": 0,
+  "staticScreenshotPercentage": 0
+}

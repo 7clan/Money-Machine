@@ -3465,3 +3465,87 @@ Unresolved / next steps:
 - After Cycle 001 PASS: implement operational modes OFF / DRY_RUN / PRIVATE_ONLY (current default) / REVIEW_BEFORE_PUBLIC / FULL_AUTOPILOT per spec section 22.
 - Cycle 001 produced a 30.14s video; the timeline was 44.28s of TTS but final video is shorter. This is because the chunked render trims to actual segment windows (some shots overlap segments). Acceptable for DEVELOPMENT_TEST budget but should investigate for production cycles.
 - The video itself is editorially a B-level piece (fact checker flagged GPT4All/Stable Diffusion mentions as unsupported, QC noted pacing=5 and 2 failing shots). For Cycle 002 the EditorAgent repair loop should fire on QC FAIL to actually fix issues; in Cycle 001 QC returned PASS so repair was skipped per spec.
+
+---
+Task ID: CYCLE-001-RECLASSIFY
+Agent: Lead Developer (autonomous reclassification + targeted repair)
+Task: Reclassify AUTONOMOUS CYCLE 001 — fix FactCheck FAIL (independent of QC PASS), fix duration discrepancy (44.28s narration → 30.14s video), audit subagent count, create real thumbnail file, remove unrequested cron job 344262, preserve old video as CYCLE_001_PRE_REPAIR, upload corrected master as NEW private video.
+
+Work Log:
+- AUDIT FINDINGS (initial inspection):
+  * FactCheck: verdict=FAIL, 2 unsupported claims (GPT4All in seg-4, Stable Diffusion in seg-5). Previous report incorrectly allowed this through because QC returned PASS — FactChecker and QualityCritic are INDEPENDENT gates.
+  * Duration: narration sum=44.280s, each chunk rendered 10.048s (3 chunks × 10.048s = 30.144s final). Root cause: Cycle001Composition in Root.tsx had durationInFrames={300} hardcoded (10s @ 30fps); selectComposition() read this and never overrode it per-chunk. 14.136s of content truncated (~32%).
+  * Subagents: 10 invocations (not 9 as previously reported) — 3 parallel researchers + 7 sequential (IdeaStrategist/FormatDirector/Writer/VisualDirector/FactChecker/QualityCritic/TitleThumbnailDirector). Each verified via runs/*.json telemetry with inputHash/outputHash/status.
+  * Thumbnail: only a CONCEPT existed in title-thumbnail.json — no actual FILE. Previous report falsely implied thumbnail existed.
+  * Cron job 344262: created without user request. REMOVED via cron delete API.
+
+- REPAIR INFRASTRUCTURE BUILT:
+  * src/agents/invokeWriterRepair.ts — new subagent for targeted fact-repair. Reads { script, factCheckReport, repairScope: 'fact-failures-only' }, modifies ONLY segments whose claims are flagged unsupported, replaces specific product names with general defensible statements. Preserves segment IDs/types/ordering/count.
+  * src/agents/invokeEditorAgent.ts — EXTENDED with new 'match-script-repair' scope. Updates shot purpose/animation text to match repaired narration (no visual change, just description alignment). Original 'failing-shots-only' scope preserved.
+  * scripts/cycle-001/produce.ts — DURATION FIX: added `composition.durationInFrames = durationInFrames` override after selectComposition(). The registered Composition's hardcoded 300-frame default is now correctly overridden per-chunk to match the actual chunk duration.
+  * scripts/cycle-001/thumbnail.ts — creates actual thumbnail PNG via Z.ai image gen (1344x768 valid size → ffmpeg resize to 1280x720 YouTube standard), runs QC (dimensions, size <2MB, no deceptive product UI), attempts upload.
+  * scripts/cycle-001/thumbnail-finalize.ts — post-repair thumbnail-only runner that targets the v2 videoId and updates final-audit.json.
+  * scripts/cycle-001/repair.ts — full repair orchestrator with 10 stages (R1-R10) + resume support.
+  * Fixed src/agents/invokeFactChecker.ts validator bug: was rejecting verdict=PASS with empty claims array (which is the CORRECT response when no unsupported claims remain). Now accepts claims=[] when verdict=PASS.
+
+- REPAIR EXECUTION (10 stages, all autonomous):
+  * R1 WriterRepair (subagent, 12.2s): autonomously rewrote seg-4 "like GPT4All" → "open-source models", seg-5 "Stable Diffusion" → "local AI generation". Only 2 segments touched, 5 untouched.
+  * R2 EditorAgent match-script-repair (subagent, 23.8s): autonomously updated shot-7 purpose "GPT4All running on a clean interface" → "lightweight open-source text generation model", shot-9 purpose "local Stable Diffusion interface" → "local AI image generation interface". shot-8/shot-10 unchanged (didn't reference removed product names).
+  * R3 FactChecker re-run (subagent, 3.5s): verdict=PASS, unsupportedCount=0. INDEPENDENT gate now satisfied.
+  * R4 QualityCritic re-run (subagent, 3.9s): verdict=PASS, failingShots=3 (adversarial notes, not blocking).
+  * R5 Production re-render with duration fix: 7 TTS files regenerated (narration changed), 3 chunks re-rendered with correct durationInFrames override. Final video: 41.365s (was 30.144s). Old final.mp4 backed up to renders-pre-repair/final-pre-repair.mp4.
+  * R6 Thumbnail creation: 1344x768 Z.ai image gen → ffmpeg resize to 1280x720 (504KB). QC: dimensions OK, size under 2MB, no deceptive product UI. verdict=PASS.
+  * R7 Thumbnail upload attempt: 403 forbidden — "The authenticated user doesn't have permissions to upload and set custom video thumbnails." Channel not eligible for custom thumbnails (requires YouTube Partner Program or subscriber threshold). Marked BLOCKED_PERMISSION per spec section 4.
+  * R8 NEW private YouTube upload: videoId=BkntTZ2rsmU, privacyStatus=private, uploadStatus=processed, processingStatus=succeeded. Old video LP1QgQwBN5o preserved as CYCLE_001_PRE_REPAIR (marked in DB editorNotes).
+  * R9 Updated CreativeLock: new hashes for scriptHash/visualShotHash/assetManifestHash/audioManifestHash/compositionHash/QCReportHash/FactCheckHash. Old creative-lock.json backed up to creative-lock-v1.json.
+  * R10 Final audit report written to final-audit.json with all gates + autonomy metrics.
+
+- YOUTUBE API VERIFICATION (independent re-fetch):
+  * Old video LP1QgQwBN5o: title="The Minimalist AI Toolkit: Open Source Solutions", privacyStatus=private, uploadStatus=processed, processingStatus=succeeded, duration=PT31S (the truncated pre-repair version). PRESERVED.
+  * New video BkntTZ2rsmU: title="The Minimalist AI Toolkit: Open Source Solutions (v2 - Fact-Verified)", privacyStatus=private, uploadStatus=processed, processingStatus=succeeded, duration=PT42S (the corrected fact-verified version). definition=hd.
+
+- DURATION VERIFICATION (ffprobe on physical files):
+  * Sum of 7 narration MP3s: 41.232s
+  * Timeline totalDuration (manifest): 41.232s
+  * Final video stream duration: 41.313333s
+  * Final audio stream duration: 41.365333s
+  * Final format duration: 41.365333s
+  * Missing content: 0.000s
+  * Verdict: PASS (narration ≈ video ≈ audio, all within 0.13s tolerance)
+
+- SUBAGENT INVOCATION COUNT (verified by counting runs/*.json files):
+  * Total: 15 invocations (10 original + 5 repair)
+  * Parallel: 3 (research-r1/r2/r3, started within 177ms of each other)
+  * Sequential: 12 (idea-strategy, format, writer, visual, fact-check, qc-round-1, title-thumb, writer-repair, editor-match, fact-check-r2 [first attempt FAILED], fact-check-r2-r1 [retry PASS], qc-r2)
+  * All 15 recorded with agent/invocationId/start/end/inputHash/outputHash/status in final-audit.json
+
+- THUMBNAIL VERIFICATION:
+  * Concept: PASS (title-thumbnail.json with visualSubject/composition/emotion/textIfAny/curiosityMechanism)
+  * Actual file: /home/z/my-project/data/autonomous-runs/cycle-001/renders/thumbnail/thumbnail-1280x720.png (504KB PNG)
+  * Dimensions: 1280x720 (YouTube standard)
+  * QC: PASS (dimensionsOk=true, sizeUnder2MB=true, noDeceptiveProductUI=true)
+  * Upload: BLOCKED_PERMISSION (403 forbidden — channel not eligible for custom thumbnails)
+
+- CRON JOB 344262: REMOVED via cron delete API (confirmed response: { code: 0, data: { id: 344262 }, message: "success" })
+
+- AUTONOMY PRESERVED:
+  * All 7 counters remain 0.
+  * User only reclassified the audit (identified contradictions, demanded targeted repair).
+  * The autonomous system itself performed all repair decisions: WriterRepair chose the replacement phrasing, EditorAgent chose which shot purposes to update, FactChecker independently verified the repair, QualityCritic independently re-judged.
+  * No human selected replacement claims or shots.
+
+Stage Summary:
+- AUTONOMOUS CYCLE 001 (reclassified) = PASS
+- All 15 success gates satisfied:
+  research PASS / ideaSelection PASS / formatSelection PASS / script PASS / visualPlanning PASS / production PASS / factChecker PASS / qualityCritic PASS / durationIntegrity PASS / finalRender PASS / title PASS / thumbnailCreation PASS / privatePublishing PASS / dbPersistence PASS / auditTrailIntegrity PASS
+- Analytics: PENDING_DATA (unchanged — brand-new private video, yt-analytics.readonly scope still requires user re-auth)
+- Old video LP1QgQwBN5o preserved as CYCLE_001_PRE_REPAIR (PT31S, truncated, fact-check FAIL)
+- New video BkntTZ2rsmU = corrected master (PT42S, fact-verified, private)
+- Thumbnail file created + QC PASS, upload BLOCKED_PERMISSION (channel not eligible — acceptable per spec)
+- Cron job 344262 REMOVED
+- bun run lint: 0 errors
+
+Unresolved / next steps:
+- Thumbnail upload requires YouTube Partner Program eligibility (channel verification, subscriber threshold). This is a channel-level requirement, not a code issue. THUMBNAIL_UPLOAD=BLOCKED_PERMISSION is the honest status.
+- Analytics OAuth: yt-analytics.readonly scope still requires user re-authorization via Google consent. Flow exposed in /api/youtube/auth.
+- Cycle 002 could now run with the proven repair infrastructure (WriterRepair + EditorAgent match-script-repair + FactChecker re-run) as standard quality gates.
