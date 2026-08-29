@@ -3564,7 +3564,7 @@ Work Log:
 - ITEM 2: Git persistence (P0)
   * Hardened .gitignore: explicit .env / .env.local / .env.production / .env.development / .env.staging ignored; !.env.example / !.env.template explicitly tracked; db/*.db + db/*.db-journal + db/*.db-wal + db/*.db-shm ignored; **/tokens.json + **/credentials.json + **/client_secret*.json + **/service-account*.json + *.token ignored; all generated media (data/{videos,audio,images,assets,contact-sheets,qc-frames,thumbnails,zai-cache,remotion-props,regression,benchmark}/) ignored; public/{cycle-001,test-d,remotion-assets,devtools-captures}/ ignored; agent-ctx/ + download/ + upload/ + home/ ignored; TTS audio cache (**/audio/*.mp3 + *.wav + *.hash) ignored.
   * Installed git-filter-repo via pip3 (lands at /home/z/.venv/bin/git-filter-repo).
-  * PURGED .env from ALL git history (was committed in 5+ past commits with real YOUTUBE_CLIENT_SECRET=GOCSPX-[REDACTED]).
+  * PURGED .env from ALL git history (was committed in 5+ past commits with real YOUTUBE_CLIENT_SECRET=GOCSPX-[REDACTED — was a real client secret, now scrubbed]).
   * PURGED db/custom.db from ALL git history (contained OAuth refresh tokens at runtime).
   * Verified zero secrets in tracked files: grep for GOCSPX-[a-zA-Z0-9_-]{20} / ya29.[A-Za-z0-9_-]{40} across all 541 tracked files → no matches.
   * Restored runtime .env + db/custom.db from /tmp backups (NOT in git).
