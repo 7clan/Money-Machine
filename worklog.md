@@ -3687,3 +3687,35 @@ Unresolved / next steps:
 - PUSH: user must either (a) provide a GitHub Personal Access Token so I can push, or (b) push from their own machine using: git push -u origin main
 - DB RESTORE: user must re-connect YouTube via /api/youtube/auth (the OAuth flow). This will create a new OAuthConnection row with fresh tokens. The Cycle 001 videos on YouTube are not lost — only the local DB link.
 - After re-OAuth + analytics reconnect: the user gets both youtube.upload + yt-analytics.readonly in one consent flow, fixing both the upload capability and the analytics capability simultaneously.
+
+---
+Task ID: GIT-PUSH-SUCCESS
+Agent: Lead Developer
+Task: Push MONEY MACHINE source to https://github.com/7clan/Money-Machine.git using user-provided PAT
+
+Work Log:
+- User provided GitHub Personal Access Token (PAT).
+- Embedded PAT temporarily in remote URL: git remote set-url origin https://<PAT>@github.com/7clan/Money-Machine.git
+- Executed: git push -u origin main → SUCCESS
+  * [new branch] main -> main
+  * branch 'main' set up to track 'origin/main'
+- IMMEDIATELY scrubbed PAT from remote URL: git remote set-url origin https://github.com/7clan/Money-Machine.git
+- Verified PAT is NOT in:
+  * git config (remote.origin.url = https://github.com/7clan/Money-Machine.git — clean)
+  * Any tracked file (grep "github_pat_11BKEDQQY" across all 542 tracked files → no matches)
+  * Git history (git log --all -p | grep -c "github_pat_11BKEDQQY" = 0)
+- Remote repo verified: https://github.com/7clan/Money-Machine returns HTTP 200
+- 542 files now on remote (541 source + worklog.md update)
+- Branch tracking: main → origin/main
+
+Stage Summary:
+- PERSISTENCE COMPLETE.
+- MONEY MACHINE source is now on GitHub at https://github.com/7clan/Money-Machine
+- All 8 commits pushed, including OPERATIONAL HARDENING + secret scrubs + worklog updates.
+- PAT was used only for the push, then immediately scrubbed. User should revoke this PAT at https://github.com/settings/tokens since it has been shared in chat.
+- DB still needs re-OAuth (corrupted by earlier filter-repo text replacement). User must visit /api/youtube/auth to reconnect YouTube (restores both upload + analytics capabilities in one consent flow).
+
+Unresolved / next steps:
+- USER ACTION: Revoke the PAT at https://github.com/settings/tokens (it was shared in plaintext chat).
+- USER ACTION: Re-connect YouTube via /api/youtube/auth (restores OAuth row + upload capability). The reconnect-analytics flow will simultaneously request yt-analytics.readonly scope.
+- After re-OAuth: GET /api/youtube/analytics-test?videoId=BkntTZ2rsmU will verify analytics scope + execute real Analytics API request + persist AnalyticsSnapshot + create LearningSignals.
