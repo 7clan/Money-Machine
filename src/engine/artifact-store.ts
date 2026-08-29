@@ -202,33 +202,136 @@ export function persistArtifactToLocalStore(artifactId: string): ProductionArtif
 }
 
 /**
- * Persist an artifact to OFF_MACHINE storage (GitHub Releases, S3, etc.).
+ * Persist an artifact to OFF_MACHINE storage via GitHub Releases.
  * This is the ONLY path that achieves FINAL_MASTER_DURABLE = true.
  *
- * Currently supports GitHub Releases via the GitHub API.
- * Requires GITHUB_TOKEN env var (PAT with repo scope).
+ * Flow:
+ *   1. Find or create a GitHub Release tagged `media-<productionId>`
+ *   2. Upload the artifact file as a release asset
+ *   3. Get the browser_download_url
+ *   4. Verify via HEAD request (HTTP 200 + content-length matches)
+ *   5. Set offMachinePath + state = OFF_MACHINE_PERSISTED
  *
- * TODO: implement actual upload. For now, returns NOT_IMPLEMENTED.
+ * Requires GITHUB_TOKEN env var (PAT with repo scope).
+ * Requires the artifact to be LOCAL_PERSISTED first (file must exist on disk).
  */
 export async function persistArtifactOffMachine(artifactId: string): Promise<ProductionArtifact | null> {
   const manifest = loadManifestRaw()
   const artifact = manifest.artifacts.find((a) => a.artifactId === artifactId)
   if (!artifact) return null
 
-  // Check if off-machine storage is configured
   const githubToken = process.env.GITHUB_TOKEN || process.env.GH_TOKEN
   if (!githubToken) {
-    throw new Error('OFF_MACHINE_STORAGE_NOT_CONFIGURED: Set GITHUB_TOKEN env var to enable GitHub Releases upload. Until then, FINAL_MASTER_DURABLE = false.')
+    throw new Error('OFF_MACHINE_STORAGE_NOT_CONFIGURED: Set GITHUB_TOKEN env var to enable GitHub Releases upload.')
   }
 
-  // TODO: implement GitHub Releases upload via API
-  // 1. Create or find a release tagged `media-<productionId>`
-  // 2. Upload the artifact as a release asset
-  // 3. Get the browser_download_url
-  // 4. Verify via HEAD request
-  // 5. Set offMachinePath + state = OFF_MACHINE_PERSISTED
+  // Determine the physical file to upload (prefer mediaStorePath, fallback localPath)
+  const filePath = artifact.mediaStorePath && existsSync(artifact.mediaStorePath)
+    ? artifact.mediaStorePath
+    : artifact.localPath && existsSync(artifact.localPath)
+      ? artifact.localPath
+      : null
+  if (!filePath) {
+    throw new Error(`artifact file not found on disk (localPath=${artifact.localPath}, mediaStorePath=${artifact.mediaStorePath}). Call persistArtifactToLocalStore() first.`)
+  }
 
-  throw new Error('OFF_MACHINE_UPLOAD_NOT_YET_IMPLEMENTED — GitHub Releases upload code pending. GITHUB_TOKEN detected but upload logic not yet coded.')
+  updateArtifactState(artifactId, 'OFF_MACHINE_PERSISTING')
+
+  const GITHUB_OWNER = '7clan'
+  const GITHUB_REPO = 'Money-Machine'
+  const releaseTag = `media-${artifact.productionId}`
+  const assetName = `${artifact.type}-${path.basename(filePath)}`
+
+  try {
+    // Step 1: Find or create the release
+    let releaseId: number
+    let uploadUrl: string
+    const findRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/tags/${releaseTag}`, {
+      headers: { Authorization: `token ${githubToken}`, Accept: 'application/vnd.github+json' },
+    })
+    if (findRes.status === 200) {
+      const release = await findRes.json()
+      releaseId = release.id
+      uploadUrl = release.upload_url.replace('{?name,label}', '')
+    } else if (findRes.status === 404) {
+      // Create the release
+      const createRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases`, {
+        method: 'POST',
+        headers: { Authorization: `token ${githubToken}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tag_name: releaseTag,
+          name: `Media: ${artifact.productionId}`,
+          body: `Off-machine media artifacts for production ${artifact.productionId}.\nArtifact: ${artifact.artifactId}\nType: ${artifact.type}\nSHA256: ${artifact.sha256}\nSize: ${artifact.size} bytes`,
+          draft: false,
+          prerelease: true,
+        }),
+      })
+      if (!createRes.ok) {
+        const errBody = await createRes.text()
+        throw new Error(`GitHub create release failed (${createRes.status}): ${errBody.slice(0, 300)}`)
+      }
+      const release = await createRes.json()
+      releaseId = release.id
+      uploadUrl = release.upload_url.replace('{?name,label}', '')
+    } else {
+      const errBody = await findRes.text()
+      throw new Error(`GitHub find release failed (${findRes.status}): ${errBody.slice(0, 300)}`)
+    }
+
+    // Step 2: Check if asset already exists on this release (delete if so — we're re-uploading)
+    const assetsRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/${releaseId}/assets`, {
+      headers: { Authorization: `token ${githubToken}`, Accept: 'application/vnd.github+json' },
+    })
+    if (assetsRes.ok) {
+      const assets = await assetsRes.json()
+      const existing = (assets as any[]).find((a) => a.name === assetName)
+      if (existing) {
+        await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/assets/${existing.id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `token ${githubToken}`, Accept: 'application/vnd.github+json' },
+        })
+      }
+    }
+
+    // Step 3: Upload the asset
+    const fileBuffer = readFileSync(filePath)
+    const uploadRes = await fetch(`${uploadUrl}?name=${encodeURIComponent(assetName)}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `token ${githubToken}`,
+        'Content-Type': artifact.mimeType,
+        'Content-Length': String(fileBuffer.length),
+      },
+      body: fileBuffer,
+    })
+    if (!uploadRes.ok) {
+      const errBody = await uploadRes.text()
+      throw new Error(`GitHub asset upload failed (${uploadRes.status}): ${errBody.slice(0, 300)}`)
+    }
+    const uploadedAsset = await uploadRes.json()
+    const downloadUrl = uploadedAsset.browser_download_url
+
+    // Step 4: Verify via HEAD request
+    const verifyRes = await fetch(downloadUrl, { method: 'HEAD' })
+    if (!verifyRes.ok) {
+      throw new Error(`off-machine verification failed: HEAD ${downloadUrl} returned ${verifyRes.status}`)
+    }
+    const contentLength = Number(verifyRes.headers.get('content-length') || 0)
+    if (contentLength !== artifact.size) {
+      throw new Error(`off-machine verification failed: content-length ${contentLength} != expected ${artifact.size}`)
+    }
+
+    // Step 5: Update artifact state
+    const updated = updateArtifactState(artifactId, 'OFF_MACHINE_PERSISTED', {
+      offMachinePath: downloadUrl,
+      backend: 'OFF_MACHINE',
+    })
+    return updated
+  } catch (e) {
+    // Revert state on failure
+    updateArtifactState(artifactId, 'LOCAL_PERSISTED')
+    throw e
+  }
 }
 
 /** Backward-compat alias for persistArtifactToLocalStore */
