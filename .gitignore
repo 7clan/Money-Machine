@@ -85,12 +85,12 @@ data/thumbnails/
 data/zai-cache/
 data/remotion-props/
 data/regression/
-data/benchmark/*/final*.mp4
-data/benchmark/*/*.mp4
-data/benchmark/*/contact-sheet*.jpg
+data/benchmark/
 data/autonomous-runs/*/renders/
 data/autonomous-runs/*/renders-pre-repair/
 data/pipeline-state/*.mp4
+data/pipeline-state/*.mp3
+data/pipeline-state/*.wav
 
 # Remotion render chunks + cached frames
 data/videos/chunks*/
