@@ -1,5 +1,5 @@
 /**
- * Cycle001Composition — generic Remotion composition for AUTONOMOUS CYCLE 001
+ * Cycle001Composition — generic Remotion composition for autonomous productions.
  *
  * Props: { shots, segments, images, audio, chunkStart, chunkEnd }
  *
@@ -9,9 +9,16 @@
  *   - Audio: the segment's TTS mp3
  *
  * All shot times are LOCAL to this chunk (chunkStart already subtracted).
+ *
+ * DYNAMIC DURATION (Cycle 001 lesson — hardcoded durationInFrames={300} caused
+ * silent truncation):
+ *   The composition exports `calculateCycleDuration()` which derives the correct
+ *   durationInFrames from the actual shots timeline. Root.tsx registers this as
+ *   the Composition's calculateMetadata callback, so selectComposition() always
+ *   gets the right duration — no produce.ts override needed.
  */
 import React from 'react'
-import { AbsoluteFill, Img, Audio, useCurrentFrame, useVideoConfig, staticFile, interpolate, Sequence, Easing } from 'remotion'
+import { AbsoluteFill, Img, Audio, useCurrentFrame, useVideoConfig, staticFile, interpolate, Sequence } from 'remotion'
 
 interface Shot {
   id: string
@@ -45,6 +52,32 @@ interface CycleProps {
   fps?: number
 }
 
+const DEFAULT_FPS = 30
+const DEFAULT_WIDTH = 1920
+const DEFAULT_HEIGHT = 1080
+const MIN_FRAMES = 1
+
+/**
+ * Derive the correct durationInFrames from the actual shot timeline.
+ * Falls back to 1 frame if no shots are provided (defensive).
+ *
+ * This is the SINGLE SOURCE OF TRUTH for composition duration.
+ * Used by:
+ *   - Root.tsx calculateMetadata callback
+ *   - produce.ts (for logging/assertion only — NOT for override)
+ */
+export function calculateCycleDuration(inputProps: Partial<CycleProps>, fps: number = DEFAULT_FPS): number {
+  const shots = (inputProps?.shots ?? []) as Shot[]
+  const segments = (inputProps?.segments ?? []) as Segment[]
+  if (shots.length === 0 && segments.length === 0) return MIN_FRAMES
+  // Max end time across all shots AND segments (segments may extend beyond last shot)
+  const maxShotEnd = shots.length > 0 ? Math.max(...shots.map((s) => Number(s.end) || 0)) : 0
+  const maxSegEnd = segments.length > 0 ? Math.max(...segments.map((s) => Number(s.end) || 0)) : 0
+  const maxEndSec = Math.max(maxShotEnd, maxSegEnd)
+  if (!Number.isFinite(maxEndSec) || maxEndSec <= 0) return MIN_FRAMES
+  return Math.max(MIN_FRAMES, Math.ceil(maxEndSec * fps))
+}
+
 const COLORS = ['#0f172a', '#1e293b', '#312e81', '#3b0764', '#7c2d12', '#1e3a8a']
 function colorForId(id: string): string {
   let h = 0
@@ -55,8 +88,7 @@ function colorForId(id: string): string {
 const ShotFrame: React.FC<{ shot: Shot; imgPath?: string }> = ({ shot, imgPath }) => {
   const frame = useCurrentFrame()
   const { durationInFrames } = useVideoConfig()
-  const progress = frame / Math.max(1, durationInFrames)
-  // Ken Burns: slow zoom + pan
+  const progress = durationInFrames > 0 ? frame / durationInFrames : 0
   const scale = interpolate(progress, [0, 1], [1.08, 1.18], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
   const panX = interpolate(progress, [0, 1], [-20, 20], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
   const panY = interpolate(progress, [0, 1], [-10, 10], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
@@ -79,7 +111,6 @@ const ShotFrame: React.FC<{ shot: Shot; imgPath?: string }> = ({ shot, imgPath }
           transform: `scale(${scale})`,
         }} />
       )}
-      {/* Dark gradient at bottom for caption legibility */}
       <AbsoluteFill style={{
         background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 30%, transparent 60%)',
       }} />
@@ -91,8 +122,7 @@ const Caption: React.FC<{ text: string; segmentType: string }> = ({ text, segmen
   const frame = useCurrentFrame()
   const { fps } = useVideoConfig()
   const fadeIn = interpolate(frame, [0, fps * 0.4], [0, 1], { extrapolateRight: 'clamp' })
-  const fadeOut = interpolate(frame, [fps * 0.4, fps * 1], [1, 1], { extrapolateRight: 'clamp' })
-  const opacity = Math.min(fadeIn, fadeOut)
+  const opacity = fadeIn
   const typeLabel = segmentType === 'HOOK' ? '★' : segmentType === 'ENDING' ? '✦' : ''
   return (
     <AbsoluteFill style={{
@@ -131,7 +161,7 @@ const Watermark: React.FC = () => (
       letterSpacing: 2,
       textTransform: 'uppercase',
     }}>
-      MONEY MACHINE · CYCLE 001
+      MONEY MACHINE · AUTONOMOUS
     </div>
   </AbsoluteFill>
 )
@@ -140,7 +170,7 @@ export const Cycle001Composition: React.FC<CycleProps> = ({ shots, segments, ima
   const { fps } = useVideoConfig()
   return (
     <AbsoluteFill style={{ background: '#000' }}>
-      {shots.map((shot, i) => {
+      {shots.map((shot) => {
         const startFrame = Math.round(shot.start * fps)
         const durFrames = Math.max(1, Math.round(shot.duration * fps))
         const seg = segments.find((s) => s.id === shot.segmentId)

@@ -17,7 +17,7 @@ import {
   PILOT_HEIGHT,
   PILOT_WIDTH,
 } from './compositions/AnimatedPilotComposition'
-import { Cycle001Composition } from './compositions/Cycle001Composition'
+import { Cycle001Composition, calculateCycleDuration } from './compositions/Cycle001Composition'
 
 export const CYCLE_001_COMP_ID = 'cycle-001'
 export const CYCLE_001_FPS = 30
@@ -66,6 +66,11 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id={CYCLE_001_COMP_ID}
         component={Cycle001Composition}
+        // DYNAMIC DURATION (Cycle 001 lesson):
+        // The registered durationInFrames={300} is just a DEFAULT for the Remotion
+        // Studio preview. At render time, calculateMetadata derives the ACTUAL
+        // durationInFrames from the shots/segments in inputProps. This makes
+        // silent truncation impossible — produce.ts no longer needs to override.
         durationInFrames={300}
         fps={CYCLE_001_FPS}
         width={CYCLE_001_WIDTH}
@@ -78,6 +83,15 @@ export const RemotionRoot: React.FC = () => {
           width: CYCLE_001_WIDTH,
           height: CYCLE_001_HEIGHT,
           fps: CYCLE_001_FPS,
+        }}
+        calculateMetadata={async ({ props }) => {
+          const durationInFrames = calculateCycleDuration(props, CYCLE_001_FPS)
+          return {
+            durationInFrames,
+            fps: CYCLE_001_FPS,
+            width: CYCLE_001_WIDTH,
+            height: CYCLE_001_HEIGHT,
+          }
         }}
       />
     </>
