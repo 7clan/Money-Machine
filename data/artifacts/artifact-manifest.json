@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    {
+      "artifactId": "yt-BkntTZ2rsmU",
+      "productionId": "autonomous-cycle-001-v2",
+      "type": "FINAL_VIDEO",
+      "localPath": "",
+      "remotePath": "https://www.youtube.com/watch?v=BkntTZ2rsmU",
+      "size": 0,
+      "sha256": "ab74d0ba4e22a98b",
+      "createdAt": "2026-08-29T21:04:53.108Z",
+      "storageStatus": "UPLOAD_COMPLETE",
+      "mimeType": "video/mp4",
+      "backend": "PERSISTENT_REMOTE",
+      "metadata": {
+        "youtubeVideoId": "BkntTZ2rsmU",
+        "privacyStatus": "private",
+        "externalCopy": true
+      }
+    },
+    {
+      "artifactId": "yt-LP1QgQwBN5o",
+      "productionId": "autonomous-cycle-001-pre-repair",
+      "type": "FINAL_VIDEO",
+      "localPath": "",
+      "remotePath": "https://www.youtube.com/watch?v=LP1QgQwBN5o",
+      "size": 0,
+      "sha256": "pre-repair-truncated",
+      "createdAt": "2026-08-29T21:04:53.109Z",
+      "storageStatus": "UPLOAD_COMPLETE",
+      "mimeType": "video/mp4",
+      "backend": "PERSISTENT_REMOTE",
+      "metadata": {
+        "youtubeVideoId": "LP1QgQwBN5o",
+        "privacyStatus": "private",
+        "externalCopy": true
+      }
+    }
+  ],
+  "updatedAt": "2026-08-29T21:04:53.109Z"
+}

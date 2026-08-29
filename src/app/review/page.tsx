@@ -22,6 +22,9 @@ interface VideoEntry {
   superseded: boolean
   supersededBy: string | null
   notes: string
+  playbackSource: 'PERSISTED' | 'LOCAL' | 'YOUTUBE' | 'NONE'
+  storageStatus: string | null
+  artifactId: string | null
 }
 
 function formatDuration(sec: number | null): string {
@@ -79,6 +82,19 @@ function VideoCard({ entry }: { entry: VideoEntry }) {
             Your browser does not support the video tag.
           </video>
         </div>
+      ) : entry.playbackSource === 'YOUTUBE' && entry.youtubeVideoId ? (
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', background: '#000', borderRadius: '8px', padding: '8px' }}>
+          <iframe
+            width={isVertical ? '270' : '640'}
+            height={isVertical ? '480' : '360'}
+            src={`https://www.youtube.com/embed/${entry.youtubeVideoId}`}
+            title={entry.name}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ maxWidth: '100%', borderRadius: '4px' }}
+          />
+        </div>
       ) : (
         <div style={{ background: '#1a0000', border: '1px dashed #ef4444', borderRadius: '8px', padding: '24px', textAlign: 'center', marginBottom: '16px' }}>
           <p style={{ color: '#ef4444', margin: 0, fontSize: '14px' }}>
@@ -86,6 +102,27 @@ function VideoCard({ entry }: { entry: VideoEntry }) {
           </p>
         </div>
       )}
+
+      {/* Playback source badge */}
+      <div style={{ marginBottom: '8px', fontSize: '11px' }}>
+        <span style={{
+          display: 'inline-block',
+          padding: '2px 8px',
+          borderRadius: '4px',
+          fontWeight: 600,
+          marginRight: '6px',
+          background: entry.playbackSource === 'PERSISTED' ? '#10b981' : entry.playbackSource === 'LOCAL' ? '#3b82f6' : entry.playbackSource === 'YOUTUBE' ? '#ef4444' : '#6b7280',
+          color: entry.playbackSource === 'NONE' ? '#fff' : '#000',
+        }}>
+          {entry.playbackSource === 'PERSISTED' && '▣ PERSISTED'}
+          {entry.playbackSource === 'LOCAL' && '▣ LOCAL'}
+          {entry.playbackSource === 'YOUTUBE' && '▶ YOUTUBE'}
+          {entry.playbackSource === 'NONE' && '✕ NONE'}
+        </span>
+        {entry.storageStatus && (
+          <span style={{ color: '#94a3b8' }}>storage: {entry.storageStatus}</span>
+        )}
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', fontSize: '13px', color: '#cbd5e1' }}>
         <div><strong style={{ color: '#94a3b8' }}>Format:</strong> {entry.format}</div>

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-29T20:47:07.972Z",
+  "generatedAt": "2026-08-29T21:07:25.812Z",
   "entries": [
     {
       "id": "capability-showcase-001",
@@ -21,7 +21,10 @@
       "contactSheetPath": null,
       "superseded": false,
       "supersededBy": null,
-      "notes": "Topic: Your Mind's Renewable Energy: How Digital Detox Works. Fact-repaired + QC PASS + duration integrity PASS. YouTube upload blocked (USER_AUTH_REQUIRED — OAuth not connected)."
+      "notes": "Topic: Your Mind's Renewable Energy: How Digital Detox Works. Fact-repaired + QC PASS + duration integrity PASS. YouTube upload blocked (USER_AUTH_REQUIRED — OAuth not connected).",
+      "playbackSource": "NONE",
+      "storageStatus": null,
+      "artifactId": null
     },
     {
       "id": "autonomous-cycle-001-v2",
@@ -43,7 +46,10 @@
       "contactSheetPath": null,
       "superseded": false,
       "supersededBy": null,
-      "notes": "Topic: The Minimalist AI Toolkit: Open Source Solutions. Uploaded to YouTube as PRIVATE (videoId=BkntTZ2rsmU). Local MP4 missing (gitignored during history purge). Watch on YouTube via the button."
+      "notes": "Topic: The Minimalist AI Toolkit: Open Source Solutions. Uploaded to YouTube as PRIVATE (videoId=BkntTZ2rsmU). Local MP4 missing (gitignored during history purge). Watch on YouTube via the button.",
+      "playbackSource": "YOUTUBE",
+      "storageStatus": "UPLOAD_COMPLETE",
+      "artifactId": "yt-BkntTZ2rsmU"
     },
     {
       "id": "autonomous-cycle-001-pre-repair",
@@ -65,7 +71,10 @@
       "contactSheetPath": null,
       "superseded": true,
       "supersededBy": "autonomous-cycle-001-v2",
-      "notes": "Original truncated master (30s instead of 44s) with fact-check FAIL. Superseded by v2. YouTube videoId=LP1QgQwBN5o still exists as PRIVATE."
+      "notes": "Original truncated master (30s instead of 44s) with fact-check FAIL. Superseded by v2. YouTube videoId=LP1QgQwBN5o still exists as PRIVATE.",
+      "playbackSource": "YOUTUBE",
+      "storageStatus": "UPLOAD_COMPLETE",
+      "artifactId": "yt-LP1QgQwBN5o"
     },
     {
       "id": "test-a-documentary",
@@ -87,7 +96,10 @@
       "contactSheetPath": null,
       "superseded": false,
       "supersededBy": null,
-      "notes": "Test A documentary benchmark. Local MP4 removed during git history purge."
+      "notes": "Test A documentary benchmark. Local MP4 removed during git history purge.",
+      "playbackSource": "NONE",
+      "storageStatus": null,
+      "artifactId": null
     },
     {
       "id": "test-b-tutorial",
@@ -109,7 +121,10 @@
       "contactSheetPath": null,
       "superseded": false,
       "supersededBy": null,
-      "notes": "Test B tutorial benchmark. Local MP4 removed."
+      "notes": "Test B tutorial benchmark. Local MP4 removed.",
+      "playbackSource": "NONE",
+      "storageStatus": null,
+      "artifactId": null
     },
     {
       "id": "test-c-short",
@@ -131,7 +146,10 @@
       "contactSheetPath": null,
       "superseded": false,
       "supersededBy": null,
-      "notes": "Test C short benchmark. Local MP4 removed."
+      "notes": "Test C short benchmark. Local MP4 removed.",
+      "playbackSource": "NONE",
+      "storageStatus": null,
+      "artifactId": null
     },
     {
       "id": "test-d-animation",
@@ -153,7 +171,10 @@
       "contactSheetPath": null,
       "superseded": false,
       "supersededBy": null,
-      "notes": "Test D animation pilot. VLM verdict A=animated. Local MP4 removed."
+      "notes": "Test D animation pilot. VLM verdict A=animated. Local MP4 removed.",
+      "playbackSource": "NONE",
+      "storageStatus": null,
+      "artifactId": null
     },
     {
       "id": "test-d-animation-proof",
@@ -175,7 +196,10 @@
       "contactSheetPath": null,
       "superseded": false,
       "supersededBy": null,
-      "notes": "Test D 12s animation proof. Local MP4 removed."
+      "notes": "Test D 12s animation proof. Local MP4 removed.",
+      "playbackSource": "NONE",
+      "storageStatus": null,
+      "artifactId": null
     }
   ]
 }

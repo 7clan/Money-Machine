@@ -12,6 +12,7 @@ import { execFile } from 'child_process'
 import { promisify } from 'util'
 import { existsSync, statSync, readdirSync, readFileSync, mkdirSync, writeFileSync } from 'fs'
 import path from 'path'
+import { getPlaybackSource, getManifest as getArtifactManifest } from '../../src/engine/artifact-store'
 
 const exec = promisify(execFile)
 const ROOT = process.cwd()
@@ -38,6 +39,9 @@ interface VideoEntry {
   superseded: boolean
   supersededBy: string | null
   notes: string
+  playbackSource: 'PERSISTED' | 'LOCAL' | 'YOUTUBE' | 'NONE'
+  storageStatus: string | null
+  artifactId: string | null
 }
 
 async function probeVideo(filePath: string): Promise<{ duration: number | null; resolution: string | null; codec: string | null; audioCodec: string | null }> {
@@ -59,6 +63,22 @@ async function probeVideo(filePath: string): Promise<{ duration: number | null; 
 
 function readJson(p: string): any {
   try { return JSON.parse(readFileSync(p, 'utf8')) } catch { return null }
+}
+
+/**
+ * Get playback source for a production from the artifact store.
+ */
+function getPlayback(productionId: string): { playbackSource: 'PERSISTED' | 'LOCAL' | 'YOUTUBE' | 'NONE'; storageStatus: string | null; artifactId: string | null } {
+  try {
+    const pb = getPlaybackSource(productionId)
+    return {
+      playbackSource: pb.source,
+      storageStatus: pb.artifact?.storageStatus || null,
+      artifactId: pb.artifact?.artifactId || null,
+    }
+  } catch {
+    return { playbackSource: 'NONE', storageStatus: null, artifactId: null }
+  }
 }
 
 async function main() {
@@ -96,6 +116,7 @@ async function main() {
     superseded: false,
     supersededBy: null,
     notes: `Topic: ${showcaseTitle?.title || 'unknown'}. Fact-repaired + QC PASS + duration integrity PASS. YouTube upload blocked (USER_AUTH_REQUIRED — OAuth not connected).`,
+    ...getPlayback('capability-showcase-001'),
   })
 
   // ===== AUTONOMOUS CYCLE 001 (corrected v2) =====
@@ -130,6 +151,7 @@ async function main() {
     superseded: false,
     supersededBy: null,
     notes: `Topic: ${cycleTitle?.title || 'The Minimalist AI Toolkit'}. Uploaded to YouTube as PRIVATE (videoId=BkntTZ2rsmU). Local MP4 missing (gitignored during history purge). Watch on YouTube via the button.`,
+    ...getPlayback('autonomous-cycle-001-v2'),
   })
 
   // ===== AUTONOMOUS CYCLE 001 (pre-repair, truncated) =====
@@ -158,6 +180,7 @@ async function main() {
     superseded: true,
     supersededBy: 'autonomous-cycle-001-v2',
     notes: 'Original truncated master (30s instead of 44s) with fact-check FAIL. Superseded by v2. YouTube videoId=LP1QgQwBN5o still exists as PRIVATE.',
+    ...getPlayback('autonomous-cycle-001-pre-repair'),
   })
 
   // ===== BENCHMARK VIDEOS (Test A/B/C/D) =====
@@ -194,6 +217,9 @@ async function main() {
       superseded: false,
       supersededBy: null,
       notes: bv.notes,
+      playbackSource: 'NONE' as const,
+      storageStatus: null,
+      artifactId: null,
     })
   }
 
@@ -227,6 +253,9 @@ async function main() {
           superseded: isBuggy,
           supersededBy: isBuggy ? f.replace('buggy', 'fixed') : null,
           notes: isBuggy ? 'Buggy reference (300-frame cap simulation) — used to verify the fix works.' : 'Fixed reference — correct duration derived from calculateCycleDuration().',
+          playbackSource: exists ? 'LOCAL' : 'NONE',
+          storageStatus: null,
+          artifactId: null,
         })
       }
     }

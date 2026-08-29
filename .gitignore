@@ -118,3 +118,6 @@ home/
 **/audio/*.mp3
 **/audio/*.wav
 **/audio/*.hash
+data/media-store/
+data/artifacts/*
+!data/artifacts/artifact-manifest.json

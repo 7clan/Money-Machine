@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createReadStream, statSync, existsSync, realpathSync, readFileSync } from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+import { getPlaybackSource } from '@/engine/artifact-store'
 
 const ROOT = process.cwd()
 const INVENTORY_PATH = path.join(ROOT, 'data', 'review', 'video-inventory.json')
@@ -29,6 +30,27 @@ function loadInventory(): any[] {
   }
 }
 
+/**
+ * Resolve the physical video file path for an inventory entry.
+ * Priority: entry.path (local) → artifact store PERSISTED remotePath.
+ */
+function resolveVideoPath(entry: any): string | null {
+  // 1. Check local path from inventory
+  if (entry.path && existsSync(entry.path)) {
+    return entry.path
+  }
+  // 2. Check artifact store for PERSISTED remote path
+  if (entry.id) {
+    try {
+      const pb = getPlaybackSource(entry.id)
+      if (pb.path && existsSync(pb.path)) {
+        return pb.path
+      }
+    } catch { /* ignore */ }
+  }
+  return null
+}
+
 export async function GET(request: NextRequest) {
   const videoId = request.nextUrl.searchParams.get('id')
   if (!videoId) {
@@ -40,11 +62,12 @@ export async function GET(request: NextRequest) {
   if (!entry) {
     return new NextResponse('Video not found in inventory', { status: 404 })
   }
-  if (!entry.exists || !entry.path) {
-    return new NextResponse('Video file does not exist on disk', { status: 404 })
-  }
 
-  const filePath = entry.path as string
+  // Resolve physical path: try local first, then artifact store PERSISTED remote
+  const filePath = resolveVideoPath(entry)
+  if (!filePath) {
+    return new NextResponse('Video file does not exist on disk (local or persisted)', { status: 404 })
+  }
 
   // SECURITY: validate the path is within the project's data/ directory
   // and matches the realpath (no symlinks, no traversal)
