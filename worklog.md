@@ -3549,3 +3549,116 @@ Unresolved / next steps:
 - Thumbnail upload requires YouTube Partner Program eligibility (channel verification, subscriber threshold). This is a channel-level requirement, not a code issue. THUMBNAIL_UPLOAD=BLOCKED_PERMISSION is the honest status.
 - Analytics OAuth: yt-analytics.readonly scope still requires user re-authorization via Google consent. Flow exposed in /api/youtube/auth.
 - Cycle 002 could now run with the proven repair infrastructure (WriterRepair + EditorAgent match-script-repair + FactChecker re-run) as standard quality gates.
+
+---
+Task ID: OPERATIONAL-HARDENING
+Agent: Lead Developer (operational hardening)
+Task: Transition from DEVELOPMENT VALIDATION to OPERATIONAL HARDENING — correct thumbnail audit claim, persist to Git, complete Analytics OAuth, formalize operational modes, hard publishing gates, duration regression test, thumbnail state machine, clean production metadata.
+
+Work Log:
+- ITEM 1: Thumbnail audit claim correction
+  * Updated data/autonomous-runs/cycle-001/thumbnail-manifest.json with explicit `uploadBlockReason`: "Authenticated YouTube account/channel currently lacks permission for the custom thumbnail API operation. The exact channel eligibility cause is UNKNOWN until verified through YouTube feature eligibility/account state. No specific cause (e.g., YPP, subscriber threshold) is claimed without explicit API or account-state proof."
+  * Updated data/autonomous-runs/cycle-001/final-audit.json thumbnail section with same wording + `claimCorrection` field noting previous YPP/subscriber-threshold speculation is removed.
+  * Cycle 001 PASS status unchanged.
+
+- ITEM 2: Git persistence (P0)
+  * Hardened .gitignore: explicit .env / .env.local / .env.production / .env.development / .env.staging ignored; !.env.example / !.env.template explicitly tracked; db/*.db + db/*.db-journal + db/*.db-wal + db/*.db-shm ignored; **/tokens.json + **/credentials.json + **/client_secret*.json + **/service-account*.json + *.token ignored; all generated media (data/{videos,audio,images,assets,contact-sheets,qc-frames,thumbnails,zai-cache,remotion-props,regression,benchmark}/) ignored; public/{cycle-001,test-d,remotion-assets,devtools-captures}/ ignored; agent-ctx/ + download/ + upload/ + home/ ignored; TTS audio cache (**/audio/*.mp3 + *.wav + *.hash) ignored.
+  * Installed git-filter-repo via pip3 (lands at /home/z/.venv/bin/git-filter-repo).
+  * PURGED .env from ALL git history (was committed in 5+ past commits with real YOUTUBE_CLIENT_SECRET=GOCSPX-[REDACTED]).
+  * PURGED db/custom.db from ALL git history (contained OAuth refresh tokens at runtime).
+  * Verified zero secrets in tracked files: grep for GOCSPX-[a-zA-Z0-9_-]{20} / ya29.[A-Za-z0-9_-]{40} across all 541 tracked files → no matches.
+  * Restored runtime .env + db/custom.db from /tmp backups (NOT in git).
+  * Created .env.example template with DATABASE_URL + YOUTUBE_CLIENT_ID/SECRET/REDIRECT_URI placeholders + scope documentation.
+  * Final tracked: 541 source files (production engine + subagents + orchestrator + workers + render architecture + schemas + migrations + Cycle 001 audit artifacts without secrets). Zero media. Zero secrets.
+  * NO GitHub remote configured (git remote -v returns empty). Push requires user action — see "Persistence" section in final report.
+
+- ITEM 3: Analytics OAuth — complete the partial capability
+  * Extended src/engine/youtube-client.ts exchangeCode() to return `scope` string from token response (was previously dropped).
+  * Updated src/app/api/youtube/callback/route.ts to persist `scope` on OAuthConnection row in BOTH GET (redirect) and POST (popup) flows. When state='reconnect-analytics', verifies granted scope contains yt-analytics.readonly and adds `analytics_scope=granted|missing` param to redirect URL.
+  * Built src/engine/analytics-agent.ts:
+    - verifyAnalyticsScope() checks OAuthConnection.scope for yt-analytics.readonly
+    - fetchAndPersistAnalytics(videoId) executes real YouTube Analytics API request (channel==MINE, 30-day window, video==VIDEO_ID filter, 10 metrics: views/estimatedMinutesWatched/averageViewDuration/averagePercentageViewed/subscribersGained/likes/comments/shares/impressions/ctr)
+    - Persists AnalyticsSnapshot row linked to Upload
+    - Creates LearningSignal rows ONLY when sufficient data (impressions>=100 AND views>=1) — CTR signal for thumbnail, AVD signal for script
+    - Returns NO_DATA when API returns no rows (brand-new private video) — NEVER fabricates
+    - Returns BLOCKED_SCOPE when OAuth token lacks yt-analytics.readonly
+  * 3 new API routes:
+    - GET /api/youtube/analytics-status → returns { hasAnalyticsScope, grantedScopes, requiredScope, reconnectUrl, action }
+    - POST /api/youtube/reconnect-analytics → returns { action: 'open_consent', authUrl, message }
+    - GET /api/youtube/analytics-test?videoId=XXX → runs full pipeline, returns AnalyticsFetchResult
+  * Verified /api/youtube/analytics-status returns hasAnalyticsScope:false with correct reconnectUrl (scope includes yt-analytics.readonly + prompt=consent + state=reconnect-analytics).
+
+- ITEM 4: Operational modes
+  * Built src/engine/operating-mode.ts:
+    - OperatingMode type: 'OFF' | 'DRY_RUN' | 'PRIVATE_ONLY' | 'REVIEW_BEFORE_PUBLIC' | 'FULL_AUTOPILOT'
+    - DEFAULT_MODE = 'PRIVATE_ONLY'
+    - modeCapabilities(mode) → { canResearch, canPlan, canProduce, canPublishPrivate, canPublishPublic, requiresHumanApprovalBeforePublic }
+    - OFF: all false
+    - DRY_RUN: research+plan true, produce+publish false
+    - PRIVATE_ONLY: research+plan+produce+publishPrivate true, publishPublic false
+    - REVIEW_BEFORE_PUBLIC: all true + requiresHumanApprovalBeforePublic
+    - FULL_AUTOPILOT: all true, no human approval required (NEVER default)
+    - getOperatingMode() / setOperatingMode() with AgentState + AuditLog persistence
+    - guardAction(action) throws if action not allowed in current mode
+  * GET/POST /api/operating-mode route. Verified GET returns current=PRIVATE_ONLY + allModes + capabilities. Verified POST sets mode (with audit log).
+
+- ITEM 5: Production safety gates
+  * Built src/engine/publishing-safety-gate.ts with 7 INDEPENDENT gates (no gate can override another):
+    1. FactChecker — verdict===PASS (QC PASS CANNOT override — Cycle 001 lesson)
+    2. QualityCritic — verdict===PASS
+    3. DurationIntegrity — narrationSum ≈ timelineTotal ≈ finalVideoDuration ≈ finalAudioDuration (1.0s tolerance)
+    4. CreativeLock — CREATIVE_LOCK===true AND all 6 hashes present (scriptHash/visualShotHash/assetManifestHash/audioManifestHash/compositionHash/QCReportHash)
+    5. PhysicalFile — h264 video + aac audio + 1920x1080 + ffprobe-valid
+    6. PrivacyMode — PRIVATE_ONLY requires privacy='private'; REVIEW_BEFORE_PUBLIC requires human approval before 'public'
+    7. ModeGuard — current OperatingMode allows publish_private
+  * runPublishGates(input) returns { overall: 'PASS'|'FAIL', gates: GateResult[], blockingGates: string[] }
+  * POST /api/publish-gate route (405 on GET — POST only). Verified returns FAIL with blockingGates on empty input.
+
+- ITEM 6: Duration bug regression test
+  * Built scripts/regression/duration-test.ts with 4 test cases:
+    1. short-chunk (1 segment, 5s) — must not be truncated to default
+    2. long-chunk (5 segments × 7s = 35s) — must exceed the 10s default
+    3. multi-chunk-concat (7 segments, 44.28s) — Cycle 001 scenario (old bug truncated to 30s)
+    4. non-integer-seconds (3 segments, 14.315s) — TTS artifacts, frame rounding must not lose content
+  * For each case: renders a "fixed" version (correct durationInFrames) AND a "buggy" version (capped at 300 frames = 10s). Asserts fixed matches expected AND (for >10s cases) fixed does NOT match buggy.
+  * All 4 cases PASS. Results saved to data/regression/duration-test/results.json.
+  * Bug description + fix description embedded in results.json for future reference.
+
+- ITEM 7: Thumbnail state machine
+  * Built src/engine/thumbnail-state.ts:
+    - ThumbnailState type: 'CONCEPT_READY' | 'FILE_READY' | 'QC_PASS' | 'UPLOAD_PASS' | 'BLOCKED_PERMISSION' | 'FAIL'
+    - isConceptValid(c) — strict shape check (visualSubject/composition/emotion/curiosityMechanism all non-empty strings)
+    - isQcPass(qc) — strict (width=1280, height=720, dimensionsOk, sizeUnder2MB, noDeceptiveProductUI, verdict=PASS)
+    - isFileReady(filePath) — exists + >1KB
+    - buildThumbnailStatus(opts) → ThumbnailStatus with state + creationOk (= fileReady AND qcPass, NOT just concept) + uploadOk
+  * A concept ALONE never reports creationOk=true. This is the Cycle 001 lesson made permanent.
+
+- ITEM 8: Clean production metadata
+  * Built src/engine/production-metadata.ts:
+    - PublicMetadata interface { title, description, tags }
+    - InternalMetadata interface { public: PublicMetadata, internal: { version?, factVerified?, repairHistory?, autonomousCycleId?, developmentNotes? } }
+    - buildProductionMetadata(opts) — separates public vs internal; version/fact-verification state stored internally only
+    - sanitizePublicTitle(title) — strips accidental suffixes: (v2 - Fact-Verified), (v3), [REPAIR], [PRE-REPAIR], - Fact-Verified
+  * Applied rule: future productions use clean public titles. Existing Cycle 001 private upload NOT altered (per spec section 8).
+
+- BONUS: Dev server turbopack fix
+  * All API routes were returning 500 with "Unknown module type" error for @esbuild/linux-x64/README.md (a markdown file shipped in the esbuild binary package that turbopack can't parse).
+  * Added serverExternalPackages to next.config.ts: @esbuild/linux-x64, @remotion/renderer, @remotion/bundler, @remotion/compositor-* (platform-specific .node binaries), z-ai-web-dev-sdk.
+  * All routes now return 200. /api/operating-mode, /api/youtube/analytics-status, /api/publish-gate verified working.
+
+Stage Summary:
+- 4 commits made:
+  1. OPERATIONAL HARDENING (12 new files: operating-mode.ts, publishing-safety-gate.ts, analytics-agent.ts, thumbnail-state.ts, production-metadata.ts, duration-test.ts, 5 route files, results.json)
+  2. next.config.ts serverExternalPackages fix
+  3. .env.example + hardened .gitignore
+  4. untrack all generated media after git-filter-repo history rewrite
+- 541 source files tracked. 0 secrets. 0 media.
+- All Cycle 001 audit artifacts preserved (without secrets).
+- Lint: 0 errors. Dev server: 200 on /, 200 on /api/operating-mode, 200 on /api/youtube/analytics-status, 405 on GET /api/publish-gate (POST-only — correct).
+- Duration regression test: 4/4 PASS.
+- NO GitHub remote configured — push requires user action.
+
+Unresolved / next steps:
+- GitHub remote: user must either (a) create a GitHub repo and add it as origin, or (b) provide an existing remote URL. Then `git push -u origin main` will push all 541 source files.
+- Analytics OAuth: user must visit the reconnectUrl (returned by /api/youtube/reconnect-analytics) and complete Google's consent screen. After consent, /api/youtube/analytics-test?videoId=BkntTZ2rsmU will verify scope + execute real Analytics API request + persist AnalyticsSnapshot + create LearningSignals if data exists.
+- Cycle 002: NOT started (per user instruction). System is READY.
