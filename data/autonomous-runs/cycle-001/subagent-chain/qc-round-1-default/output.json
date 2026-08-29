@@ -1,0 +1,29 @@
+{
+  "verdict": "PASS",
+  "scores": {
+    "hookStrength": 8,
+    "narrativeFlow": 7,
+    "visualVariety": 6,
+    "pacing": 5,
+    "narrationAlignment": 9,
+    "visualCoverage": 8
+  },
+  "failingShots": [
+    {
+      "shotId": "shot-3",
+      "timestamp": 0,
+      "issue": "Rapid transitions between multiple tools may cause visual overload, contradicting the minimalist message",
+      "recommendation": "Slow down transitions or reduce number of tools shown to maintain minimalist aesthetic"
+    },
+    {
+      "shotId": "shot-15",
+      "timestamp": 0,
+      "issue": "End screen with logo and website creates digital clutter after emphasizing minimalism",
+      "recommendation": "Consider a cleaner exit or integrate branding more subtly within the minimalist aesthetic"
+    }
+  ],
+  "fakeUICount": 0,
+  "realUIPercentage": 100,
+  "rawVideoPercentage": 0,
+  "staticScreenshotPercentage": 0
+}

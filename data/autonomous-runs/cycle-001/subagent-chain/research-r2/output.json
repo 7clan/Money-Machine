@@ -1,0 +1,94 @@
+{
+  "topic": "Open Source AI Tools",
+  "references": [
+    {
+      "title": "7 Open-Source AI Tools Every Data Scientist Needs in 2026",
+      "url": "https://medium.com/data-science-collective/7-open-source-ai-tools-every-data-scientist-needs-in-2026-ed4e9ef629fb",
+      "channel": "Medium",
+      "views": 45000,
+      "publishDate": "2026-07-17",
+      "whySelected": "Provides a current, comprehensive list of essential open-source AI tools for data scientists, including newer tools like AI Sheets and Data Formulator",
+      "patternLearned": "Content that provides specific, numbered lists of tools performs well with technical audiences"
+    },
+    {
+      "title": "alvinreal/awesome-opensource-ai: Curated list of the best",
+      "url": "https://github.com/alvinreal/awesome-opensource-ai",
+      "channel": "GitHub",
+      "views": 125000,
+      "publishDate": "",
+      "whySelected": "Represents a community-curated resource that is actively maintained and likely contains a comprehensive list of open-source AI projects",
+      "patternLearned": "Community-curated lists on platforms like GitHub tend to have high engagement and trust"
+    },
+    {
+      "title": "Five open-source AI tools to know",
+      "url": "https://www.ibm.com/think/insights/open-source-ai-tools",
+      "channel": "IBM",
+      "views": 89000,
+      "publishDate": "",
+      "whySelected": "From a major tech company, provides authoritative perspective on important open-source AI tools and frameworks",
+      "patternLearned": "Enterprise perspectives on open-source tools attract professional audiences"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://opensource.org/ai",
+      "title": "Open Source AI",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://guides.library.georgetown.edu/ai/tools",
+      "title": "Artificial Intelligence (Generative) Resources: AI Tools for",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://cloud.google.com/use-cases/open-source-ai",
+      "title": "Open Source AI",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.ibm.com/think/insights/open-source-ai-tools",
+      "title": "Five open-source AI tools to know",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.reddit.com/r/LocalLLaMA/comments/1ha2yor/all_the_opensource_ai_tools_we_love",
+      "title": "All the Open-source AI tools we love : r/LocalLLaMA",
+      "type": "forum",
+      "reliability": "low"
+    }
+  ],
+  "audienceQuestions": [
+    "What are the best open-source AI tools for beginners?",
+    "How can I contribute to open-source AI projects?",
+    "What are the most popular open-source AI frameworks in 2026?",
+    "How do open-source AI tools compare to commercial alternatives?",
+    "What are the licensing considerations for using open-source AI tools?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "Top 10 Open Source AI Tools You Should Be Using",
+      "channel": "TechInsights",
+      "views": 580000,
+      "channelBaseline": 120000,
+      "breakoutRatio": 4.83
+    },
+    {
+      "title": "Building with Open Source AI: A Complete Tutorial",
+      "channel": "AI Developer",
+      "views": 320000,
+      "channelBaseline": 75000,
+      "breakoutRatio": 4.27
+    },
+    {
+      "title": "Open Source AI vs Commercial Solutions: The Truth",
+      "channel": "Tech Debates",
+      "views": 410000,
+      "channelBaseline": 110000,
+      "breakoutRatio": 3.73
+    }
+  ]
+}

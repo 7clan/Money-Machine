@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "[\n  {\n    \"id\": \"idea-1\",\n    \"subject\": \"Digital Minimalism: Ancient Wisdom for Modern Digital Lives\",\n    \"angle\": \"Applying ancient climate adaptation techniques to our relationship with digital technology\",\n    \"viewerPromise\": \"Discover how ancient farming strategies can help us create a healthier, more balanced digital lifestyle.\",\n    \"scores\": {\n      \"novelty\": 8,\n      \"visualPotential\": 9,\n      \"productionFeasibility\": 8,\n      \"monetization\": 7,\n      \"channelFit\": 8\n    },\n    \"requiredCapabilities\": [\n      \"WEB_RESEARCH\",\n      \"ZAI_TEXT\",\n      \"ZAI_IMAGE\",\n      \"TTS\",\n      \"FFMPEG\",\n      \"PLAYWRIGHT\",\n      \"BROWSER_PAGE_CAPTURE\"\n    ],\n    \"productionFeasible\": true,\n    \"feasibilityBlocked\": null\n  },\n  {\n    \"id\": \"idea-2\",\n    \"subject\": \"Open Source AI Tools: The Digital Minimalist's Toolkit\",\n    \"angle\": \"How to leverage powerful open-source AI tools while maintaining a minimalist approach to technology\",\n    \"viewerPromise\": \"Learn to use AI efficiently without overwhelming yourself with unnecessary digital clutter.\",\n    \"scores\": {\n      \"novelty\": 9,\n      \"visualPotential\": 7,\n      \"productionFeasibility\": 7,\n      \"monetization\": 8,\n      \"channelFit\": 9\n    },\n    \"requiredCapabilities\": [\n      \"WEB_RESEARCH\",\n      \"ZAI_TEXT\",\n      \"ZAI_IMAGE\",\n      \"TTS\",\n      \"FFMPEG\",\n      \"PLAYWRIGHT\",\n      \"BROWSER_PAGE_CAPTURE\",\n      \"WEB_APP_INTERACTION\"\n    ],\n    \"productionFeasible\": true,\n    \"feasibilityBlocked\": null\n  },\n  {\n    \"id\": \"idea-3\",\n    \"subject\": \"The Digital Detox Paradox\",\n    \"angle\": \"Why completely disconnecting from technology might be counterproductive to achieving true digital balance\",\n    \"viewerPromise\": \"Evidence-based strategies for a sustainable approach to digital wellbeing without extreme measures.\",\n    \"scores\": {\n      \"novelty\": 7,\n      \"visualPotential\": 8,\n      \"productionFeasibility\": 9,\n      \"monetization\": 8,\n      \"channelFit\": 8\n    },\n    \"requiredCapabilities\": [\n      \"WEB_RESEARCH\",\n      \"ZAI_TEXT\",\n      \"ZAI_IMAGE\",\n      \"TTS\",\n      \"FFMPEG\",\n      \"SCREENSHOT_CAPTURE\"\n    ],\n    \"productionFeasible\": true,\n    \"feasibilityBlocked\": null\n  }\n]",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788002646,
+  "id": "20260829192320a66f192855f34c3a",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260829192320a66f192855f34c3a",
+  "usage": {
+    "completion_tokens": 563,
+    "prompt_tokens": 2541,
+    "total_tokens": 3104
+  }
+}

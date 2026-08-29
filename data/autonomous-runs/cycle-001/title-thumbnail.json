@@ -1,0 +1,86 @@
+{
+  "title": "The Minimalist AI Toolkit: Open Source Solutions",
+  "thumbnail": {
+    "visualSubject": "Clean workspace with three minimalist AI tool interfaces",
+    "composition": "Centered composition with negative space, showing only essential tools",
+    "emotion": "Calm, focused, empowered",
+    "textIfAny": "Less is More",
+    "curiosityMechanism": "Contrast between minimal interface and powerful AI capability"
+  },
+  "titleComposite": 7.25,
+  "allTitles": [
+    {
+      "text": "The Minimalist AI Toolkit: Open Source Solutions",
+      "scores": {
+        "accuracy": 8,
+        "curiosity": 7,
+        "specificity": 8,
+        "thumbnailSynergy": 7
+      },
+      "composite": 7.5
+    },
+    {
+      "text": "Powerful AI Without Digital Clutter",
+      "scores": {
+        "accuracy": 7,
+        "curiosity": 8,
+        "specificity": 6,
+        "thumbnailSynergy": 6
+      },
+      "composite": 6.8
+    },
+    {
+      "text": "Open Source AI: The Minimalist Approach",
+      "scores": {
+        "accuracy": 9,
+        "curiosity": 6,
+        "specificity": 7,
+        "thumbnailSynergy": 7
+      },
+      "composite": 7.3
+    },
+    {
+      "text": "Essential AI Tools for Digital Minimalists",
+      "scores": {
+        "accuracy": 8,
+        "curiosity": 7,
+        "specificity": 8,
+        "thumbnailSynergy": 6
+      },
+      "composite": 7.3
+    },
+    {
+      "text": "Streamlined AI: Open Source Alternatives",
+      "scores": {
+        "accuracy": 7,
+        "curiosity": 6,
+        "specificity": 7,
+        "thumbnailSynergy": 7
+      },
+      "composite": 6.8
+    }
+  ],
+  "allThumbnails": [
+    {
+      "visualSubject": "Split screen: messy desktop vs clean minimalist AI workspace",
+      "composition": "Divided vertically with clean side on the right",
+      "emotion": "Relief, clarity, simplicity",
+      "textIfAny": "Clean AI",
+      "curiosityMechanism": "Visual contrast between digital clutter and minimalism"
+    },
+    {
+      "visualSubject": "Three essential AI tool icons arranged in minimalist fashion",
+      "composition": "Centered with ample negative space around icons",
+      "emotion": "Focused, intentional, empowered",
+      "textIfAny": "Essential AI",
+      "curiosityMechanism": "Question of which three tools are essential"
+    },
+    {
+      "visualSubject": "Clean workspace with three minimalist AI tool interfaces",
+      "composition": "Centered composition with negative space, showing only essential tools",
+      "emotion": "Calm, focused, empowered",
+      "textIfAny": "Less is More",
+      "curiosityMechanism": "Contrast between minimal interface and powerful AI capability"
+    }
+  ]
+}

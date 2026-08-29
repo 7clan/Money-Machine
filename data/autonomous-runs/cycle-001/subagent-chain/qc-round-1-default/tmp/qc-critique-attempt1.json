@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "{\n  \"scores\": {\n    \"hookStrength\": 8,\n    \"narrativeFlow\": 7,\n    \"visualVariety\": 6,\n    \"pacing\": 5,\n    \"narrationAlignment\": 9,\n    \"visualCoverage\": 8\n  },\n  \"failingShots\": [\n    {\n      \"shotId\": \"shot-3\",\n      \"timestamp\": \"8-14\",\n      \"issue\": \"Rapid transitions between multiple tools may cause visual overload, contradicting the minimalist message\",\n      \"recommendation\": \"Slow down transitions or reduce number of tools shown to maintain minimalist aesthetic\"\n    },\n    {\n      \"shotId\": \"shot-15\",\n      \"timestamp\": \"70-75\",\n      \"issue\": \"End screen with logo and website creates digital clutter after emphasizing minimalism\",\n      \"recommendation\": \"Consider a cleaner exit or integrate branding more subtly within the minimalist aesthetic\"\n    }\n  ],\n  \"verdictSuggestion\": \"PASS\"\n}",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788003333,
+  "id": "202608291935308fa0a4e95fab4fc6",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "202608291935308fa0a4e95fab4fc6",
+  "usage": {
+    "completion_tokens": 210,
+    "prompt_tokens": 2376,
+    "total_tokens": 2586
+  }
+}

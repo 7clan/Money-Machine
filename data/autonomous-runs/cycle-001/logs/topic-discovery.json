@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "[\n  {\n    \"topic\": \"Digital Minimalism Benefits\",\n    \"rationale\": \"Growing interest in reducing screen time and mental health optimization through intentional technology use\",\n    \"opportunityDomain\": \"PSYCHOLOGY\"\n  },\n  {\n    \"topic\": \"Open Source AI Tools\",\n    \"rationale\": \"Rising demand for accessible alternatives to proprietary AI solutions with verifiable performance metrics\",\n    \"opportunityDomain\": \"TECHNOLOGY\"\n  },\n  {\n    \"topic\": \"Ancient Climate Adaptation\",\n    \"rationale\": \"Historical examples of civilizations adapting to climate changes offer valuable insights for modern challenges\",\n    \"opportunityDomain\": \"HISTORY\"\n  }\n]",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788002576,
+  "id": "2026082919225394972465a5544125",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "2026082919225394972465a5544125",
+  "usage": {
+    "completion_tokens": 145,
+    "prompt_tokens": 245,
+    "total_tokens": 390
+  }
+}

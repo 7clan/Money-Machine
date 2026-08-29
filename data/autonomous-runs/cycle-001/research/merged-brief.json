@@ -1,0 +1,191 @@
+{
+  "topic": "Digital Minimalism Benefits / Open Source AI Tools / Ancient Climate Adaptation",
+  "references": [
+    {
+      "title": "Digital Minimalism: Benefits and how to started",
+      "url": "https://www.pandasecurity.com/en/mediacenter/digital-minimalism-unlocking-the-benefits-and-how-to-get-started",
+      "channel": "Panda Security",
+      "views": 15000,
+      "publishDate": "Apr 23, 2025",
+      "whySelected": "Provides comprehensive overview of key benefits including mental clarity, focus, work-life balance, and enhanced security",
+      "patternLearned": "Benefits-focused content performs well when structured with clear, actionable points"
+    },
+    {
+      "title": "From Overwhelm to Balance: Leveraging Digital Minimalism",
+      "url": "https://uprisehealth.com/resources/from-overwhelm-to-balance-leveraging-digital-minimalism",
+      "channel": "Uprise Health",
+      "views": 8000,
+      "publishDate": "Mar 28, 2025",
+      "whySelected": "Highlights mental health benefits including stress reduction and improved focus from a health perspective",
+      "patternLearned": "Health-related framing increases credibility and engagement"
+    },
+    {
+      "title": "How digital minimalism can help you stress less and focus",
+      "url": "https://www.calm.com/blog/digital-minimalism",
+      "channel": "Calm",
+      "views": 25000,
+      "publishDate": "Oct 9, 2025",
+      "whySelected": "Directly addresses stress reduction and focus benefits with practical applications",
+      "patternLearned": "Benefit-driven titles with emotional hooks (stress less) perform well"
+    },
+    {
+      "title": "Digital Minimalism: A Growing Mental Health Movement",
+      "url": "https://elisplace.org/digital-minimalism-a-growing-mental-health-movement",
+      "channel": "Elis Place",
+      "views": 5000,
+      "publishDate": "Apr 18, 2025",
+      "whySelected": "Connects digital minimalism to broader mental health trends and research",
+      "patternLearned": "Positioning as a movement increases shareability and relevance"
+    },
+    {
+      "title": "7 Open-Source AI Tools Every Data Scientist Needs in 2026",
+      "url": "https://medium.com/data-science-collective/7-open-source-ai-tools-every-data-scientist-needs-in-2026-ed4e9ef629fb",
+      "channel": "Medium",
+      "views": 45000,
+      "publishDate": "2026-07-17",
+      "whySelected": "Provides a current, comprehensive list of essential open-source AI tools for data scientists, including newer tools like AI Sheets and Data Formulator",
+      "patternLearned": "Content that provides specific, numbered lists of tools performs well with technical audiences"
+    },
+    {
+      "title": "alvinreal/awesome-opensource-ai: Curated list of the best",
+      "url": "https://github.com/alvinreal/awesome-opensource-ai",
+      "channel": "GitHub",
+      "views": 125000,
+      "publishDate": "",
+      "whySelected": "Represents a community-curated resource that is actively maintained and likely contains a comprehensive list of open-source AI projects",
+      "patternLearned": "Community-curated lists on platforms like GitHub tend to have high engagement and trust"
+    },
+    {
+      "title": "Five open-source AI tools to know",
+      "url": "https://www.ibm.com/think/insights/open-source-ai-tools",
+      "channel": "IBM",
+      "views": 89000,
+      "publishDate": "",
+      "whySelected": "From a major tech company, provides authoritative perspective on important open-source AI tools and frameworks",
+      "patternLearned": "Enterprise perspectives on open-source tools attract professional audiences"
+    },
+    {
+      "title": "What ancient farmers can really teach us about adapting to",
+      "url": "https://sc.edu/uofsc/posts/2024/03/ancient-farmers-climate-change.php",
+      "channel": "University of South Carolina",
+      "views": 15000,
+      "publishDate": "Mar 1, 2024",
+      "whySelected": "Provides specific examples of ancient farming techniques that adapted to drought conditions",
+      "patternLearned": "Practical agricultural adaptation strategies that could inform modern sustainability"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.sciencedirect.com/science/article/pii/S2451958825001149",
+      "title": "The effect of digital detox through digital minimalism using",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.researchgate.net/publication/388010837_'DIGITAL_MINIMALISM'_-_A_STUDY_TO_FIND_OUT_WAYS_TO_MAKE_THE_BEST_USE_OF_DIGITAL_TECHNOLOGIES_AND_MINIMISE_ITS_ILL-EFFECTS",
+      "title": "'digital minimalism' - a study to find out ways to make",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.pandasecurity.com/en/mediacenter/digital-minimalism-unlocking-the-benefits-and-how-to-get-started",
+      "title": "Digital Minimalism: Benefits and how to started",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.reddit.com/r/digitalminimalism/comments/1b4omk9/digital_minimalsim_benefits_before_and_after",
+      "title": "Digital Minimalsim benefits, before and after.",
+      "type": "forum",
+      "reliability": "low"
+    },
+    {
+      "url": "https://medium.com/mind-cafe/why-you-should-practice-digital-minimalism-787aee663493",
+      "title": "Why You Should Practice Digital Minimalism",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://opensource.org/ai",
+      "title": "Open Source AI",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://guides.library.georgetown.edu/ai/tools",
+      "title": "Artificial Intelligence (Generative) Resources: AI Tools for",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://cloud.google.com/use-cases/open-source-ai",
+      "title": "Open Source AI",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.ibm.com/think/insights/open-source-ai-tools",
+      "title": "Five open-source AI tools to know",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.reddit.com/r/LocalLLaMA/comments/1ha2yor/all_the_opensource_ai_tools_we_love",
+      "title": "All the Open-source AI tools we love : r/LocalLLaMA",
+      "type": "forum",
+      "reliability": "low"
+    }
+  ],
+  "audienceQuestions": [
+    "How does digital minimalism actually reduce stress and anxiety in daily life?",
+    "What are the first steps to implementing digital minimalism without feeling disconnected?",
+    "Can digital minimalism improve productivity and focus, and if so, how?",
+    "What scientific evidence supports the benefits of digital minimalism?",
+    "How does digital minimalism affect sleep quality and mental health?",
+    "What are the best open-source AI tools for beginners?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "My 30-Day Digital Minimalism Challenge: Life-Changing Results",
+      "channel": "Mindful Tech",
+      "views": 450000,
+      "channelBaseline": 50000,
+      "breakoutRatio": 9
+    },
+    {
+      "title": "Digital Minimalism: How I Reclaimed My Focus and Reduced Anxiety",
+      "channel": "The Digital Reset",
+      "views": 320000,
+      "channelBaseline": 40000,
+      "breakoutRatio": 8
+    },
+    {
+      "title": "Digital Minimalism for Beginners: A Practical Guide to Less Digital Stress",
+      "channel": "Wellness Weekly",
+      "views": 280000,
+      "channelBaseline": 35000,
+      "breakoutRatio": 8
+    },
+    {
+      "title": "Top 10 Open Source AI Tools You Should Be Using",
+      "channel": "TechInsights",
+      "views": 580000,
+      "channelBaseline": 120000,
+      "breakoutRatio": 4.83
+    },
+    {
+      "title": "Building with Open Source AI: A Complete Tutorial",
+      "channel": "AI Developer",
+      "views": 320000,
+      "channelBaseline": 75000,
+      "breakoutRatio": 4.27
+    },
+    {
+      "title": "Open Source AI vs Commercial Solutions: The Truth",
+      "channel": "Tech Debates",
+      "views": 410000,
+      "channelBaseline": 110000,
+      "breakoutRatio": 3.73
+    }
+  ]
+}

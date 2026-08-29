@@ -1,0 +1,29 @@
+{
+  "videoPath": "/home/z/my-project/data/autonomous-runs/cycle-001/renders/final.mp4",
+  "metadata": {
+    "title": "The Minimalist AI Toolkit: Open Source Solutions",
+    "description": "The Minimalist AI Toolkit: Open Source Solutions\n\nAn autonomously-produced YouTube video. Generated end-to-end by MONEY MACHINE Cycle 001 (PRIVATE_ONLY, DEVELOPMENT_TEST).\n\nChapters:\n1. What if you could harness AI's power without drowning in digital clutter?\n2. Open-source AI tools offer powerful alternatives without the bloat.\n3. The secret? Focus on tools that do one thing exceptionally well.\n4. Start with text generation using lightweight models like GPT4All.\n5. For images, Stable Diffusion gives you control without cloud subscriptions.\n6. This approach gives you AI power without the digital baggage.\n7. Choose tools that serve you, not the other way around.\n\n#autonomous #aiGenerated",
+    "tags": [
+      "without",
+      "tools",
+      "source",
+      "power",
+      "digital",
+      "gives",
+      "minimalist",
+      "toolkit"
+    ],
+    "category": "27",
+    "privacy": "private",
+    "language": "en-US",
+    "madeForKids": false,
+    "isAiGenerated": true
+  },
+  "startedAt": "2026-08-29T11:38:58.204Z",
+  "youtubeVideoId": "LP1QgQwBN5o",
+  "uploadStatus": "completed",
+  "privacyStatus": "private",
+  "publishedAt": "2026-08-29T11:39:01.140Z",
+  "videoIdeaId": "cmteb53y20002qi8sf4ezl17s",
+  "videoProjectId": "cmteb53y50006qi8sxw6o8aez"
+}

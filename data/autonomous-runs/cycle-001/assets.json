@@ -1,0 +1,36 @@
+{
+  "assets": [
+    {
+      "id": "asset-shot-3",
+      "type": "generated-image",
+      "localPath": "/home/z/my-project/public/cycle-001/shot-3.png",
+      "beatId": "shot-3",
+      "reasonForUse": "Quick montage of popular open-source AI tools",
+      "provenance": "generated"
+    },
+    {
+      "id": "asset-shot-8",
+      "type": "generated-image",
+      "localPath": "/home/z/my-project/public/cycle-001/shot-8.png",
+      "beatId": "shot-8",
+      "reasonForUse": "Show the lightweight nature of the tool",
+      "provenance": "generated"
+    },
+    {
+      "id": "asset-shot-12",
+      "type": "generated-image",
+      "localPath": "/home/z/my-project/public/cycle-001/shot-12.png",
+      "beatId": "shot-12",
+      "reasonForUse": "Visualize the concept of AI without digital baggage",
+      "provenance": "generated"
+    },
+    {
+      "id": "asset-shot-15",
+      "type": "generated-image",
+      "localPath": "/home/z/my-project/public/cycle-001/shot-15.png",
+      "beatId": "shot-15",
+      "reasonForUse": "End screen with minimalist branding",
+      "provenance": "generated"
+    }
+  ]
+}

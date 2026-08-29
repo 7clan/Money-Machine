@@ -1,0 +1,26 @@
+{
+  "archetype": "EXPLAINER_ESSAY",
+  "reason": "This idea has the highest novelty score and strong channel fit, making it perfect for an explainer essay format that showcases open-source AI tools while maintaining digital minimalism.",
+  "capabilitiesAvailable": {
+    "WEB_RESEARCH": true,
+    "ZAI_TEXT": true,
+    "ZAI_IMAGE": true,
+    "TTS": true,
+    "FFMPEG": true,
+    "PLAYWRIGHT": true,
+    "BROWSER_PAGE_CAPTURE": true,
+    "WEB_APP_INTERACTION": true
+  },
+  "capabilitiesRequired": [
+    "WEB_RESEARCH",
+    "ZAI_TEXT",
+    "ZAI_IMAGE",
+    "TTS",
+    "FFMPEG",
+    "PLAYWRIGHT",
+    "BROWSER_PAGE_CAPTURE",
+    "WEB_APP_INTERACTION"
+  ],
+  "blocked": false,
+  "selectedIdeaId": "idea-2"
+}

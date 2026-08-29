@@ -1,0 +1,18 @@
+{
+  "verdict": "FAIL",
+  "claims": [
+    {
+      "claim": "Start with text generation using lightweight models like GPT4All.",
+      "supported": false,
+      "source": "",
+      "issue": "No evidence in the provided web search mentions GPT4All specifically."
+    },
+    {
+      "claim": "For images, Stable Diffusion gives you control without cloud subscriptions.",
+      "supported": false,
+      "source": "",
+      "issue": "No evidence in the provided web search mentions Stable Diffusion specifically."
+    }
+  ],
+  "unsupportedCount": 2
+}

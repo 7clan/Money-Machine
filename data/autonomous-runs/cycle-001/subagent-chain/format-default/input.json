@@ -1,0 +1,76 @@
+{
+  "ideas": [
+    {
+      "id": "idea-1",
+      "subject": "Digital Minimalism: Ancient Wisdom for Modern Digital Lives",
+      "angle": "Applying ancient climate adaptation techniques to our relationship with digital technology",
+      "viewerPromise": "Discover how ancient farming strategies can help us create a healthier, more balanced digital lifestyle.",
+      "scores": {
+        "novelty": 8,
+        "visualPotential": 9,
+        "productionFeasibility": 8,
+        "monetization": 7,
+        "channelFit": 8
+      },
+      "requiredCapabilities": [
+        "WEB_RESEARCH",
+        "ZAI_TEXT",
+        "ZAI_IMAGE",
+        "TTS",
+        "FFMPEG",
+        "PLAYWRIGHT",
+        "BROWSER_PAGE_CAPTURE"
+      ],
+      "productionFeasible": true,
+      "feasibilityBlocked": []
+    },
+    {
+      "id": "idea-2",
+      "subject": "Open Source AI Tools: The Digital Minimalist's Toolkit",
+      "angle": "How to leverage powerful open-source AI tools while maintaining a minimalist approach to technology",
+      "viewerPromise": "Learn to use AI efficiently without overwhelming yourself with unnecessary digital clutter.",
+      "scores": {
+        "novelty": 9,
+        "visualPotential": 7,
+        "productionFeasibility": 7,
+        "monetization": 8,
+        "channelFit": 9
+      },
+      "requiredCapabilities": [
+        "WEB_RESEARCH",
+        "ZAI_TEXT",
+        "ZAI_IMAGE",
+        "TTS",
+        "FFMPEG",
+        "PLAYWRIGHT",
+        "BROWSER_PAGE_CAPTURE",
+        "WEB_APP_INTERACTION"
+      ],
+      "productionFeasible": true,
+      "feasibilityBlocked": []
+    },
+    {
+      "id": "idea-3",
+      "subject": "The Digital Detox Paradox",
+      "angle": "Why completely disconnecting from technology might be counterproductive to achieving true digital balance",
+      "viewerPromise": "Evidence-based strategies for a sustainable approach to digital wellbeing without extreme measures.",
+      "scores": {
+        "novelty": 7,
+        "visualPotential": 8,
+        "productionFeasibility": 9,
+        "monetization": 8,
+        "channelFit": 8
+      },
+      "requiredCapabilities": [
+        "WEB_RESEARCH",
+        "ZAI_TEXT",
+        "ZAI_IMAGE",
+        "TTS",
+        "FFMPEG",
+        "SCREENSHOT_CAPTURE"
+      ],
+      "productionFeasible": true,
+      "feasibilityBlocked": []
+    }
+  ]
+}

@@ -51,7 +51,8 @@ const ROOT = process.cwd()
 
 export function chainDir(): string {
   const dir = process.env.SUBAGENT_CHAIN_DIR ?? 'data/pipeline-state/subagent-chain'
-  return join(ROOT, dir)
+  // Support both relative (joined with cwd) and absolute paths.
+  return dir.startsWith('/') ? dir : join(ROOT, dir)
 }
 
 export function ensureDir(dir: string): string {

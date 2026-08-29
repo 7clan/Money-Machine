@@ -1,4 +1,4 @@
-import { Composition } from 'remotion'
+import { Composition, registerRoot } from 'remotion'
 import { DocumentaryComposition, DOCUMENTARY_COMP_ID, DOCUMENTARY_FPS, DOCUMENTARY_WIDTH, DOCUMENTARY_HEIGHT } from './compositions/DocumentaryComposition'
 import { TutorialComposition, TUTORIAL_COMP_ID, TUTORIAL_FPS, TUTORIAL_WIDTH, TUTORIAL_HEIGHT } from './compositions/TutorialComposition'
 import {
@@ -17,6 +17,12 @@ import {
   PILOT_HEIGHT,
   PILOT_WIDTH,
 } from './compositions/AnimatedPilotComposition'
+import { Cycle001Composition } from './compositions/Cycle001Composition'
+
+export const CYCLE_001_COMP_ID = 'cycle-001'
+export const CYCLE_001_FPS = 30
+export const CYCLE_001_WIDTH = 1920
+export const CYCLE_001_HEIGHT = 1080
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -57,6 +63,25 @@ export const RemotionRoot: React.FC = () => {
         height={PILOT_HEIGHT}
         defaultProps={{}}
       />
+      <Composition
+        id={CYCLE_001_COMP_ID}
+        component={Cycle001Composition}
+        durationInFrames={300}
+        fps={CYCLE_001_FPS}
+        width={CYCLE_001_WIDTH}
+        height={CYCLE_001_HEIGHT}
+        defaultProps={{
+          shots: [],
+          segments: [],
+          images: {},
+          audio: {},
+          width: CYCLE_001_WIDTH,
+          height: CYCLE_001_HEIGHT,
+          fps: CYCLE_001_FPS,
+        }}
+      />
     </>
   )
 }
+
+registerRoot(RemotionRoot)

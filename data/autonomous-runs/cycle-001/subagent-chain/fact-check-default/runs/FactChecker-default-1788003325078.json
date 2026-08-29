@@ -1,0 +1,20 @@
+{
+  "agent": "FactChecker",
+  "role": "FACT_CHECKER",
+  "artifact": "FactCheckReport",
+  "flow": "cycle-001",
+  "batchId": "fact-check",
+  "instanceId": "default",
+  "pid": 5049,
+  "startedAt": "2026-08-29T11:35:25.078Z",
+  "endedAt": "2026-08-29T11:35:30.295Z",
+  "durationMs": 5217,
+  "inputHash": "7ec389c43f6fe34b",
+  "outputHash": "3ba4caaa6f2ab8db",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 1,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/cycle-001/subagent-chain/fact-check-default"
+}

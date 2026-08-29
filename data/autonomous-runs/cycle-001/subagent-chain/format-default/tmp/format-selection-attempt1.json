@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "{\n  \"selectedIdeaId\": \"idea-2\",\n  \"archetype\": \"EXPLAINER_ESSAY\",\n  \"reason\": \"This idea has the highest novelty score and strong channel fit, making it perfect for an explainer essay format that showcases open-source AI tools while maintaining digital minimalism.\",\n  \"capabilitiesRequired\": [\"WEB_RESEARCH\", \"ZAI_TEXT\", \"ZAI_IMAGE\", \"TTS\", \"FFMPEG\", \"PLAYWRIGHT\", \"BROWSER_PAGE_CAPTURE\", \"WEB_APP_INTERACTION\"]\n}",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788002649,
+  "id": "20260829192407d7fb985523b7455b",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260829192407d7fb985523b7455b",
+  "usage": {
+    "completion_tokens": 112,
+    "prompt_tokens": 969,
+    "total_tokens": 1081
+  }
+}

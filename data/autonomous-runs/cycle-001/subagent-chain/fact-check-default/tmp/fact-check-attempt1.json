@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"verdict\": \"FAIL\",\n  \"claims\": [\n    {\n      \"claim\": \"Start with text generation using lightweight models like GPT4All.\",\n      \"supported\": false,\n      \"source\": \"\",\n      \"issue\": \"No evidence in the provided web search mentions GPT4All specifically.\"\n    },\n    {\n      \"claim\": \"For images, Stable Diffusion gives you control without cloud subscriptions.\",\n      \"supported\": false,\n      \"source\": \"\",\n      \"issue\": \"No evidence in the provided web search mentions Stable Diffusion specifically.\"\n    }\n  ],\n  \"unsupportedCount\": 2\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788003330,
+  "id": "202608291935262f866b68092e4bf5",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "202608291935262f866b68092e4bf5",
+  "usage": {
+    "completion_tokens": 133,
+    "prompt_tokens": 1565,
+    "total_tokens": 1698
+  }
+}

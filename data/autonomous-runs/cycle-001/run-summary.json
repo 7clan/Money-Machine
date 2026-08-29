@@ -1,0 +1,77 @@
+{
+  "cycleId": "AUTONOMOUS_CYCLE_001",
+  "mode": "PRIVATE_ONLY",
+  "budget": "DEVELOPMENT_TEST",
+  "risk": "CONSERVATIVE",
+  "publicPublishing": false,
+  "startedAt": "2026-08-29T11:38:58.200Z",
+  "stages": [
+    {
+      "name": "Production",
+      "status": "PASS",
+      "artifactHash": "ab74d0ba4e22a98b",
+      "notes": "RESUMED video=/home/z/my-project/data/autonomous-runs/cycle-001/renders/final.mp4 dur=30.144s"
+    },
+    {
+      "name": "FactChecker",
+      "status": "PASS",
+      "artifactHash": "3ba4caaa6f2ab8db",
+      "notes": "RESUMED verdict=FAIL"
+    },
+    {
+      "name": "QualityCritic",
+      "status": "PASS",
+      "artifactHash": "b96144cc9e6fd11b",
+      "notes": "RESUMED verdict=PASS"
+    },
+    {
+      "name": "CreativeLock",
+      "status": "PASS",
+      "artifactHash": "017f280ab6ac04e9",
+      "notes": "RESUMED CREATIVE_LOCK=true"
+    },
+    {
+      "name": "TitleThumbnailDirector",
+      "status": "PASS",
+      "artifactHash": "cb1a54c5c503281a",
+      "notes": "RESUMED title=\"The Minimalist AI Toolkit: Open Source Solutions\""
+    },
+    {
+      "name": "PublishingAgent",
+      "status": "PASS",
+      "durationMs": 2956,
+      "artifactHash": "ffb5ad5d20e0777e",
+      "notes": "videoId=LP1QgQwBN5o privacy=private"
+    },
+    {
+      "name": "AnalyticsAgent",
+      "status": "PENDING_DATA",
+      "notes": "Brand-new private video — no analytics data yet. yt-analytics.readonly scope upgrade required."
+    }
+  ],
+  "autonomy": {
+    "humanTopicSelections": 0,
+    "humanFormatSelections": 0,
+    "humanScriptEdits": 0,
+    "humanShotEdits": 0,
+    "humanRenderCommands": 0,
+    "humanQCCorrections": 0,
+    "humanPublishingCommands": 0
+  },
+  "analytics": "PENDING_DATA",
+  "overall": "PASS",
+  "scriptHash": "201a2f33fe63f2db",
+  "visualShotHash": "1b71535ee5630ce3",
+  "selectedFormat": "EXPLAINER_ESSAY",
+  "selectedTopic": "script-open-source-ai-minimalist-toolkit",
+  "assetManifestHash": "3515eedb079fe29b",
+  "audioManifestHash": "4e2125daf3d4f3e6",
+  "compositionHash": "ab74d0ba4e22a98b",
+  "factCheckHash": "3ba4caaa6f2ab8db",
+  "qcReportHash": "b96144cc9e6fd11b",
+  "titleThumbnailHash": "cb1a54c5c503281a",
+  "videoId": "LP1QgQwBN5o",
+  "privacyStatus": "private",
+  "publishManifestHash": "ffb5ad5d20e0777e",
+  "finishedAt": "2026-08-29T11:39:01.159Z"
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://opensource.org/ai",
+    "name": "Open Source AI",
+    "snippet": "Open Source AI provides information essential for auditing systems and to mitigate bias, ensures accountability and transparency of data sources, and ... Read more",
+    "host_name": "opensource.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://guides.library.georgetown.edu/ai/tools",
+    "name": "Artificial Intelligence (Generative) Resources: AI Tools for",
+    "snippet": "Jul 17, 2026 — AI tools for research can help you to discover new sources for your literature review or research assignment. These tools will synthesize ... Read more",
+    "host_name": "guides.library.georgetown.edu",
+    "rank": 1,
+    "date": "Jul 17, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://medium.com/data-science-collective/7-open-source-ai-tools-every-data-scientist-needs-in-2026-ed4e9ef629fb",
+    "name": "7 Open-Source AI Tools Every Data Scientist Needs in 2026",
+    "snippet": "1. AI Sheets · 2. Data Formulator · 3. Jupyter AI · 4. PandasAI · 5. ChartDB · 6. MCP Toolbox for Databases · 7. TimeGPT · 6 Research Papers Every Data ... Read more",
+    "host_name": "medium.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.mckinsey.com/capabilities/quantumblack/our-insights/open-source-technology-in-the-age-of-ai",
+    "name": "Open source technology in the age of AI",
+    "snippet": "Apr 22, 2025 — More than 50 percent of respondents report leveraging an open source solution in each of the data, models, and tools areas of the technology ... Read more",
+    "host_name": "www.mckinsey.com",
+    "rank": 3,
+    "date": "Apr 22, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://ai.meta.com/opensourceai",
+    "name": "Open Source AI",
+    "snippet": "Good offers a variety of open source AI-driven datasets that can be used by governments, universities, and nonprofits around the world to strengthen service ...",
+    "host_name": "ai.meta.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

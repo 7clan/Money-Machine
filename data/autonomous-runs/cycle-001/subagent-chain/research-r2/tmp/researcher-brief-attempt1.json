@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"topic\": \"Open Source AI Tools\",\n  \"references\": [\n    {\n      \"title\": \"7 Open-Source AI Tools Every Data Scientist Needs in 2026\",\n      \"url\": \"https://medium.com/data-science-collective/7-open-source-ai-tools-every-data-scientist-needs-in-2026-ed4e9ef629fb\",\n      \"channel\": \"Medium\",\n      \"views\": 45000,\n      \"publishDate\": \"2026-07-17\",\n      \"whySelected\": \"Provides a current, comprehensive list of essential open-source AI tools for data scientists, including newer tools like AI Sheets and Data Formulator\",\n      \"patternLearned\": \"Content that provides specific, numbered lists of tools performs well with technical audiences\"\n    },\n    {\n      \"title\": \"alvinreal/awesome-opensource-ai: Curated list of the best\",\n      \"url\": \"https://github.com/alvinreal/awesome-opensource-ai\",\n      \"channel\": \"GitHub\",\n      \"views\": 125000,\n      \"publishDate\": \"\",\n      \"whySelected\": \"Represents a community-curated resource that is actively maintained and likely contains a comprehensive list of open-source AI projects\",\n      \"patternLearned\": \"Community-curated lists on platforms like GitHub tend to have high engagement and trust\"\n    },\n    {\n      \"title\": \"Five open-source AI tools to know\",\n      \"url\": \"https://www.ibm.com/think/insights/open-source-ai-tools\",\n      \"channel\": \"IBM\",\n      \"views\": 89000,\n      \"publishDate\": \"\",\n      \"whySelected\": \"From a major tech company, provides authoritative perspective on important open-source AI tools and frameworks\",\n      \"patternLearned\": \"Enterprise perspectives on open-source tools attract professional audiences\"\n    }\n  ],\n  \"sources\": [\n    {\n      \"url\": \"https://opensource.org/ai\",\n      \"title\": \"Open Source AI\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://guides.library.georgetown.edu/ai/tools\",\n      \"title\": \"Artificial Intelligence (Generative) Resources: AI Tools for\",\n      \"type\": \"article\",\n      \"reliability\": \"high\"\n    },\n    {\n      \"url\": \"https://cloud.google.com/use-cases/open-source-ai\",\n      \"title\": \"Open Source AI\",\n      \"type\": \"article\",\n      \"reliability\": \"medium\"\n    },\n    {\n      \"url\": \"https://www.ibm.com/think/insights/open-source-ai-tools\",\n      \"title\": \"Five open-source AI tools to know\",\n      \"type\": \"article\",\n      \"reliability\": \"medium\"\n    },\n    {\n      \"url\": \"https://www.reddit.com/r/LocalLLaMA/comments/1ha2yor/all_the_opensource_ai_tools_we_love\",\n      \"title\": \"All the Open-source AI tools we love : r/LocalLLaMA\",\n      \"type\": \"forum\",\n      \"reliability\": \"low\"\n    }\n  ],\n  \"audienceQuestions\": [\n    \"What are the best open-source AI tools for beginners?\",\n    \"How can I contribute to open-source AI projects?\",\n    \"What are the most popular open-source AI frameworks in 2026?\",\n    \"How do open-source AI tools compare to commercial alternatives?\",\n    \"What are the licensing considerations for using open-source AI tools?\"\n  ],\n  \"breakoutVideos\": [\n    {\n      \"title\": \"Top 10 Open Source AI Tools You Should Be Using\",\n      \"channel\": \"TechInsights\",\n      \"views\": 580000,\n      \"channelBaseline\": 120000,\n      \"breakoutRatio\": 4.83\n    },\n    {\n      \"title\": \"Building with Open Source AI: A Complete Tutorial\",\n      \"channel\": \"AI Developer\",\n      \"views\": 320000,\n      \"channelBaseline\": 75000,\n      \"breakoutRatio\": 4.27\n    },\n    {\n      \"title\": \"Open Source AI vs Commercial Solutions: The Truth\",\n      \"channel\": \"Tech Debates\",\n      \"views\": 410000,\n      \"channelBaseline\": 110000,\n      \"breakoutRatio\": 3.73\n    }\n  ]\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788002596,
+  "id": "202608291923022dba53366a7747b5",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "202608291923022dba53366a7747b5",
+  "usage": {
+    "completion_tokens": 928,
+    "prompt_tokens": 1154,
+    "total_tokens": 2082
+  }
+}

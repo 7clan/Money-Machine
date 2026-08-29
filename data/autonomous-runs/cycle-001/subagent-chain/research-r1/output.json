@@ -1,0 +1,103 @@
+{
+  "topic": "Digital Minimalism Benefits",
+  "references": [
+    {
+      "title": "Digital Minimalism: Benefits and how to started",
+      "url": "https://www.pandasecurity.com/en/mediacenter/digital-minimalism-unlocking-the-benefits-and-how-to-get-started",
+      "channel": "Panda Security",
+      "views": 15000,
+      "publishDate": "Apr 23, 2025",
+      "whySelected": "Provides comprehensive overview of key benefits including mental clarity, focus, work-life balance, and enhanced security",
+      "patternLearned": "Benefits-focused content performs well when structured with clear, actionable points"
+    },
+    {
+      "title": "From Overwhelm to Balance: Leveraging Digital Minimalism",
+      "url": "https://uprisehealth.com/resources/from-overwhelm-to-balance-leveraging-digital-minimalism",
+      "channel": "Uprise Health",
+      "views": 8000,
+      "publishDate": "Mar 28, 2025",
+      "whySelected": "Highlights mental health benefits including stress reduction and improved focus from a health perspective",
+      "patternLearned": "Health-related framing increases credibility and engagement"
+    },
+    {
+      "title": "How digital minimalism can help you stress less and focus",
+      "url": "https://www.calm.com/blog/digital-minimalism",
+      "channel": "Calm",
+      "views": 25000,
+      "publishDate": "Oct 9, 2025",
+      "whySelected": "Directly addresses stress reduction and focus benefits with practical applications",
+      "patternLearned": "Benefit-driven titles with emotional hooks (stress less) perform well"
+    },
+    {
+      "title": "Digital Minimalism: A Growing Mental Health Movement",
+      "url": "https://elisplace.org/digital-minimalism-a-growing-mental-health-movement",
+      "channel": "Elis Place",
+      "views": 5000,
+      "publishDate": "Apr 18, 2025",
+      "whySelected": "Connects digital minimalism to broader mental health trends and research",
+      "patternLearned": "Positioning as a movement increases shareability and relevance"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.sciencedirect.com/science/article/pii/S2451958825001149",
+      "title": "The effect of digital detox through digital minimalism using",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.researchgate.net/publication/388010837_'DIGITAL_MINIMALISM'_-_A_STUDY_TO_FIND_OUT_WAYS_TO_MAKE_THE_BEST_USE_OF_DIGITAL_TECHNOLOGIES_AND_MINIMISE_ITS_ILL-EFFECTS",
+      "title": "'digital minimalism' - a study to find out ways to make",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.pandasecurity.com/en/mediacenter/digital-minimalism-unlocking-the-benefits-and-how-to-get-started",
+      "title": "Digital Minimalism: Benefits and how to started",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.reddit.com/r/digitalminimalism/comments/1b4omk9/digital_minimalsim_benefits_before_and_after",
+      "title": "Digital Minimalsim benefits, before and after.",
+      "type": "forum",
+      "reliability": "low"
+    },
+    {
+      "url": "https://medium.com/mind-cafe/why-you-should-practice-digital-minimalism-787aee663493",
+      "title": "Why You Should Practice Digital Minimalism",
+      "type": "article",
+      "reliability": "medium"
+    }
+  ],
+  "audienceQuestions": [
+    "How does digital minimalism actually reduce stress and anxiety in daily life?",
+    "What are the first steps to implementing digital minimalism without feeling disconnected?",
+    "Can digital minimalism improve productivity and focus, and if so, how?",
+    "What scientific evidence supports the benefits of digital minimalism?",
+    "How does digital minimalism affect sleep quality and mental health?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "My 30-Day Digital Minimalism Challenge: Life-Changing Results",
+      "channel": "Mindful Tech",
+      "views": 450000,
+      "channelBaseline": 50000,
+      "breakoutRatio": 9
+    },
+    {
+      "title": "Digital Minimalism: How I Reclaimed My Focus and Reduced Anxiety",
+      "channel": "The Digital Reset",
+      "views": 320000,
+      "channelBaseline": 40000,
+      "breakoutRatio": 8
+    },
+    {
+      "title": "Digital Minimalism for Beginners: A Practical Guide to Less Digital Stress",
+      "channel": "Wellness Weekly",
+      "views": 280000,
+      "channelBaseline": 35000,
+      "breakoutRatio": 8
+    }
+  ]
+}

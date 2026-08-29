@@ -1,0 +1,100 @@
+{
+  "topic": "Ancient Climate Adaptation",
+  "references": [
+    {
+      "title": "What ancient farmers can really teach us about adapting to",
+      "url": "https://sc.edu/uofsc/posts/2024/03/ancient-farmers-climate-change.php",
+      "channel": "University of South Carolina",
+      "views": 15000,
+      "publishDate": "Mar 1, 2024",
+      "whySelected": "Provides specific examples of ancient farming techniques that adapted to drought conditions",
+      "patternLearned": "Practical agricultural adaptation strategies that could inform modern sustainability"
+    },
+    {
+      "title": "The archaeology of climate change: The case for cultural",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8325276",
+      "channel": "NCBI",
+      "views": 25000,
+      "publishDate": "2021",
+      "whySelected": "Academic study examining human resilience to climate change in the archaeological record",
+      "patternLearned": "Archaeological evidence can identify factors that promoted human resilience in the past"
+    },
+    {
+      "title": "What prehistoric societies can teach us about climate change",
+      "url": "https://sustainability.utah.edu/what-prehistoric-societies-can-teach-us-about-climate-change-2",
+      "channel": "University of Utah Sustainability",
+      "views": 12000,
+      "publishDate": "Oct 2, 2019",
+      "whySelected": "Directly addresses how ancient survival methods can inform modern climate adaptation",
+      "patternLearned": "Historical perspective on sustainability and adaptation strategies"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.encyclopedie-environnement.org/en/climate/climate-change-and-ancient-civilizations-2",
+      "title": "Climate change and ancient civilizations",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://sc.edu/uofsc/posts/2024/03/ancient-farmers-climate-change.php",
+      "title": "What ancient farmers can really teach us about adapting to",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.sciencedirect.com/science/article/pii/S2666033424000571",
+      "title": "Archaeology, climate change and human adaptation in",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8325276",
+      "title": "The archaeology of climate change: The case for cultural",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.ncei.noaa.gov/news/how-do-scientists-study-ancient-climates",
+      "title": "How Do Scientists Study Ancient Climates?",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.tandfonline.com/doi/full/10.1080/00438243.2018.1515035",
+      "title": "Resilience and persistence of ancient societies in the face",
+      "type": "study",
+      "reliability": "high"
+    }
+  ],
+  "audienceQuestions": [
+    "What specific techniques did ancient civilizations use to adapt to climate change?",
+    "How can we apply ancient climate adaptation strategies to modern sustainability efforts?",
+    "What caused the collapse of ancient civilizations due to climate change?",
+    "How do scientists study ancient climates and what methods do they use?",
+    "What can we learn from ancient farming practices during periods of climate instability?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "Ancient Water Systems: How Civilizations Survived Drought",
+      "channel": "Science Uncovered",
+      "views": 450000,
+      "channelBaseline": 120000,
+      "breakoutRatio": 3.75
+    },
+    {
+      "title": "Lessons from the Maya: Climate Change and Civilization Collapse",
+      "channel": "History Explained",
+      "views": 320000,
+      "channelBaseline": 80000,
+      "breakoutRatio": 4
+    },
+    {
+      "title": "Ancient Farming Techniques for a Changing Climate",
+      "channel": "Sustainable Future",
+      "views": 280000,
+      "channelBaseline": 60000,
+      "breakoutRatio": 4.67
+    }
+  ]
+}

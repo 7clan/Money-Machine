@@ -1,0 +1,20 @@
+{
+  "agent": "Researcher",
+  "role": "OPPORTUNITY_RESEARCHER",
+  "artifact": "OpportunityBrief",
+  "flow": "cycle-001",
+  "batchId": "research",
+  "instanceId": "r2",
+  "pid": 3654,
+  "startedAt": "2026-08-29T11:22:57.184Z",
+  "endedAt": "2026-08-29T11:23:16.886Z",
+  "durationMs": 19702,
+  "inputHash": "362ec63e52c892e4",
+  "outputHash": "f778cc21286d2554",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 2,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/cycle-001/subagent-chain/research-r2"
+}

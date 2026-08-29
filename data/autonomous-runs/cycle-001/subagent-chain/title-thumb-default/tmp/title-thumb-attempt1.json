@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "```json\n{\n  \"title\": \"The Minimalist AI Toolkit: Open Source Solutions\",\n  \"titleComposite\": 7.25,\n  \"thumbnail\": {\n    \"visualSubject\": \"Clean workspace with three minimalist AI tool interfaces\",\n    \"composition\": \"Centered composition with negative space, showing only essential tools\",\n    \"emotion\": \"Calm, focused, empowered\",\n    \"textIfAny\": \"Less is More\",\n    \"curiosityMechanism\": \"Contrast between minimal interface and powerful AI capability\"\n  },\n  \"allTitles\": [\n    {\n      \"text\": \"The Minimalist AI Toolkit: Open Source Solutions\",\n      \"scores\": {\n        \"accuracy\": 8,\n        \"curiosity\": 7,\n        \"specificity\": 8,\n        \"thumbnailSynergy\": 7\n      },\n      \"composite\": 7.25\n    },\n    {\n      \"text\": \"Powerful AI Without Digital Clutter\",\n      \"scores\": {\n        \"accuracy\": 7,\n        \"curiosity\": 8,\n        \"specificity\": 6,\n        \"thumbnailSynergy\": 6\n      },\n      \"composite\": 6.75\n    },\n    {\n      \"text\": \"Open Source AI: The Minimalist Approach\",\n      \"scores\": {\n        \"accuracy\": 9,\n        \"curiosity\": 6,\n        \"specificity\": 7,\n        \"thumbnailSynergy\": 7\n      },\n      \"composite\": 7.25\n    },\n    {\n      \"text\": \"Essential AI Tools for Digital Minimalists\",\n      \"scores\": {\n        \"accuracy\": 8,\n        \"curiosity\": 7,\n        \"specificity\": 8,\n        \"thumbnailSynergy\": 6\n      },\n      \"composite\": 7.25\n    },\n    {\n      \"text\": \"Streamlined AI: Open Source Alternatives\",\n      \"scores\": {\n        \"accuracy\": 7,\n        \"curiosity\": 6,\n        \"specificity\": 7,\n        \"thumbnailSynergy\": 7\n      },\n      \"composite\": 6.75\n    }\n  ],\n  \"allThumbnails\": [\n    {\n      \"visualSubject\": \"Split screen: messy desktop vs clean minimalist AI workspace\",\n      \"composition\": \"Divided vertically with clean side on the right\",\n      \"emotion\": \"Relief, clarity, simplicity\",\n      \"textIfAny\": \"Clean AI\",\n      \"curiosityMechanism\": \"Visual contrast between digital clutter and minimalism\"\n    },\n    {\n      \"visualSubject\": \"Three essential AI tool icons arranged in minimalist fashion\",\n      \"composition\": \"Centered with ample negative space around icons\",\n      \"emotion\": \"Focused, intentional, empowered\",\n      \"textIfAny\": \"Essential AI\",\n      \"curiosityMechanism\": \"Question of which three tools are essential\"\n    },\n    {\n      \"visualSubject\": \"Clean workspace with three minimalist AI tool interfaces\",\n      \"composition\": \"Centered composition with negative space, showing only essential tools\",\n      \"emotion\": \"Calm, focused, empowered\",\n      \"textIfAny\": \"Less is More\",\n      \"curiosityMechanism\": \"Contrast between minimal interface and powerful AI capability\"\n    }\n  ]\n}\n```",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788003349,
+  "id": "20260829193534517ac910e2c443d6",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260829193534517ac910e2c443d6",
+  "usage": {
+    "completion_tokens": 683,
+    "prompt_tokens": 970,
+    "total_tokens": 1653
+  }
+}

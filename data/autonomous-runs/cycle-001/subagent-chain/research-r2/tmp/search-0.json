@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://github.com/alvinreal/awesome-opensource-ai",
+    "name": "alvinreal/awesome-opensource-ai: Curated list of the best",
+    "snippet": "Curated list of the best truly open-source AI projects, models, tools, and infrastructure . Daily updated. - alvinreal/awesome-opensource-ai.",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1ha2yor/all_the_opensource_ai_tools_we_love",
+    "name": "All the Open-source AI tools we love : r/LocalLLaMA",
+    "snippet": "Open Scholar from AI2 (Allen Institute for AI) is an open-source LLM-powered CS paper search tool , powered by an 8b model. Generates a nicely ... Read more",
+    "host_name": "www.reddit.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://opensource.org/ai",
+    "name": "Open Source AI",
+    "snippet": "Open Source AI provides information essential for auditing systems and to mitigate bias, ensures accountability and transparency of data sources, and ...",
+    "host_name": "opensource.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://cloud.google.com/use-cases/open-source-ai",
+    "name": "Open Source AI",
+    "snippet": "Level up your AI skills with open-source AI tools . Streamline development with pre-trained AI models, libraries, and modifiable tools under open-source licenses ... Read more",
+    "host_name": "cloud.google.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.ibm.com/think/insights/open-source-ai-tools",
+    "name": "Five open-source AI tools to know",
+    "snippet": "The surging popularity of open-source AI tools, from frameworks like TensorFlow, Apache, and PyTorch ; to community platforms like Hugging Face,",
+    "host_name": "www.ibm.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

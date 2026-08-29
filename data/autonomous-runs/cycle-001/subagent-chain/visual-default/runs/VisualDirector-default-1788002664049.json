@@ -1,0 +1,20 @@
+{
+  "agent": "VisualDirector",
+  "role": "VISUAL_DIRECTOR",
+  "artifact": "VisualShot[]",
+  "flow": "cycle-001",
+  "batchId": "visual",
+  "instanceId": "default",
+  "pid": 3914,
+  "startedAt": "2026-08-29T11:24:24.049Z",
+  "endedAt": "2026-08-29T11:24:48.525Z",
+  "durationMs": 24476,
+  "inputHash": "66925a4c1eea1d00",
+  "outputHash": "1b71535ee5630ce3",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/cycle-001/subagent-chain/visual-default"
+}
