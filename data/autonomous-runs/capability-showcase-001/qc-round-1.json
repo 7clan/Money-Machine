@@ -1,0 +1,41 @@
+{
+  "verdict": "PASS",
+  "scores": {
+    "hookStrength": 7,
+    "narrativeFlow": 6,
+    "visualVariety": 8,
+    "pacing": 5,
+    "narrationAlignment": 7,
+    "visualCoverage": 9
+  },
+  "failingShots": [
+    {
+      "shotId": "shot-8",
+      "timestamp": 0,
+      "issue": "Text card breaks visual momentum and feels like a placeholder rather than meaningful content",
+      "recommendation": "Replace with dynamic animation showing storage efficiency rather than static text"
+    },
+    {
+      "shotId": "shot-14",
+      "timestamp": 0,
+      "issue": "Text card duplicates narration content without adding visual value",
+      "recommendation": "Use this shot to reinforce the concept visually rather than repeating text"
+    },
+    {
+      "shotId": "shot-17",
+      "timestamp": 0,
+      "issue": "End screen text card feels abrupt and disrupts the closing visual narrative",
+      "recommendation": "Integrate social handles more organically into the final nature scene"
+    },
+    {
+      "shotId": "shot-18",
+      "timestamp": 0,
+      "issue": "Logo reveal feels tacked on rather than thematically integrated",
+      "recommendation": "Make logo part of the renewable energy transformation earlier in the sequence"
+    }
+  ],
+  "fakeUICount": 0,
+  "realUIPercentage": 100,
+  "rawVideoPercentage": 0,
+  "staticScreenshotPercentage": 0
+}

@@ -1,0 +1,20 @@
+{
+  "agent": "Researcher",
+  "role": "OPPORTUNITY_RESEARCHER",
+  "artifact": "OpportunityBrief",
+  "flow": "capability-showcase",
+  "batchId": "research",
+  "instanceId": "r2",
+  "pid": 7826,
+  "startedAt": "2026-08-29T16:39:01.514Z",
+  "endedAt": "2026-08-29T16:39:26.457Z",
+  "durationMs": 24943,
+  "inputHash": "f8a9658ce4061b45",
+  "outputHash": "298061305d8ffd9c",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 2,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/subagent-chain/research-r2"
+}

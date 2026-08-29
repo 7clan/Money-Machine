@@ -1,0 +1,18 @@
+{
+  "conceptHash": "5b0d8567a256aa58",
+  "fileHash": "5d36dcf3a0fe40de",
+  "filePath": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/renders/thumbnail/thumbnail-1280x720.png",
+  "width": 1280,
+  "height": 720,
+  "format": "png",
+  "sizeBytes": 779108,
+  "sizeKB": 761,
+  "expectedWidth": 1280,
+  "expectedHeight": 720,
+  "dimensionsOk": true,
+  "sizeUnder2MB": true,
+  "noDeceptiveProductUI": true,
+  "textOverlayPresent": true,
+  "verdict": "PASS",
+  "notes": "Generated from approved concept. Dimensions 1280x720. Size 761KB."
+}

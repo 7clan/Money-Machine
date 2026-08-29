@@ -1,0 +1,20 @@
+{
+  "agent": "FormatDirector",
+  "role": "FORMAT_DIRECTOR",
+  "artifact": "FormatSelection",
+  "flow": "capability-showcase",
+  "batchId": "format",
+  "instanceId": "default",
+  "pid": 8007,
+  "startedAt": "2026-08-29T16:39:33.995Z",
+  "endedAt": "2026-08-29T16:39:35.976Z",
+  "durationMs": 1981,
+  "inputHash": "081c0743419735c6",
+  "outputHash": "23789007a6f1d17d",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/subagent-chain/format-default"
+}

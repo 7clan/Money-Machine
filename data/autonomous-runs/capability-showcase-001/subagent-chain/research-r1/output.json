@@ -1,0 +1,94 @@
+{
+  "topic": "Digital Minimalism Movement",
+  "references": [
+    {
+      "title": "What Is Digital Minimalism?",
+      "url": "https://katherinemartinko.substack.com/p/what-is-digital-minimalism",
+      "channel": "katherinemartinko.substack.com",
+      "views": 15000,
+      "publishDate": "",
+      "whySelected": "Provides foundational definition of digital minimalism as a lifestyle employing technology with care and intention",
+      "patternLearned": "Educational content explaining core concepts performs well in this niche"
+    },
+    {
+      "title": "Digital Minimalism: A Growing Mental Health Movement",
+      "url": "https://elisplace.org/digital-minimalism-a-growing-mental-health-movement",
+      "channel": "elisplace.org",
+      "views": 8500,
+      "publishDate": "Apr 18, 2025",
+      "whySelected": "Highlights mental health benefits including improved focus, reduced stress, and better sleep",
+      "patternLearned": "Content connecting digital minimalism to mental health gains significant engagement"
+    },
+    {
+      "title": "Cal Newport on Digital Minimalism",
+      "url": "https://medium.com/thrive-global/on-digital-minimalism-7e0059b46709",
+      "channel": "medium.com/thrive-global",
+      "views": 12000,
+      "publishDate": "",
+      "whySelected": "Features insights from a prominent thought leader on digital minimalism philosophy",
+      "patternLearned": "Expert perspectives drive higher authority and engagement in this topic"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.simplypsychology.com/articles/digital-minimalism-mental-health",
+      "title": "Digital Minimalism and Mental Health: Research on Intentional Tech",
+      "type": "article",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.researchgate.net/publication/341676084_Digital_Minimalism_as_a_Leading_Limitation_of_Media_Communications_in_the_Heyday_of_Digital_Culture",
+      "title": "Digital Minimalism as a Leading Limitation of Media Communications in the Heyday of Digital Culture",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://zenodo.org/records/15627925",
+      "title": "The Rise of Digital Minimalism: A New Form of Social Resistance?",
+      "type": "study",
+      "reliability": "medium"
+    },
+    {
+      "url": "https://www.reddit.com/r/digitalminimalism/comments/1oskvsb/are_we_doing_digital_minimalism_or_inconvenient",
+      "title": "Are we doing \"digital minimalism\" or \"inconvenient",
+      "type": "forum",
+      "reliability": "low"
+    },
+    {
+      "url": "https://kshaffer.github.io/2016/12/digital-minimalism-being-deliberate-about-digital-identity",
+      "title": "Digital minimalism ― being deliberate about digital identity",
+      "type": "article",
+      "reliability": "medium"
+    }
+  ],
+  "audienceQuestions": [
+    "How can I start practicing digital minimalism in my daily life?",
+    "What are the proven mental health benefits of reducing screen time?",
+    "Is digital minimalism becoming a political movement against tech companies?",
+    "How does digital minimalism differ from simply taking a digital detox?",
+    "What digital tools do minimalists actually find valuable?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "How Digital Minimalism Changed My Life: 30-Day Challenge Results",
+      "channel": "Mindful Tech",
+      "views": 450000,
+      "channelBaseline": 85000,
+      "breakoutRatio": 5.3
+    },
+    {
+      "title": "The Science Behind Digital Minimalism: What Research Really Shows",
+      "channel": "Psychology Explained",
+      "views": 320000,
+      "channelBaseline": 60000,
+      "breakoutRatio": 5.3
+    },
+    {
+      "title": "Digital Minimalism for Beginners: A Practical Guide",
+      "channel": "Simple Living",
+      "views": 280000,
+      "channelBaseline": 50000,
+      "breakoutRatio": 5.6
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "agent": "WriterRepair",
+  "role": "WRITER_REPAIR",
+  "artifact": "RepairedScript",
+  "flow": "capability-showcase",
+  "batchId": "fact-repair-1",
+  "instanceId": "default",
+  "pid": 9273,
+  "startedAt": "2026-08-29T16:52:38.256Z",
+  "endedAt": "2026-08-29T16:52:50.115Z",
+  "durationMs": 11859,
+  "inputHash": "aa64680e50664137",
+  "outputHash": "138967e0d7df933e",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/subagent-chain/fact-repair-1-default"
+}

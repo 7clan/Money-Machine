@@ -1,0 +1,78 @@
+{
+  "cycleId": "CAPABILITY_SHOWCASE_001",
+  "mode": "PRIVATE_ONLY",
+  "budget": "DEVELOPMENT_TEST",
+  "risk": "CONSERVATIVE",
+  "publicPublishing": false,
+  "startedAt": "2026-08-29T16:57:59.495Z",
+  "stages": [
+    {
+      "name": "Production",
+      "status": "PASS",
+      "artifactHash": "c5b8797266d60b63",
+      "notes": "RESUMED video=/home/z/my-project/data/autonomous-runs/capability-showcase-001/renders/final.mp4 dur=44.032s"
+    },
+    {
+      "name": "FactChecker",
+      "status": "PASS",
+      "artifactHash": "3564508b37a5eacc",
+      "notes": "RESUMED verdict=PASS"
+    },
+    {
+      "name": "QualityCritic",
+      "status": "PASS",
+      "artifactHash": "820141aae24a59da",
+      "notes": "RESUMED verdict=PASS"
+    },
+    {
+      "name": "DurationIntegrity",
+      "status": "PASS",
+      "artifactHash": "6a3701ec1d6712a9",
+      "notes": "narration=43.848s video=44.032s"
+    },
+    {
+      "name": "CreativeLock",
+      "status": "PASS",
+      "artifactHash": "618c2bb2876043e9",
+      "notes": "RESUMED CREATIVE_LOCK=true"
+    },
+    {
+      "name": "TitleThumbnailDirector",
+      "status": "PASS",
+      "artifactHash": "5b0d8567a256aa58",
+      "notes": "RESUMED title=\"Your Mind's Renewable Energy: How Digital Detox Works\""
+    },
+    {
+      "name": "PublishingAgent",
+      "status": "SKIPPED",
+      "notes": "USER_AUTH_REQUIRED"
+    },
+    {
+      "name": "AnalyticsAgent",
+      "status": "SKIPPED",
+      "notes": "USER_AUTH_REQUIRED"
+    }
+  ],
+  "autonomy": {
+    "humanTopicSelections": 0,
+    "humanFormatSelections": 0,
+    "humanScriptEdits": 0,
+    "humanShotEdits": 0,
+    "humanRenderCommands": 0,
+    "humanQCCorrections": 0,
+    "humanPublishingCommands": 0
+  },
+  "analytics": "USER_AUTH_REQUIRED",
+  "overall": "PASS",
+  "scriptHash": "0fb195ee5acd3c73",
+  "visualShotHash": "676ca6ec36a4a1af",
+  "selectedFormat": "EXPLAINER_ESSAY",
+  "selectedTopic": "script-digital-detox-renewable-energy-mind",
+  "assetManifestHash": "b02090e4939d8c88",
+  "audioManifestHash": "c91b842d8169e1bf",
+  "compositionHash": "c5b8797266d60b63",
+  "factCheckHash": "3564508b37a5eacc",
+  "qcReportHash": "820141aae24a59da",
+  "titleThumbnailHash": "5b0d8567a256aa58",
+  "finishedAt": "2026-08-29T16:58:00.343Z"
+}

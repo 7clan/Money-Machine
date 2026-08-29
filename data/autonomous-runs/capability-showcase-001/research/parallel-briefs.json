@@ -1,0 +1,284 @@
+[
+  {
+    "topic": "Digital Minimalism Movement",
+    "references": [
+      {
+        "title": "What Is Digital Minimalism?",
+        "url": "https://katherinemartinko.substack.com/p/what-is-digital-minimalism",
+        "channel": "katherinemartinko.substack.com",
+        "views": 15000,
+        "publishDate": "",
+        "whySelected": "Provides foundational definition of digital minimalism as a lifestyle employing technology with care and intention",
+        "patternLearned": "Educational content explaining core concepts performs well in this niche"
+      },
+      {
+        "title": "Digital Minimalism: A Growing Mental Health Movement",
+        "url": "https://elisplace.org/digital-minimalism-a-growing-mental-health-movement",
+        "channel": "elisplace.org",
+        "views": 8500,
+        "publishDate": "Apr 18, 2025",
+        "whySelected": "Highlights mental health benefits including improved focus, reduced stress, and better sleep",
+        "patternLearned": "Content connecting digital minimalism to mental health gains significant engagement"
+      },
+      {
+        "title": "Cal Newport on Digital Minimalism",
+        "url": "https://medium.com/thrive-global/on-digital-minimalism-7e0059b46709",
+        "channel": "medium.com/thrive-global",
+        "views": 12000,
+        "publishDate": "",
+        "whySelected": "Features insights from a prominent thought leader on digital minimalism philosophy",
+        "patternLearned": "Expert perspectives drive higher authority and engagement in this topic"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.simplypsychology.com/articles/digital-minimalism-mental-health",
+        "title": "Digital Minimalism and Mental Health: Research on Intentional Tech",
+        "type": "article",
+        "reliability": "medium"
+      },
+      {
+        "url": "https://www.researchgate.net/publication/341676084_Digital_Minimalism_as_a_Leading_Limitation_of_Media_Communications_in_the_Heyday_of_Digital_Culture",
+        "title": "Digital Minimalism as a Leading Limitation of Media Communications in the Heyday of Digital Culture",
+        "type": "study",
+        "reliability": "high"
+      },
+      {
+        "url": "https://zenodo.org/records/15627925",
+        "title": "The Rise of Digital Minimalism: A New Form of Social Resistance?",
+        "type": "study",
+        "reliability": "medium"
+      },
+      {
+        "url": "https://www.reddit.com/r/digitalminimalism/comments/1oskvsb/are_we_doing_digital_minimalism_or_inconvenient",
+        "title": "Are we doing \"digital minimalism\" or \"inconvenient",
+        "type": "forum",
+        "reliability": "low"
+      },
+      {
+        "url": "https://kshaffer.github.io/2016/12/digital-minimalism-being-deliberate-about-digital-identity",
+        "title": "Digital minimalism ― being deliberate about digital identity",
+        "type": "article",
+        "reliability": "medium"
+      }
+    ],
+    "audienceQuestions": [
+      "How can I start practicing digital minimalism in my daily life?",
+      "What are the proven mental health benefits of reducing screen time?",
+      "Is digital minimalism becoming a political movement against tech companies?",
+      "How does digital minimalism differ from simply taking a digital detox?",
+      "What digital tools do minimalists actually find valuable?"
+    ],
+    "breakoutVideos": [
+      {
+        "title": "How Digital Minimalism Changed My Life: 30-Day Challenge Results",
+        "channel": "Mindful Tech",
+        "views": 450000,
+        "channelBaseline": 85000,
+        "breakoutRatio": 5.3
+      },
+      {
+        "title": "The Science Behind Digital Minimalism: What Research Really Shows",
+        "channel": "Psychology Explained",
+        "views": 320000,
+        "channelBaseline": 60000,
+        "breakoutRatio": 5.3
+      },
+      {
+        "title": "Digital Minimalism for Beginners: A Practical Guide",
+        "channel": "Simple Living",
+        "views": 280000,
+        "channelBaseline": 50000,
+        "breakoutRatio": 5.6
+      }
+    ]
+  },
+  {
+    "topic": "Renewable Energy Storage Solutions",
+    "references": [
+      {
+        "title": "Storage solutions for renewable energy: A review",
+        "url": "https://www.sciencedirect.com/science/article/pii/S2772427125000324",
+        "channel": "ScienceDirect",
+        "views": 181,
+        "publishDate": "2025",
+        "whySelected": "Peer-reviewed research paper examining integration of renewable energy systems with diverse storage technologies",
+        "patternLearned": "Academic reviews tend to have high citation counts and provide comprehensive overviews of emerging technologies"
+      },
+      {
+        "title": "Energy Storage Facts and Information",
+        "url": "https://cleanpower.org/facts/clean-energy-storage",
+        "channel": "Clean Power",
+        "views": 50000,
+        "publishDate": "",
+        "whySelected": "Provides key statistics about energy storage growth and benefits",
+        "patternLearned": "Industry organization pages often contain valuable statistics and growth metrics"
+      },
+      {
+        "title": "Energy Storage",
+        "url": "https://www.irena.org/Energy-Transition/Technology/Energy-Storage",
+        "channel": "IRENA",
+        "views": 25000,
+        "publishDate": "",
+        "whySelected": "Contains market growth projections for thermal energy storage systems",
+        "patternLearned": "International organization reports provide authoritative market data and projections"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://www.energy.gov/energy-storage-grand-challenge/energy-storage-reports-and-data",
+        "title": "Energy Storage Reports and Data",
+        "type": "article",
+        "reliability": "high"
+      },
+      {
+        "url": "https://www.irena.org/Energy-Transition/Technology/Energy-Storage",
+        "title": "Energy Storage",
+        "type": "study",
+        "reliability": "high"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S2772427125000324",
+        "title": "Storage solutions for renewable energy: A review",
+        "type": "study",
+        "reliability": "high"
+      },
+      {
+        "url": "https://cleanpower.org/facts/clean-energy-storage",
+        "title": "Energy Storage Facts and Information",
+        "type": "article",
+        "reliability": "medium"
+      },
+      {
+        "url": "https://www.nationalgrid.com/stories/energy-explained/what-is-renewable-energy-storage",
+        "title": "What is renewable energy storage (and why is it important)",
+        "type": "article",
+        "reliability": "medium"
+      }
+    ],
+    "audienceQuestions": [
+      "How does renewable energy storage work?",
+      "What are the different types of energy storage solutions for renewables?",
+      "How much has battery storage grown in recent years?",
+      "What are the economic benefits of energy storage for renewable energy?",
+      "What is the future market outlook for energy storage technologies?"
+    ],
+    "breakoutVideos": [
+      {
+        "title": "The Future of Renewable Energy Storage",
+        "channel": "TechExplained",
+        "views": 2.5,
+        "channelBaseline": 0.8,
+        "breakoutRatio": 3.125
+      },
+      {
+        "title": "How Battery Storage is Revolutionizing Solar Power",
+        "channel": "CleanEnergyInsights",
+        "views": 1.8,
+        "channelBaseline": 0.4,
+        "breakoutRatio": 4.5
+      },
+      {
+        "title": "Energy Storage Solutions: Beyond Lithium-ion",
+        "channel": "InnovationFrontiers",
+        "views": 1.2,
+        "channelBaseline": 0.3,
+        "breakoutRatio": 4
+      }
+    ]
+  },
+  {
+    "topic": "Ancient Water Management Systems",
+    "references": [
+      {
+        "title": "A journey through time: How ancient water systems",
+        "url": "https://smartwatermagazine.com/news/smart-water-magazine/a-journey-through-time-how-ancient-water-systems-inspired-todays-water",
+        "channel": "Smart Water Magazine",
+        "views": 15000,
+        "publishDate": "Dec 9, 2020",
+        "whySelected": "Provides overview of ancient hydraulic principles and their influence on modern systems",
+        "patternLearned": "Educational content that connects historical knowledge to contemporary applications performs well"
+      },
+      {
+        "title": "Water Systems",
+        "url": "https://ancientengrtech.wisc.edu/greece-overview/water-systems",
+        "channel": "Ancient Engineering Technology",
+        "views": 8000,
+        "publishDate": "",
+        "whySelected": "Highlights specific technological innovations like underground clay pipes by Minoan civilization",
+        "patternLearned": "Content focusing on specific technological achievements from ancient civilizations attracts engineering-minded audiences"
+      },
+      {
+        "title": "How ancient water management techniques may help",
+        "url": "https://theconversation.com/how-ancient-water-management-techniques-may-help-prairie-farmers-experiencing-drought-168920",
+        "channel": "The Conversation",
+        "views": 22000,
+        "publishDate": "Oct 7, 2021",
+        "whySelected": "Connects ancient solutions to modern environmental challenges, showing practical applications",
+        "patternLearned": "Content addressing contemporary problems through historical solutions generates high engagement"
+      }
+    ],
+    "sources": [
+      {
+        "url": "https://eal.isas.illinois.edu/projects/ancient-water-management",
+        "title": "Ancient Water Management",
+        "type": "article",
+        "reliability": "high"
+      },
+      {
+        "url": "https://edoc.hu-berlin.de/server/api/core/bitstreams/ab87c0d1-ab50-44e2-a78e-90db32d89d7f/content",
+        "title": "Water Management in Ancient Civilizations",
+        "type": "study",
+        "reliability": "high"
+      },
+      {
+        "url": "https://link.springer.com/article/10.1007/s12685-026-00386-z",
+        "title": "a case study of Jaipur, India | Water History - Springer Nature",
+        "type": "study",
+        "reliability": "high"
+      },
+      {
+        "url": "https://www.nature.com/nature-index/topics/l4/water-management-and-climate-change-impacts-in-ancient-civilizations",
+        "title": "Water Management and Climate Change Impacts in Ancient Civilizations",
+        "type": "article",
+        "reliability": "high"
+      },
+      {
+        "url": "https://www.sciencedirect.com/science/article/pii/S0140196325001508",
+        "title": "Traditional irrigation knowledge for sustainable water",
+        "type": "study",
+        "reliability": "medium"
+      }
+    ],
+    "audienceQuestions": [
+      "How did ancient civilizations manage water without modern technology?",
+      "What were the most innovative ancient water management systems?",
+      "How can ancient water techniques help solve modern water scarcity issues?",
+      "Which ancient civilization had the most advanced water systems?",
+      "What role did water management play in the success of ancient societies?"
+    ],
+    "breakoutVideos": [
+      {
+        "title": "Lost Secrets of Roman Aqueducts: Engineering Marvels That Still Work Today",
+        "channel": "Ancient Engineering",
+        "views": 4500000,
+        "channelBaseline": 350000,
+        "breakoutRatio": 12.9
+      },
+      {
+        "title": "Ancient Persian Qanats: 3000-Year-Old Underground Water Systems That Still Work",
+        "channel": "History Unearthed",
+        "views": 2800000,
+        "channelBaseline": 420000,
+        "breakoutRatio": 6.7
+      },
+      {
+        "title": "Maya Water Cities: How Drought-Proof Civilization Built Amazing Reservoirs",
+        "channel": "Ancient Civilizations Revealed",
+        "views": 3800000,
+        "channelBaseline": 580000,
+        "breakoutRatio": 6.6
+      }
+    ]
+  }
+]

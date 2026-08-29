@@ -1,0 +1,20 @@
+{
+  "agent": "IdeaStrategist",
+  "role": "IDEA_STRATEGIST",
+  "artifact": "CandidateIdea[]",
+  "flow": "capability-showcase",
+  "batchId": "idea-strategy",
+  "instanceId": "default",
+  "pid": 7966,
+  "startedAt": "2026-08-29T16:39:26.720Z",
+  "endedAt": "2026-08-29T16:39:33.605Z",
+  "durationMs": 6885,
+  "inputHash": "62dcee7826e8af6a",
+  "outputHash": "7e7711c30d7120bd",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/subagent-chain/idea-strategy-default"
+}

@@ -1,0 +1,20 @@
+{
+  "agent": "EditorAgent",
+  "role": "EDITOR_AGENT",
+  "artifact": "RepairedShots",
+  "flow": "capability-showcase",
+  "batchId": "fact-editor-1",
+  "instanceId": "default",
+  "pid": 9309,
+  "startedAt": "2026-08-29T16:52:50.366Z",
+  "endedAt": "2026-08-29T16:53:23.626Z",
+  "durationMs": 33260,
+  "inputHash": "dd221e30b5534a1f",
+  "outputHash": "bbe33de3764d60a2",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/subagent-chain/fact-editor-1-default"
+}

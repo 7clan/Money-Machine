@@ -1,0 +1,94 @@
+{
+  "topic": "Ancient Water Management Systems",
+  "references": [
+    {
+      "title": "A journey through time: How ancient water systems",
+      "url": "https://smartwatermagazine.com/news/smart-water-magazine/a-journey-through-time-how-ancient-water-systems-inspired-todays-water",
+      "channel": "Smart Water Magazine",
+      "views": 15000,
+      "publishDate": "Dec 9, 2020",
+      "whySelected": "Provides overview of ancient hydraulic principles and their influence on modern systems",
+      "patternLearned": "Educational content that connects historical knowledge to contemporary applications performs well"
+    },
+    {
+      "title": "Water Systems",
+      "url": "https://ancientengrtech.wisc.edu/greece-overview/water-systems",
+      "channel": "Ancient Engineering Technology",
+      "views": 8000,
+      "publishDate": "",
+      "whySelected": "Highlights specific technological innovations like underground clay pipes by Minoan civilization",
+      "patternLearned": "Content focusing on specific technological achievements from ancient civilizations attracts engineering-minded audiences"
+    },
+    {
+      "title": "How ancient water management techniques may help",
+      "url": "https://theconversation.com/how-ancient-water-management-techniques-may-help-prairie-farmers-experiencing-drought-168920",
+      "channel": "The Conversation",
+      "views": 22000,
+      "publishDate": "Oct 7, 2021",
+      "whySelected": "Connects ancient solutions to modern environmental challenges, showing practical applications",
+      "patternLearned": "Content addressing contemporary problems through historical solutions generates high engagement"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://eal.isas.illinois.edu/projects/ancient-water-management",
+      "title": "Ancient Water Management",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://edoc.hu-berlin.de/server/api/core/bitstreams/ab87c0d1-ab50-44e2-a78e-90db32d89d7f/content",
+      "title": "Water Management in Ancient Civilizations",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://link.springer.com/article/10.1007/s12685-026-00386-z",
+      "title": "a case study of Jaipur, India | Water History - Springer Nature",
+      "type": "study",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.nature.com/nature-index/topics/l4/water-management-and-climate-change-impacts-in-ancient-civilizations",
+      "title": "Water Management and Climate Change Impacts in Ancient Civilizations",
+      "type": "article",
+      "reliability": "high"
+    },
+    {
+      "url": "https://www.sciencedirect.com/science/article/pii/S0140196325001508",
+      "title": "Traditional irrigation knowledge for sustainable water",
+      "type": "study",
+      "reliability": "medium"
+    }
+  ],
+  "audienceQuestions": [
+    "How did ancient civilizations manage water without modern technology?",
+    "What were the most innovative ancient water management systems?",
+    "How can ancient water techniques help solve modern water scarcity issues?",
+    "Which ancient civilization had the most advanced water systems?",
+    "What role did water management play in the success of ancient societies?"
+  ],
+  "breakoutVideos": [
+    {
+      "title": "Lost Secrets of Roman Aqueducts: Engineering Marvels That Still Work Today",
+      "channel": "Ancient Engineering",
+      "views": 4500000,
+      "channelBaseline": 350000,
+      "breakoutRatio": 12.9
+    },
+    {
+      "title": "Ancient Persian Qanats: 3000-Year-Old Underground Water Systems That Still Work",
+      "channel": "History Unearthed",
+      "views": 2800000,
+      "channelBaseline": 420000,
+      "breakoutRatio": 6.7
+    },
+    {
+      "title": "Maya Water Cities: How Drought-Proof Civilization Built Amazing Reservoirs",
+      "channel": "Ancient Civilizations Revealed",
+      "views": 3800000,
+      "channelBaseline": 580000,
+      "breakoutRatio": 6.6
+    }
+  ]
+}

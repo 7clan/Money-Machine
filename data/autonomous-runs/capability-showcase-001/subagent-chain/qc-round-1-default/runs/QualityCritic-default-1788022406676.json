@@ -1,0 +1,20 @@
+{
+  "agent": "QualityCritic",
+  "role": "QUALITY_CRITIC",
+  "artifact": "QCReport",
+  "flow": "capability-showcase",
+  "batchId": "qc-round-1",
+  "instanceId": "default",
+  "pid": 9404,
+  "startedAt": "2026-08-29T16:53:26.676Z",
+  "endedAt": "2026-08-29T16:53:31.484Z",
+  "durationMs": 4808,
+  "inputHash": "574189718ac72c88",
+  "outputHash": "820141aae24a59da",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/subagent-chain/qc-round-1-default"
+}

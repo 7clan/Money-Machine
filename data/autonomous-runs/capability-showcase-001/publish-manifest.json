@@ -1,0 +1,91 @@
+{
+  "status": "USER_AUTH_REQUIRED",
+  "reason": "YouTube OAuth not connected. Visit /api/youtube/auth to reconnect. Video rendered + thumbnail created — only upload blocked.",
+  "videoPath": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/renders/final.mp4",
+  "titleThumb": {
+    "title": "Your Mind's Renewable Energy: How Digital Detox Works",
+    "thumbnail": {
+      "visualSubject": "Brain with renewable energy symbols",
+      "composition": "Split screen showing brain on left with energy flowing through it, phone on right with battery draining",
+      "emotion": "Inspirational yet informative",
+      "textIfAny": "Renew Mind",
+      "curiosityMechanism": "Visual contrast between mental energy and digital drain"
+    },
+    "titleComposite": 8.25,
+    "allTitles": [
+      {
+        "text": "Your Mind's Renewable Energy: How Digital Detox Works",
+        "scores": {
+          "accuracy": 9,
+          "curiosity": 8,
+          "specificity": 8,
+          "thumbnailSynergy": 8
+        },
+        "composite": 8.3
+      },
+      {
+        "text": "Digital Detox: Powering Up Your Mental Resources",
+        "scores": {
+          "accuracy": 8,
+          "curiosity": 7,
+          "specificity": 7,
+          "thumbnailSynergy": 7
+        },
+        "composite": 7.3
+      },
+      {
+        "text": "The Renewable Energy of the Mind: Digital Balance",
+        "scores": {
+          "accuracy": 8,
+          "curiosity": 7,
+          "specificity": 7,
+          "thumbnailSynergy": 8
+        },
+        "composite": 7.5
+      },
+      {
+        "text": "Beyond Battery Life: Recharging Your Mental Energy",
+        "scores": {
+          "accuracy": 7,
+          "curiosity": 8,
+          "specificity": 7,
+          "thumbnailSynergy": 7
+        },
+        "composite": 7.3
+      },
+      {
+        "text": "Digital Overload vs Mental Renewal: The Energy Balance",
+        "scores": {
+          "accuracy": 8,
+          "curiosity": 7,
+          "specificity": 8,
+          "thumbnailSynergy": 7
+        },
+        "composite": 7.5
+      }
+    ],
+    "allThumbnails": [
+      {
+        "visualSubject": "Person meditating with energy flowing from phone turned off",
+        "composition": "Central figure with energy radiating outward, digital devices in background",
+        "emotion": "Peaceful yet powerful",
+        "textIfAny": "Digital Reset",
+        "curiosityMechanism": "Contrast between active meditation and passive digital consumption"
+      },
+      {
+        "visualSubject": "Brain with renewable energy symbols",
+        "composition": "Split screen showing brain on left with energy flowing through it, phone on right with battery draining",
+        "emotion": "Inspirational yet informative",
+        "textIfAny": "Renew Mind",
+        "curiosityMechanism": "Visual contrast between mental energy and digital drain"
+      },
+      {
+        "visualSubject": "Nature scene with digital elements integrated",
+        "composition": "Peaceful natural landscape with subtle digital elements dissolving into the environment",
+        "emotion": "Calming yet thought-provoking",
+        "textIfAny": "Digital Harmony",
+        "curiosityMechanism": "Blending of natural and digital worlds to suggest balance"
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "status": "USER_AUTH_REQUIRED",
+  "reason": "YouTube OAuth not connected — visit /api/youtube/auth"
+}

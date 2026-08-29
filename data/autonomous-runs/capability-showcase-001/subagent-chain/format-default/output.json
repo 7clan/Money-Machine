@@ -1,0 +1,28 @@
+{
+  "archetype": "EXPLAINER_ESSAY",
+  "reason": "This idea combines digital wellness with renewable energy concepts in a visually engaging way that works well with the available text-to-speech and image generation capabilities.",
+  "capabilitiesAvailable": {
+    "LINUX": true,
+    "PLAYWRIGHT": true,
+    "BROWSER_PAGE_CAPTURE": true,
+    "WEB_RESEARCH": true,
+    "TTS": true,
+    "FFMPEG": true,
+    "ZAI_TEXT": true,
+    "ZAI_IMAGE": true,
+    "SCREENSHOT_CAPTURE": true
+  },
+  "capabilitiesRequired": [
+    "LINUX",
+    "PLAYWRIGHT",
+    "BROWSER_PAGE_CAPTURE",
+    "WEB_RESEARCH",
+    "TTS",
+    "FFMPEG",
+    "ZAI_TEXT",
+    "ZAI_IMAGE",
+    "SCREENSHOT_CAPTURE"
+  ],
+  "blocked": false,
+  "selectedIdeaId": "idea-3"
+}

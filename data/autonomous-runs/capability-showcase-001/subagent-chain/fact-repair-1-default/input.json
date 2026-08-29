@@ -1,0 +1,103 @@
+{
+  "script": {
+    "id": "script-digital-detox-renewable-energy-mind",
+    "segments": [
+      {
+        "id": "seg-1",
+        "type": "HOOK",
+        "narration": "Your phone battery drains daily. But what about your mental battery?",
+        "screenAction": "Split screen showing phone battery draining on left, person looking exhausted on right",
+        "expectedResult": "Viewer recognizes digital fatigue as a real energy drain",
+        "visualPurpose": "Establish parallel between physical and mental energy depletion"
+      },
+      {
+        "id": "seg-2",
+        "type": "SETUP",
+        "narration": "Like renewable energy powers our devices, we can renew our mental energy.",
+        "screenAction": "Animation showing renewable energy flowing into phone, then transforming into mental energy filling a person's silhouette",
+        "expectedResult": "Viewer understands the metaphor connecting renewable energy to mental health",
+        "visualPurpose": "Introduce the core concept visually"
+      },
+      {
+        "id": "seg-3",
+        "type": "TRICK",
+        "narration": "Digital overloads create mental pollution, just like fossil fuels harm our environment.",
+        "screenAction": "Split screen showing social media notifications flooding one side, factory emissions on the other",
+        "expectedResult": "Viewer draws connection between digital overload and environmental pollution",
+        "visualPurpose": "Create an unexpected parallel between digital and environmental issues"
+      },
+      {
+        "id": "seg-4",
+        "type": "SECTION",
+        "narration": "Digital storage is like energy storage - both need efficient management.",
+        "screenAction": "Animation showing data storage filling up, then transitioning to battery storage visualization",
+        "expectedResult": "Viewer understands the relationship between digital storage and energy concepts",
+        "visualPurpose": "Explain the core metaphor through visual analogy"
+      },
+      {
+        "id": "seg-5",
+        "type": "SECTION",
+        "narration": "Practice digital mindfulness - your mind's renewable energy source.",
+        "screenAction": "Person meditating with phone in another room, peaceful energy radiating from them",
+        "expectedResult": "Viewer sees digital detox as a practical mental health strategy",
+        "visualPurpose": "Demonstrate the solution in action"
+      },
+      {
+        "id": "seg-6",
+        "type": "PAYOFF",
+        "narration": "When you manage your digital energy, you recharge your mental wellbeing.",
+        "screenAction": "Time-lapse of person going from frazzled to focused, with renewable energy symbols surrounding them",
+        "expectedResult": "Viewer understands the benefit of digital detox for mental health",
+        "visualPurpose": "Show the transformation and benefits clearly"
+      },
+      {
+        "id": "seg-7",
+        "type": "ENDING",
+        "narration": "Your mind is the most valuable renewable resource. Protect it.",
+        "screenAction": "Person looking peacefully at nature, with digital devices minimized in the background",
+        "expectedResult": "Viewer feels motivated to implement digital wellness practices",
+        "visualPurpose": "Leave viewer with a memorable call to action"
+      }
+    ],
+    "archetype": "EXPLAINER_ESSAY",
+    "tone": "Informative yet inspiring",
+    "targetDuration": 75
+  },
+  "factCheckReport": {
+    "verdict": "FAIL",
+    "claims": [
+      {
+        "claim": "Your phone battery drains daily.",
+        "supported": true,
+        "source": "https://jukkaniiranen.com/2022/09/your-mental-battery-and-the-power-of-living",
+        "issue": ""
+      },
+      {
+        "claim": "Digital overloads create mental pollution, just like fossil fuels harm our environment.",
+        "supported": false,
+        "source": "",
+        "issue": "The evidence doesn't support the specific claim that digital overloads create 'mental pollution' or draw this parallel to fossil fuels."
+      },
+      {
+        "claim": "Digital storage is like energy storage - both need efficient management.",
+        "supported": false,
+        "source": "",
+        "issue": "The evidence doesn't support the specific comparison between digital storage and energy storage."
+      },
+      {
+        "claim": "Practice digital mindfulness - your mind's renewable energy source.",
+        "supported": false,
+        "source": "",
+        "issue": "The evidence doesn't support the specific claim that digital mindfulness is a 'renewable energy source' for the mind."
+      },
+      {
+        "claim": "When you manage your digital energy, you recharge your mental wellbeing.",
+        "supported": false,
+        "source": "",
+        "issue": "While the evidence mentions mental fatigue and smartphone impacts on mental health, it doesn't specifically support the claim that managing 'digital energy' recharges mental wellbeing."
+      }
+    ],
+    "unsupportedCount": 4
+  },
+  "repairScope": "fact-failures-only"
+}

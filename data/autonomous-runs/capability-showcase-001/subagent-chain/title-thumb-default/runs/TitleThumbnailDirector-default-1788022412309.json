@@ -1,0 +1,20 @@
+{
+  "agent": "TitleThumbnailDirector",
+  "role": "TITLE_THUMBNAIL_DIRECTOR",
+  "artifact": "TitleThumbnailPair",
+  "flow": "capability-showcase",
+  "batchId": "title-thumb",
+  "instanceId": "default",
+  "pid": 9453,
+  "startedAt": "2026-08-29T16:53:32.309Z",
+  "endedAt": "2026-08-29T16:53:39.186Z",
+  "durationMs": 6877,
+  "inputHash": "0e648897e211219b",
+  "outputHash": "5b0d8567a256aa58",
+  "status": "PASS",
+  "llmCalls": 1,
+  "searchCalls": 0,
+  "llmModel": "glm-4-plus",
+  "inputUnmodified": true,
+  "chainDir": "/home/z/my-project/data/autonomous-runs/capability-showcase-001/subagent-chain/title-thumb-default"
+}

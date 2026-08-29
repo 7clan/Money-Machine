@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "[\n  {\n    \"topic\": \"Digital Minimalism Movement\",\n    \"rationale\": \"Growing interest in reducing digital overload with practical strategies for mindful tech use.\",\n    \"opportunityDomain\": \"PSYCHOLOGY\"\n  },\n  {\n    \"topic\": \"Renewable Energy Storage Solutions\",\n    \"rationale\": \"Critical need for efficient energy storage with rapid innovation in battery technology.\",\n    \"opportunityDomain\": \"TECHNOLOGY\"\n  },\n  {\n    \"topic\": \"Ancient Water Management Systems\",\n    \"rationale\": \"Sustainable historical techniques that modern societies can learn from in water conservation.\",\n    \"opportunityDomain\": \"HISTORY\"\n  }\n]",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1788021540,
+  "id": "20260830003858a9936d710285460b",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "20260830003858a9936d710285460b",
+  "usage": {
+    "completion_tokens": 141,
+    "prompt_tokens": 245,
+    "total_tokens": 386
+  }
+}
