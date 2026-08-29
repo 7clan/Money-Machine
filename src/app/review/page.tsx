@@ -22,7 +22,7 @@ interface VideoEntry {
   superseded: boolean
   supersededBy: string | null
   notes: string
-  playbackSource: 'PERSISTED' | 'LOCAL' | 'YOUTUBE' | 'NONE'
+  playbackSource: 'OFF_MACHINE' | 'LOCAL_STORE' | 'LOCAL' | 'YOUTUBE' | 'NONE'
   storageStatus: string | null
   artifactId: string | null
 }
@@ -111,10 +111,11 @@ function VideoCard({ entry }: { entry: VideoEntry }) {
           borderRadius: '4px',
           fontWeight: 600,
           marginRight: '6px',
-          background: entry.playbackSource === 'PERSISTED' ? '#10b981' : entry.playbackSource === 'LOCAL' ? '#3b82f6' : entry.playbackSource === 'YOUTUBE' ? '#ef4444' : '#6b7280',
+          background: entry.playbackSource === 'OFF_MACHINE' ? '#10b981' : entry.playbackSource === 'LOCAL_STORE' ? '#3b82f6' : entry.playbackSource === 'LOCAL' ? '#6366f1' : entry.playbackSource === 'YOUTUBE' ? '#ef4444' : '#6b7280',
           color: entry.playbackSource === 'NONE' ? '#fff' : '#000',
         }}>
-          {entry.playbackSource === 'PERSISTED' && '▣ PERSISTED'}
+          {entry.playbackSource === 'OFF_MACHINE' && '▣ OFF_MACHINE'}
+          {entry.playbackSource === 'LOCAL_STORE' && '▣ LOCAL_STORE'}
           {entry.playbackSource === 'LOCAL' && '▣ LOCAL'}
           {entry.playbackSource === 'YOUTUBE' && '▶ YOUTUBE'}
           {entry.playbackSource === 'NONE' && '✕ NONE'}

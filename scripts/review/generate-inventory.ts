@@ -39,7 +39,7 @@ interface VideoEntry {
   superseded: boolean
   supersededBy: string | null
   notes: string
-  playbackSource: 'PERSISTED' | 'LOCAL' | 'YOUTUBE' | 'NONE'
+  playbackSource: 'OFF_MACHINE' | 'LOCAL_STORE' | 'LOCAL' | 'YOUTUBE' | 'NONE'
   storageStatus: string | null
   artifactId: string | null
 }
@@ -68,7 +68,7 @@ function readJson(p: string): any {
 /**
  * Get playback source for a production from the artifact store.
  */
-function getPlayback(productionId: string): { playbackSource: 'PERSISTED' | 'LOCAL' | 'YOUTUBE' | 'NONE'; storageStatus: string | null; artifactId: string | null } {
+function getPlayback(productionId: string): { playbackSource: 'OFF_MACHINE' | 'LOCAL_STORE' | 'LOCAL' | 'YOUTUBE' | 'NONE'; storageStatus: string | null; artifactId: string | null } {
   try {
     const pb = getPlaybackSource(productionId)
     return {
